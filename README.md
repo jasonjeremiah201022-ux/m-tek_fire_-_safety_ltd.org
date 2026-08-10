@@ -14,6 +14,8 @@ security and solar equipment supplier since 2012 (RC: 1082534).
 | Gallery        | `gallery.html`  | Filterable photo gallery with lightbox               |
 | Shop           | `shop.html`     | Product catalogue, cart, quick-view modal, checkout  |
 | Contact        | `contact.html`  | Offices, form (WhatsApp/email), map, FAQ             |
+| Terms          | `terms.html`    | Terms & Conditions of Use and Sale (legal framework) |
+| Privacy        | `privacy.html`  | Privacy Policy & Cookie / Local Storage Statement    |
 
 ## Tech
 
