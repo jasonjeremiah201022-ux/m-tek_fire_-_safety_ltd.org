@@ -3,17 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shop Online | M-Tek Fire & Safety Ltd — Fire, Safety, Security & Solar Equipment</title>
-  <meta name="description" content="Shop 240+ fire safety, security, solar, PPE and alarm products from M-Tek Fire & Safety Ltd. Add to cart and checkout via WhatsApp or email.">
+  <title>About Us | M-Tek Fire & Safety Ltd</title>
+  <meta name="description" content="Learn about M-Tek Fire & Safety Ltd — a certified fire safety, security and solar equipment company in Kaduna, Nigeria. Incorporated 2012, RC 1082534.">
   <link rel="icon" href="assets/img/favicon-32.png" sizes="32x32">
   <link rel="icon" href="assets/img/favicon-64.png" sizes="64x64">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-  <script src="products.js" defer></script>
   <script src="script.js" defer></script>
-  <script src="shop.js" defer></script>
 </head>
 <body>
   <!-- Header -->
@@ -28,18 +26,15 @@
       </a>
       <nav class="main-nav">
         <a href="index.html" class="nav-link">Home</a>
-        <a href="about.html" class="nav-link">About</a>
+        <a href="about.html" class="nav-link active">About</a>
         <a href="products.html" class="nav-link">Products</a>
         <a href="services.html" class="nav-link">Services</a>
         <a href="gallery.html" class="nav-link">Gallery</a>
-        <a href="shop.html" class="nav-link active">Shop</a>
+        <a href="shop.html" class="nav-link">Shop</a>
         <a href="contact.html" class="nav-link">Contact</a>
       </nav>
       <div class="header-actions">
-        <button class="cart-toggle open-cart" aria-label="Open cart">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1.5"/><circle cx="19" cy="21" r="1.5"/><path d="M2.5 3h2l2.4 12.2a1.5 1.5 0 001.5 1.3h8.9a1.5 1.5 0 001.5-1.2L21 7H6"/></svg>
-          Cart <span class="cart-count-badge cart-count">0</span>
-        </button>
+        <a href="shop.html" class="btn btn-primary btn-sm header-shop-btn">Shop Online</a>
         <button class="menu-toggle" aria-label="Open navigation"><span></span><span></span><span></span></button>
       </div>
     </div>
@@ -49,11 +44,11 @@
     <button class="close-mobile-nav" aria-label="Close navigation">&times;</button>
     <nav>
       <a href="index.html" class="nav-link">Home</a>
-      <a href="about.html" class="nav-link">About</a>
+      <a href="about.html" class="nav-link active">About</a>
       <a href="products.html" class="nav-link">Products</a>
       <a href="services.html" class="nav-link">Services</a>
       <a href="gallery.html" class="nav-link">Gallery</a>
-      <a href="shop.html" class="nav-link active">Shop Online</a>
+      <a href="shop.html" class="nav-link">Shop Online</a>
       <a href="contact.html" class="nav-link">Contact</a>
     </nav>
     <a href="https://wa.me/2348033498452" target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp btn-block mobile-cta">Chat on WhatsApp</a>
@@ -65,127 +60,148 @@
     <!-- Page hero -->
     <section class="page-hero">
       <div class="container">
-        <nav class="breadcrumb"><a href="index.html">Home</a><span class="sep">/</span><span>Shop</span></nav>
-        <p class="eyebrow">Online Shop</p>
-        <h1>Shop fire safety, security &amp; solar equipment online</h1>
-        <p class="lead">Browse M-Tek's curated range of extinguishers, safety gear, security devices, solar equipment, alarms and surveillance. Add to cart, then checkout via WhatsApp or email.</p>
-        <div class="shop-stats">
-          <span class="shop-stat"><strong>240+</strong> certified products</span>
-          <span class="shop-stat"><strong>5</strong> categories</span>
-          <span class="shop-stat"><strong>Fast</strong> nationwide delivery</span>
-          <span class="shop-stat"><strong>Secure</strong> WhatsApp / email checkout</span>
-        </div>
-        <div class="hero-actions">
-          <a href="#catalog" class="btn btn-primary btn-lg">Start Shopping</a>
-          <button class="btn btn-ghost btn-lg open-cart" type="button">View Cart</button>
-        </div>
+        <nav class="breadcrumb"><a href="index.html">Home</a><span class="sep">/</span><span>About Us</span></nav>
+        <p class="eyebrow">About M-Tek</p>
+        <h1>Building a safer Nigeria, one facility at a time</h1>
+        <p class="lead">Certified supplier and service provider of fire safety, security and solar solutions — headquartered in Kaduna and serving organisations nationwide since 2012.</p>
       </div>
     </section>
 
-    <!-- Top picks carousel -->
-    <section class="section section-alt" id="top-picks">
-      <div class="container">
-        <header class="section-header reveal">
-          <p class="eyebrow">Staff Favourites</p>
-          <h2>Top Picks</h2>
-          <p>Popular and recommended products from M-Tek Fire &amp; Safety Ltd.</p>
-        </header>
-
-        <div class="top-picks-wrapper reveal">
-          <button class="top-picks-nav top-picks-prev" type="button" aria-label="Previous products">&lsaquo;</button>
-          <div class="top-picks-track" aria-label="Top products"><!-- Filled by shop.js --></div>
-          <button class="top-picks-nav top-picks-next" type="button" aria-label="Next products">&rsaquo;</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- Catalog -->
-    <section class="section" id="catalog">
-      <div class="container">
-        <header class="section-header reveal">
-          <p class="eyebrow">Catalogue</p>
-          <h2>All Products</h2>
-          <p>Filter by category, search by name, or sort to find the right equipment.</p>
-        </header>
-
-        <div class="shop-toolbar reveal">
-          <div class="category-chips" id="categoryFilters"><!-- Filled by shop.js --></div>
-          <div class="shop-controls">
-            <div class="search-box">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
-              <input type="search" id="productSearch" placeholder="Search products..." aria-label="Search products">
-            </div>
-            <select class="sort-select" id="sortSelect" aria-label="Sort products">
-              <option value="featured">Sort: Featured</option>
-              <option value="name">Sort: Name A–Z</option>
-              <option value="price-asc">Sort: Price (low → high)</option>
-              <option value="price-desc">Sort: Price (high → low)</option>
-            </select>
+    <!-- Story -->
+    <section class="section">
+      <div class="container two-col">
+        <div class="reveal">
+          <p class="eyebrow">Our Story</p>
+          <h2>A decade of trusted safety partnerships</h2>
+          <p>
+            M-Tek Fire &amp; Safety Ltd was incorporated on <strong>5th December 2012</strong> with
+            registration number <strong>RC: 1082534</strong>. From our base in Kaduna, we have grown
+            into one of Northern Nigeria's dependable suppliers of fire safety, security and solar equipment.
+          </p>
+          <p>
+            We help organisations and individuals protect lives and property through reliable,
+            standard-compliant safety solutions — from extinguishers and alarm systems to security
+            devices and complete solar installations.
+          </p>
+          <p>
+            Today, our team supports offices, schools, hospitals, factories, warehouses, fuel stations,
+            places of worship and residential estates with tailored safety and power solutions, backed
+            by professional installation, refilling, maintenance and training services.
+          </p>
+          <div class="hero-actions mt-3">
+            <a href="contact.html" class="btn btn-primary">Work With Us</a>
+            <a href="shop.html" class="btn btn-outline">Browse Our Shop</a>
           </div>
         </div>
+        <div class="two-col-media reveal">
+          <img src="assets/img/hero-fire.jpg" alt="Fire extinguisher inspection in a commercial facility" loading="lazy">
+          <div class="float-chip">
+            <span class="icon-circle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-3.5 8-10V5l-8-3-8 3v7c0 6.5 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+            </span>
+            <span><strong>RC: 1082534</strong>Incorporated 5 December 2012</span>
+          </div>
+        </div>
+      </div>
+    </section>
 
-        <p class="results-count" id="resultsCount" style="margin-bottom:1rem;">Loading products…</p>
+    <!-- Mission / Vision / Values -->
+    <section class="section section-alt">
+      <div class="container">
+        <header class="section-header reveal">
+          <p class="eyebrow">Why We Exist</p>
+          <h2>Mission, vision &amp; values</h2>
+        </header>
+        <div class="grid-3">
+          <article class="value-card reveal">
+            <span class="icon-circle">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/></svg>
+            </span>
+            <h3>Our Mission</h3>
+            <p>To protect lives and property by delivering certified, reliable fire safety, security and solar solutions with professional service and integrity.</p>
+          </article>
+          <article class="value-card reveal reveal-delay-1">
+            <span class="icon-circle gold">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            </span>
+            <h3>Our Vision</h3>
+            <p>To be the most trusted safety and power solutions partner in Nigeria — recognised for quality products, expert service and lasting client relationships.</p>
+          </article>
+          <article class="value-card reveal reveal-delay-2">
+            <span class="icon-circle navy">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg>
+            </span>
+            <h3>Our Values</h3>
+            <p>Integrity, safety-first thinking, quality assurance, responsiveness and long-term partnerships with every client we serve.</p>
+          </article>
+        </div>
+      </div>
+    </section>
 
-        <div id="productGrid" class="product-grid"><!-- Filled by shop.js --></div>
+    <!-- Timeline -->
+    <section class="section">
+      <div class="container">
+        <header class="section-header reveal">
+          <p class="eyebrow">Our Journey</p>
+          <h2>Milestones along the way</h2>
+        </header>
+        <div class="timeline">
+          <div class="timeline-item reveal">
+            <span class="tl-year">2012</span>
+            <h3>Incorporation in Kaduna</h3>
+            <p>M-Tek Fire &amp; Safety Ltd is incorporated (RC: 1082534) with a focus on fire safety equipment supply.</p>
+          </div>
+          <div class="timeline-item reveal">
+            <span class="tl-year">2014–2016</span>
+            <h3>Expanding the service range</h3>
+            <p>We grow into extinguisher refilling, maintenance and installation services for businesses and institutions.</p>
+          </div>
+          <div class="timeline-item reveal">
+            <span class="tl-year">2017–2019</span>
+            <h3>Security &amp; solar solutions</h3>
+            <p>Product range expands into security systems, CCTV, PPE and solar power equipment — serving clients nationwide.</p>
+          </div>
+          <div class="timeline-item reveal">
+            <span class="tl-year">2020–2023</span>
+            <h3>Training, consultancy &amp; branch network</h3>
+            <p>Fire safety training and consultancy become core services; a second office opens along Sir Patrick Ibrahim Yakowa Way, Kaduna.</p>
+          </div>
+          <div class="timeline-item reveal">
+            <span class="tl-year">2024 – Today</span>
+            <h3>A complete safety partner</h3>
+            <p>Over 240 products in our certified catalogue, nationwide delivery, and a growing base of organisational clients.</p>
+          </div>
+        </div>
+      </div>
+    </section>
 
-        <div class="info-card mt-4 reveal" style="border-left-color:var(--gold-500);">
-          <h3>💡 Ordering made simple</h3>
-          <p style="margin-bottom:.4rem;">Prices are indicative — final confirmation, availability and delivery cost are sent after we review your order.</p>
-          <p style="margin-bottom:0;">Prefer to talk? Call <a href="tel:08033498452"><strong>0803 349 8452</strong></a> or <a href="https://wa.me/2348033498452" target="_blank" rel="noopener noreferrer"><strong>chat with us on WhatsApp</strong></a> for bulk and institutional pricing.</p>
+    <!-- Stats -->
+    <section class="section section-dark">
+      <div class="container stat-grid">
+        <div class="stat-block reveal"><div class="stat-number" data-count="12" data-suffix="+">0</div><div class="stat-label">Years in business</div></div>
+        <div class="stat-block reveal reveal-delay-1"><div class="stat-number" data-count="240" data-suffix="+">0</div><div class="stat-label">Products in catalogue</div></div>
+        <div class="stat-block reveal reveal-delay-2"><div class="stat-number" data-count="100" data-suffix="+">0</div><div class="stat-label">Organisations served</div></div>
+        <div class="stat-block reveal reveal-delay-3"><div class="stat-number" data-count="6" data-suffix="">0</div><div class="stat-label">Core service lines</div></div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="section">
+      <div class="container">
+        <div class="cta-band reveal">
+          <div>
+            <p class="eyebrow">Let's Talk</p>
+            <h2>Partner with a certified safety team</h2>
+            <p>Whether you need one extinguisher or a full facility safety programme, we're ready to help.</p>
+          </div>
+          <div class="cta-actions">
+            <a href="https://wa.me/2348033498452" target="_blank" rel="noopener noreferrer" class="btn btn-gold btn-lg">Chat on WhatsApp</a>
+            <a href="contact.html" class="btn btn-ghost btn-lg">Contact Us</a>
+          </div>
         </div>
       </div>
     </section>
   </main>
-
-  <!-- Cart drawer -->
-  <div class="cart-drawer-backdrop"></div>
-  <aside class="cart-drawer" aria-hidden="true">
-    <header class="cart-header">
-      <h2>Your Cart <span>(<span class="cart-count">0</span>)</span></h2>
-      <button class="cart-close" type="button" aria-label="Close cart">&times;</button>
-    </header>
-    <div class="cart-body">
-      <div class="cart-items"><!-- Filled by shop.js --></div>
-      <div class="cart-summary">
-        <div class="cart-summary-row">
-          <span>Subtotal</span>
-          <strong id="cartTotal">₦0</strong>
-        </div>
-        <p class="cart-note">Prices and availability are indicative. Final confirmation will be sent after we review your order.</p>
-      </div>
-      <form class="cart-checkout" id="checkoutForm">
-        <h3>Customer details</h3>
-        <label>
-          Name
-          <input type="text" id="customerName" required placeholder="Full name">
-        </label>
-        <label>
-          Phone number
-          <input type="tel" id="customerPhone" required placeholder="e.g. 0803 000 0000">
-        </label>
-        <label>
-          Delivery address
-          <textarea id="customerAddress" rows="2" required placeholder="Street, city, state"></textarea>
-        </label>
-        <label>
-          Additional note (optional)
-          <textarea id="customerNote" rows="2" placeholder="E.g. preferred delivery time, landmark"></textarea>
-        </label>
-        <div class="cart-actions">
-          <button type="button" id="checkoutWhatsApp" class="btn btn-whatsapp btn-block">Checkout via WhatsApp</button>
-          <button type="button" id="checkoutEmail" class="btn btn-outline btn-block">Checkout via Email</button>
-          <button type="button" id="clearCart" class="cart-clear-link">Clear cart</button>
-        </div>
-      </form>
-    </div>
-  </aside>
-
-  <!-- Product modal -->
-  <div class="modal-backdrop"></div>
-  <div class="product-modal" role="dialog" aria-modal="true" aria-label="Product details">
-    <button class="modal-close" type="button" aria-label="Close">&times;</button>
-    <div class="modal-grid" id="modalBody"><!-- Filled by shop.js --></div>
-  </div>
 
   <!-- Footer -->
   <footer class="site-footer">
