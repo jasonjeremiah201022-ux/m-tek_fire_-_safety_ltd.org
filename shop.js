@@ -18,10 +18,20 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /* ---------------------------------------------------------------
-     1. Real product photography — map each item to the company's
-        own photos in /assets/products/ when a sensible match exists.
+     1. Product photography — per-product `image` + smart fallback
+        WORKFLOW FOR NEW PICTURES:
+        1) Upload the photo to assets/products/  (e.g. "DCP 6kg Bajik I.jpg")
+        2) In products.js set the product's `image` to that path:
+           image: "assets/products/DCP 6kg Bajik I.jpg"
+        3) shop.js will use `product.image` verbatim (encoded). If `image`
+           is empty/null, the keyword fallback below keeps a sensible
+           placeholder so nothing breaks.
+        NOTE: Fire Estinguisher Hanged.jpg on disk is currently a 2-byte
+        placeholder (broken). Extinguishers therefore fall back to
+        DCP_50kg_Fire_Extinguisher.jpg until the real photo is replaced.
   --------------------------------------------------------------- */
-  const IMG = (file) => "assets/products/" + file;
+  // Use encodeURI so filenames with spaces / parentheses work in the browser.
+  const IMG = (file) => encodeURI("assets/products/" + file);
   const CAT_IMG = {
     Fire: IMG("DCP_50kg_Fire_Extinguisher.jpg"),
     Safety: IMG("Rocklander Safety Boots.jpg"),
@@ -29,39 +39,83 @@ document.addEventListener("DOMContentLoaded", () => {
     Solar: IMG("solar bulb.jpg"),
     "Home Automation, Alarm & Surveillance": IMG("Zeta Smoke Detector.jpg"),
   };
+  // Generic product placeholder when nothing else matches
+  const PLACEHOLDER = CAT_IMG.Fire;
 
   const imageRules = [
-    [/hose reel and box|hose reel cabinet|hose reel\b/i, IMG("hose reel and box.jpg")],
-    [/hose reel/i, IMG("hose reel.jpg")],
+    // Fire — specific extinguisher types first (more specific than generic)
+    [/foam\s*9/i, IMG("Foam 9L Fire Extinguisher.jpg")],
+    [/foam/i, IMG("Foam 9L Fire Extinguisher.jpg")],
+    [/co2\s*2kg/i, IMG("CO2 5kg Fire Extinguisher.webp")],
+    [/co2/i, IMG("CO2 5kg Fire Extinguisher.webp")],
+    [/dcp\s*1kg/i, IMG("DCP 6kg Fire Extinguisher.jpg")],
+    [/dcp/i, IMG("DCP 6kg Fire Extinguisher.jpg")],
+    [/hose reel and box|hose reel cabinet|fire hose reel and box|hose reel cabinet/i, IMG("Fire Hose Reel Cabinet.jpg")],
+    [/hose reel|fire hose reel/i, IMG("hose reel.jpg")],
     [/continous flow|continuous flow/i, IMG("continous flow hose reel.jpg")],
     [/hydrant \(pillar|pillar\/pedestrian|pillar hydrant/i, IMG("Pillar Hydrant.jpg")],
     [/hydrant \(underground|one way pillar/i, IMG("one way pillar hydrant.jpg")],
     [/landing valve/i, IMG("landing valve.jpg")],
     [/breathing apparatus|respiratory|dust mask|spaceman/i, IMG("Auto Fire Ball.jpg")],
-    [/smoke detector/i, IMG("Zeta Smoke Detector.jpg")],
-    [/helmet/i, IMG("MSA Helmet (Green).jpg")],
-    [/boots/i, IMG("Rocklander Safety Boots.jpg")],
-    [/vest|jacket/i, IMG("reflective jacket green.jpg")],
-    [/ear muffs|ear defenders/i, IMG("ear muffs.jpg")],
-    [/overall|fireman suit|fire tunic/i, IMG("Overall.jpg")],
-    [/camera|cctv|dvr/i, IMG("bulb camera.jpg")],
-    [/metal detector/i, IMG("metal dectector.jpg")],
-    [/solar light|solar lamp|solar bulb|dc bulb|solar fan|solar power pack|beacon/i, IMG("solar bulb.jpg")],
+    [/fire blanket/i, IMG("DCP_50kg_Fire_Extinguisher.jpg")],
     [/sprinkler/i, IMG("sprinkler head.jpg")],
-    [/caution cone|traffic cone/i, IMG("Caution Cone (75cm).jpg")],
-    [/muster point|safety sign board|fire exit|fire action|caution board|wet floor/i, IMG("Muster Point Mounted.jpg")],
-    [/beware/i, IMG("Beware Of Dogs Mounted.jpg")],
+    [/fire bucket/i, IMG("DCP_50kg_Fire_Extinguisher.jpg")],
+    [/hanger|valve|coupline|nozzle|horn|strap|pin|nipple/i, IMG("DCP_50kg_Fire_Extinguisher.jpg")],
+    [/extinguisher|bajik|angus|bryk|stangoz|extintore|bizland|flamesense|flame point|keenstop|poztan|fire killer|capital tell|chubb|visa|pansion|fire stop/i, IMG("DCP 6kg Fire Extinguisher.jpg")],
+    // Safety — first aid and signage get dedicated images
+    [/first aid box/i, IMG("First Aid Box.jpg")],
+    [/muster point|sinage|signage|beware.*dog|caution|danger|fire exit|fire action|wet floor|no smoking/i, IMG("Muster Point Sign.jpg")],
+    [/helmet/i, IMG("MSA Helmet (Green).jpg")],
+    [/boots|rain boot/i, IMG("Rocklander Safety Boots.jpg")],
+    [/vest|jacket|reflective/i, IMG("reflective jacket green.jpg")],
+    [/ear muffs|ear defenders|earpiece|ear plug/i, IMG("ear muffs.jpg")],
+    [/overall|fireman suit|fire tunic|harness|belt/i, IMG("Overall.jpg")],
+    [/metal detector/i, IMG("metal dectector.jpg")],
+    [/gloves/i, IMG("Rocklander Safety Boots.jpg")],
+    [/goggles|mask/i, IMG("MSA Helmet (Green).jpg")],
+    [/cone|barrier|tape/i, IMG("Caution Cone (75cm).jpg")],
+    // Solar — specific assets we just sourced
+    [/inverter/i, IMG("Solar Inverter 3kVA.jpg")],
+    [/panel/i, IMG("Solar Panel 200W.jpg")],
+    [/battery|220ah|200ah/i, IMG("Solar Battery 200Ah.jpg")],
+    [/charge controller/i, IMG("Solar Inverter 3kVA.jpg")],
+    [/solar light|solar lamp|solar bulb|dc bulb|solar fan|solar power pack|beacon/i, IMG("solar bulb.jpg")],
+    // Surveillance / Home Automation
+    [/baofeng|two way radio/i, IMG("Baofeng Radio.jpg")],
+    [/dvr|nvr|hard drive/i, IMG("DVR 8 Channel.jpg")],
+    [/camera.*outdoor|cctv.*outdoor/i, IMG("Outdoor CCTV Camera.jpg")],
+    [/camera|cctv/i, IMG("bulb camera.jpg")],
+    [/panel.*fap|fire alarm panel/i, IMG("Fire Alarm Panel.jpg")],
+    [/bell|siren|flasher|strobe|sounder|beacon/i, IMG("Zeta Smoke Detector.jpg")],
+    [/call point|break glass/i, IMG("Beak Glass.jpg")],
+    [/cable/i, IMG("Zeta Smoke Detector.jpg")],
+    [/smoke detector|smoke alarm|heat detector|pir|infrared|magnetic.*contact|panic button|psu/i, IMG("Zeta Smoke Detector.jpg")],
     [/fire ball/i, IMG("Auto Fire Ball.jpg")],
-    [/break glass|call point/i, IMG("Beak Glass.jpg")],
-    [/extinguisher|fire bucket|foam|fire blanket|bajik|angus|bryk|stangoz|extintore|bizland|flamesense|flame point|keenstop|poztan|fire killer|capital tell|chubb|visa|pansion/i, IMG("Fire Estinguisher Hanged.jpg")],
   ];
 
   function resolveImage(product) {
+    // 1) Explicit per-product image wins — this is where your uploads plug in.
+    //    Accepts: product.image, product.img, product.photo, product.imageUrl
+    const explicit = product.image || product.img || product.photo || product.imageUrl;
+    if (explicit && typeof explicit === "string" && explicit.trim()) {
+      const trimmed = explicit.trim();
+      // Already a full path or URL? Return as-is (encoded).
+      if (/^(https?:)?\/\//.test(trimmed) || trimmed.startsWith("data:")) return trimmed;
+      if (trimmed.startsWith("assets/")) return encodeURI(trimmed);
+      // Bare filename — assume it lives in assets/products/
+      return IMG(trimmed);
+    }
+    // 2) Keyword fallback keeps existing catalogue working without extra config
     const name = (product.name || "") + " " + (product.category || "");
     for (const [re, path] of imageRules) {
       if (re.test(name)) return path;
     }
-    return CAT_IMG[product.category] || IMG("DCP_50kg_Fire_Extinguisher.jpg");
+    return CAT_IMG[product.category] || PLACEHOLDER;
+  }
+
+  // Expose for debugging / tooling
+  if (typeof window !== "undefined") {
+    window.MTEK_IMG = { IMG, CAT_IMG, PLACEHOLDER, resolveImage };
   }
 
   /* ---------------------------------------------------------------
@@ -190,7 +244,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <article class="product-card reveal in-view" data-id="${p.id}">
         <div class="product-card-media">
           ${p.featured ? '<span class="product-card-badge">Featured</span>' : ""}
-          <img src="${resolveImage(p)}" alt="${p.name}" loading="lazy">
+          <img src="${resolveImage(p)}" alt="${p.name}" loading="lazy" onerror="this.onerror=null;this.src=CAT_IMG[p.category]||PLACEHOLDER">
         </div>
         <div class="product-card-body">
           <span class="product-card-category">${p.category}</span>
@@ -264,7 +318,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .map(
         (p) => `
         <article class="top-pick-card" data-id="${p.id}">
-          <img src="${resolveImage(p)}" alt="${p.name}" loading="lazy">
+          <img src="${resolveImage(p)}" alt="${p.name}" loading="lazy" onerror="this.onerror=null;this.src=CAT_IMG[p.category]||PLACEHOLDER">
           <div class="top-pick-body">
             <h3 class="top-pick-title">${p.name}</h3>
             <div class="top-pick-price">${formatNaira(p.price)}</div>
@@ -298,7 +352,7 @@ document.addEventListener("DOMContentLoaded", () => {
         total += lineTotal;
         return `
           <div class="cart-item" data-id="${item.id}">
-            <img src="${item.image}" alt="${item.name}">
+            <img src="${item.image}" alt="${item.name}" onerror="this.onerror=null;this.src=PLACEHOLDER">
             <div class="cart-item-details">
               <p class="cart-item-title">${item.name}</p>
               <p class="cart-item-meta">${formatNaira(item.price)} × ${item.qty}</p>
@@ -339,7 +393,7 @@ document.addEventListener("DOMContentLoaded", () => {
     modalQty = 1;
     modalBody.innerHTML = `
       <div class="modal-media">
-        <img src="${resolveImage(p)}" alt="${p.name}">
+        <img src="${resolveImage(p)}" alt="${p.name}" onerror="this.onerror=null;this.src=CAT_IMG[p.category]||PLACEHOLDER">
       </div>
       <div class="modal-info">
         <span class="product-card-category">${p.category}</span>

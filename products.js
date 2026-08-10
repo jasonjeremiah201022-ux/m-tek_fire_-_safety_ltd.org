@@ -1,1943 +1,3252 @@
 // M-Tek Fire & Safety Ltd — product catalogue
 // Data only: prices are indicative in Naira (₦). To update the catalogue,
 // edit this file — no other code changes are required.
+//
+// Each product has: id, name, category, price (₦), description, featured, image
+//   - price: 0 or omit for "Price on request"
+//   - featured: true shows in Shop "Top Picks" carousel
+//   - image: optional path to product photo in assets/products/
+//            Example: image: "assets/products/DCP 6kg Bajik I.jpg"
+//            When image is "" or omitted, shop.js auto-picks a sensible
+//            placeholder based on product name/category. Once you upload
+//            a new photo to assets/products/, just set image to that path
+//            — use forward slashes, keep spaces/parentheses as-is.
+//            Supported aliases: image, img, photo, imageUrl
+//   - categories: "Fire" | "Safety" | "Security" | "Solar" | "Home Automation, Alarm & Surveillance"
+//   - To add a new product, copy a block and fill all fields.
+//   - Filenames with spaces or ( ) are handled automatically (encoded to %20).
+
 const MTEK_PRODUCTS = [
     // FIRE 
-    {
+        {
         id: "F001",
-        name: "Box for Breaching Inlet",
+        name: "BOX FOR BREECHING INLET",
         category: "Fire",
         price: 185000,
-        description: "Storage box for fire hydrant breaching inlet.",
-        featured: false
+        description: "BOX FOR BREECHING INLET \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: true
     },
-    {
+        {
         id: "F002",
-        name: "Box for 6kg Fire Extinguisher",
+        name: "BOX FOR 6KG FIRE EXTINGUISHER",
         category: "Fire",
-        price: 65000,
-        description: "Heavy duty storage box for 6kg fire extinguishers.",
-        featured: false
+        price: 55000,
+        description: "BOX FOR 6KG FIRE EXTINGUISHER \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: true
     },
-    {
+        {
         id: "F003",
-        name: "Box for 9kg Fire Extinguisher",
+        name: "BOX FOR 9KG FIRE EXTINGUISHER",
         category: "Fire",
         price: 65000,
-        description: "Heavy duty storage box for 9kg fire extinguishers.",
+        description: "BOX FOR 9KG FIRE EXTINGUISHER \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
         featured: false
     },
-    {
+        {
         id: "F004",
-        name: "Box for Flame Fighting Hose (Bajik)",
+        name: "BOX FOR FLAME FIGHTING HOSE ( BAJIK)",
         category: "Fire",
         price: 95000,
-        description: "Storage box for Bajik flame fighting hoses.",
+        description: "BOX FOR FLAME FIGHTING HOSE ( BAJIK) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
         featured: false
     },
-    {
+        {
         id: "F005",
-        name: "Box for Flame Fighting Hose (Stangoz)",
+        name: "BOX FOR FLAME FIGHTING HOSE (STANGOZ)",
         category: "Fire",
         price: 92000,
-        description: "Storage box for Stangoz flame fighting hoses.",
+        description: "BOX FOR FLAME FIGHTING HOSE (STANGOZ) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
         featured: false
     },
-    {
+        {
         id: "F006",
-        name: "Box for Flame Fighting Hose (Bryk)",
+        name: "BOX FOR FLAME FIGHTING HOSE (BRYK)",
         category: "Fire",
-        price: 98000,
-        description: "Storage box for Bryk flame fighting hoses.",
+        price: 95000,
+        description: "BOX FOR FLAME FIGHTING HOSE (BRYK) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
         featured: false
     },
-    {
+        {
         id: "F007",
-        name: "Box for Flame Fighting Hose (Double Bajik)",
+        name: "BOX FOR FLAME FIGHTING HOSE (DOUBLE BAJIK)",
         category: "Fire",
-        price: 110000,
-        description: "Storage box for double Bajik flame fighting hoses.",
+        price: 100000,
+        description: "BOX FOR FLAME FIGHTING HOSE (DOUBLE BAJIK) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
         featured: false
     },
-    {
+        {
         id: "F008",
-        name: "Breathing Apparatus",
+        name: "BREATHING APPARATUS",
         category: "Fire",
         price: 350000,
-        description: "Professional breathing apparatus for firefighters.",
-        featured: true
+        description: "BREATHING APPARATUS \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Auto Fire Ball.jpg",
+        featured: false
     },
-    {
+        {
         id: "F009",
-        name: "CO2 2kg Angus",
+        name: "CO2 2KG ANGUS",
         category: "Fire",
         price: 32000,
-        description: "2kg Carbon Dioxide fire extinguisher (Angus).",
-        featured: true
+        description: "CO2 2KG ANGUS \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/CO2 5kg Fire Extinguisher.webp",
+        featured: false
     },
-    {
+        {
         id: "F010",
-        name: "CO2 3kg Bajik",
+        name: "CO2 3KG BRYK I",
         category: "Fire",
-        price: 38000,
-        description: "3kg CO2 fire extinguisher (Bajik).",
+        price: 40000,
+        description: "CO2 3KG BRYK I \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/CO2 5kg Fire Extinguisher.webp",
         featured: false
     },
-    {
+        {
         id: "F011",
-        name: "CO2 5kg Bajik II",
-        category: "Fire",
-        price: 45000,
-        description: "5kg CO2 fire extinguisher (Bajik II).",
-        featured: false
-    },
-    {
-        id: "F012",
-        name: "CO2 5kg Angus II",
-        category: "Fire",
-        price: 46500,
-        description: "5kg CO2 fire extinguisher (Angus II).",
-        featured: true
-    },
-    {
-        id: "F013",
-        name: "CO2 9kg Angus II",
-        category: "Fire",
-        price: 130000,
-        description: "9kg CO2 fire extinguisher (Angus II).",
-        featured: false
-    },
-    {
-        id: "F014",
-        name: "DCP 1kg Bajik",
-        category: "Fire",
-        price: 11500,
-        description: "1kg Dry Chemical Powder fire extinguisher (Bajik).",
-        featured: false
-    },
-    {
-        id: "F015",
-        name: "DCP 2kg Bajik",
-        category: "Fire",
-        price: 20500,
-        description: "2kg DCP fire extinguisher (Bajik).",
-        featured: false
-    },
-    {
-        id: "F016",
-        name: "DCP 6kg Bajik I",
-        category: "Fire",
-        price: 30000,
-        description: "6kg Dry Chemical Powder fire extinguisher (Bajik I).",
-        featured: true
-    },
-    {
-        id: "F017",
-        name: "DCP 6kg Angus II",
-        category: "Fire",
-        price: 26000,
-        description: "6kg DCP fire extinguisher (Angus II).",
-        featured: true
-    },
-    {
-        id: "F018",
-        name: "DCP 9kg Bajik I",
+        name: "CO2 3KG (BAJIK)",
         category: "Fire",
         price: 38000,
-        description: "9kg DCP fire extinguisher (Bajik I).",
+        description: "CO2 3KG (BAJIK) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/CO2 5kg Fire Extinguisher.webp",
+        featured: false
+    },
+        {
+        id: "F012",
+        name: "CO2 3KG (BIZLAND I)",
+        category: "Fire",
+        price: 38000,
+        description: "CO2 3KG (BIZLAND I) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/CO2 5kg Fire Extinguisher.webp",
         featured: true
     },
-    {
-        id: "F019",
-        name: "DCP 9kg Angus II",
-        category: "Fire",
-        price: 36000,
-        description: "9kg DCP fire extinguisher (Angus II).",
-        featured: true
-    },
-    {
-        id: "F020",
-        name: "DCP 25kg Bajik II",
-        category: "Fire",
-        price: 170000,
-        description: "25kg DCP fire extinguisher (Bajik II).",
-        featured: false
-    },
-    {
-        id: "F021",
-        name: "DCP 50kg Angus II",
-        category: "Fire",
-        price: 250000,
-        description: "50kg DCP fire extinguisher (Angus II).",
-        featured: false
-    },
-    {
-        id: "F022",
-        name: "Fire Ball AFO/Elide",
-        category: "Fire",
-        price: 20000,
-        description: "Automatic fire suppression ball.",
-        featured: true
-    },
-    {
-        id: "F023",
-        name: "Fire Blanket (1.2 x 1.8) Plastic Container",
-        category: "Fire",
-        price: 20000,
-        description: "Fire blanket in plastic container (1.2m x 1.8m).",
-        featured: false
-    },
-    {
-        id: "F024",
-        name: "Fire Hose Reel (Stangoz)",
-        category: "Fire",
-        price: 185000,
-        description: "Fire hose reel (Stangoz brand).",
-        featured: true
-    },
-    {
-        id: "F025",
-        name: "Fire Hose Reel and Box (Stangoz)",
-        category: "Fire",
-        price: 375000,
-        description: "Fire hose reel with cabinet/box (Stangoz).",
-        featured: false
-    },
-    {
-        id: "F026",
-        name: "Fireman Suit (Bulldozer)",
-        category: "Fire",
-        price: 450000,
-        description: "Professional firefighter suit.",
-        featured: true
-    },
-    {
-        id: "F027",
-        name: "Hanger (L Shape Silver Cylindrical Tip)",
-        category: "Fire",
-        price: 1500,
-        description: "Fire extinguisher wall hanger (L shape).",
-        featured: false
-    },
-    {
-        id: "F028",
-        name: "Landing Valve",
-        category: "Fire",
-        price: 95000,
-        description: "Fire hydrant landing valve.",
-        featured: false
-    },
-    {
-        id: "F029",
-        name: "Manometre (Pressure Gauge)",
-        category: "Fire",
-        price: 1500,
-        description: "Pressure gauge for fire extinguishers.",
-        featured: false
-    },
-    {
-        id: "F030",
-        name: "Smoke Detector",
-        category: "Fire",
-        price: 8500,
-        description: "Photoelectric smoke detector with alarm.",
-        featured: true
-    },
-    {
-        id: "F031",
-        name: "CO2 3kg Bryk I",
-        category: "Fire",
-        price: 40000,
-        description: "3kg CO2 fire extinguisher (Bryk I).",
-        featured: false
-    },
-    {
-        id: "F032",
-        name: "CO2 5kg Bryk I",
-        category: "Fire",
-        price: 55000,
-        description: "5kg CO2 fire extinguisher (Bryk I).",
-        featured: false
-    },
-    {
-        id: "F033",
-        name: "CO2 25kg Flamesense",
-        category: "Fire",
-        price: 215000,
-        description: "25kg CO2 fire extinguisher (Flamesense).",
-        featured: false
-    },
-    {
-        id: "F034",
-        name: "CO2 50kg",
-        category: "Fire",
-        price: 250000,
-        description: "50kg CO2 fire extinguisher.",
-        featured: false
-    },
-    {
-        id: "F035",
-        name: "DCP 1kg Anl Gold/Kbi Gold",
-        category: "Fire",
-        price: 8500,
-        description: "1kg DCP fire extinguisher (ANL Gold).",
-        featured: false
-    },
-    {
-        id: "F036",
-        name: "DCP 6kg Bryk I",
-        category: "Fire",
-        price: 27000,
-        description: "6kg DCP fire extinguisher (Bryk I).",
-        featured: false
-    },
-    {
-        id: "F037",
-        name: "DCP 9kg Fire Fighter/Unique",
-        category: "Fire",
-        price: 40000,
-        description: "9kg DCP fire extinguisher (Fire Fighter).",
-        featured: false
-    },
-    {
-        id: "F038",
-        name: "DCP 10kg Angus II",
-        category: "Fire",
-        price: 40000,
-        description: "10kg DCP fire extinguisher (Angus II).",
-        featured: false
-    },
-    {
-        id: "F039",
-        name: "DCP 12kg M-Tek Product",
-        category: "Fire",
-        price: 40000,
-        description: "12kg DCP fire extinguisher (M-Tek).",
-        featured: false
-    },
-    {
-        id: "F040",
-        name: "DCP 25kg Bajik II",
-        category: "Fire",
-        price: 170000,
-        description: "25kg DCP fire extinguisher (Bajik II).",
-        featured: false
-    },
-    {
-        id: "F041",
-        name: "DCP 50kg Fire Killer I",
-        category: "Fire",
-        price: 380000,
-        description: "50kg DCP fire extinguisher (Fire Killer).",
-        featured: false
-    },
-    {
-        id: "F042",
-        name: "Fire Ball AFO/Elide",
-        category: "Fire",
-        price: 20000,
-        description: "Automatic fire suppression ball AFO/Elide.",
-        featured: true
-    },
-    {
-        id: "F043",
-        name: "Fire Blanket (1.0 x 1.0) Plastic Container",
-        category: "Fire",
-        price: 10000,
-        description: "1.0m x 1.0m fire blanket in plastic container.",
-        featured: false
-    },
-    {
-        id: "F044",
-        name: "Fire Blanket (1.2 x 1.2) Plastic Container",
-        category: "Fire",
-        price: 15000,
-        description: "1.2m x 1.2m fire blanket in plastic container.",
-        featured: false
-    },
-    {
-        id: "F045",
-        name: "Fire Bucket (Small)",
-        category: "Fire",
-        price: 5500,
-        description: "Small red fire bucket.",
-        featured: false
-    },
-    {
-        id: "F046",
-        name: "Fire Hose Reel [Bryk]",
-        category: "Fire",
-        price: 205000,
-        description: "Fire hose reel (Bryk brand).",
-        featured: false
-    },
-    {
-        id: "F047",
-        name: "Fire Hose Reel [Naffco]",
-        category: "Fire",
-        price: 370000,
-        description: "Fire hose reel (Naffco brand).",
-        featured: false
-    },
-    {
-        id: "F048",
-        name: "Fire Hose Reel and Box (Bajik)",
-        category: "Fire",
-        price: 390000,
-        description: "Fire hose reel complete with box (Bajik).",
-        featured: false
-    },
-    {
-        id: "F049",
-        name: "Fireman Suit (Bulldozer)",
-        category: "Fire",
-        price: 450000,
-        description: "Full firefighter suit (Bulldozer).",
-        featured: true
-    },
-    {
-        id: "F050",
-        name: "Fire Tunic (Bajik)",
-        category: "Fire",
-        price: 180000,
-        description: "Firefighter tunic (Bajik).",
-        featured: false
-    },
-    {
-        id: "F051",
-        name: "Foam 6 Litres (Mixed Brands)",
-        category: "Fire",
-        price: 35000,
-        description: "6 litre foam fire extinguisher.",
-        featured: false
-    },
-    {
-        id: "F052",
-        name: "Foam 50 Litre",
-        category: "Fire",
-        price: 264000,
-        description: "50 litre foam extinguisher.",
-        featured: false
-    },
-    {
-        id: "F053",
-        name: "Hand Control Nozzle (Metal)",
-        category: "Fire",
-        price: 40000,
-        description: "Metal hand control fire nozzle.",
-        featured: false
-    },
-    {
-        id: "F054",
-        name: "Hanger (L Shape Black Fabricated)",
-        category: "Fire",
-        price: 1000,
-        description: "L-shape fire extinguisher hanger.",
-        featured: false
-    },
-    {
-        id: "F055",
-        name: "Landing Valve",
-        category: "Fire",
-        price: 95000,
-        description: "Fire hydrant landing valve.",
-        featured: false
-    },
-    {
-        id: "F056",
-        name: "Maintenance Tag (Multiple Colour)",
-        category: "Fire",
-        price: 100,
-        description: "Fire equipment maintenance tag.",
-        featured: false
-    },
-    {
-        id: "F057",
-        name: "Manometre (Pressure Gauge)",
-        category: "Fire",
-        price: 1500,
-        description: "Fire extinguisher pressure gauge.",
-        featured: false
-    },
-    {
-        id: "F058",
-        name: "Safety Pin",
-        category: "Fire",
-        price: 100,
-        description: "Fire extinguisher safety pin.",
-        featured: false
-    },
-    {
-        id: "F059",
-        name: "Strap (Fire Extinguisher)",
-        category: "Fire",
-        price: 1000,
-        description: "Fire extinguisher carrying strap.",
-        featured: false
-    },
-    {
-        id: "F060",
-        name: "Valve DCP (9kg/6kg)",
-        category: "Fire",
-        price: 4500,
-        description: "Replacement valve for 6kg/9kg DCP extinguishers.",
-        featured: false
-    },
-    {
-        id: "F061",
-        name: "CO2 3kg Stangoz I",
+        {
+        id: "F013",
+        name: "CO2 3KG (STANGOZ I)",
         category: "Fire",
         price: 39500,
-        description: "3kg CO2 fire extinguisher (Stangoz I).",
+        description: "CO2 3KG (STANGOZ I) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/CO2 5kg Fire Extinguisher.webp",
         featured: false
     },
-    {
-        id: "F062",
-        name: "CO2 5kg Extintore",
+        {
+        id: "F014",
+        name: "CO2 3KG CO2 II (ANGUS)",
+        category: "Fire",
+        price: 35000,
+        description: "CO2 3KG CO2 II (ANGUS) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/CO2 5kg Fire Extinguisher.webp",
+        featured: false
+    },
+        {
+        id: "F015",
+        name: "CO2 5KG (ESTINTORE)",
         category: "Fire",
         price: 45000,
-        description: "5kg CO2 fire extinguisher (Extintore).",
+        description: "CO2 5KG (ESTINTORE) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/CO2 5kg Fire Extinguisher.webp",
         featured: false
     },
-    {
-        id: "F063",
-        name: "Coupline 3\" x 2\" Outside Thread",
+        {
+        id: "F016",
+        name: "CO2 5KG (CAPITAL TELL)",
         category: "Fire",
-        price: 18000,
-        description: "Fire hose coupling 3\" x 2\" outside thread.",
+        price: 45000,
+        description: "CO2 5KG (CAPITAL TELL) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/CO2 5kg Fire Extinguisher.webp",
         featured: false
     },
-    {
-        id: "F064",
-        name: "DCP 6kg Extintore II",
+        {
+        id: "F017",
+        name: "CO2 5KG (FLAME POINT)",
         category: "Fire",
-        price: 27000,
-        description: "6kg DCP fire extinguisher (Extintore II).",
+        price: 40000,
+        description: "CO2 5KG (FLAME POINT) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/CO2 5kg Fire Extinguisher.webp",
         featured: false
     },
-    {
-        id: "F065",
-        name: "DCP 9kg Bizland I",
+        {
+        id: "F018",
+        name: "CO2 5KG (BIZLAND I)",
         category: "Fire",
-        price: 37500,
-        description: "9kg DCP fire extinguisher (Bizland I).",
+        price: 45000,
+        description: "CO2 5KG (BIZLAND I) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/CO2 5kg Fire Extinguisher.webp",
         featured: false
     },
-    {
-        id: "F066",
-        name: "DCP 25kg Bajik II",
+        {
+        id: "F019",
+        name: "CO2 5KG I ANGUS",
         category: "Fire",
-        price: 170000,
-        description: "25kg DCP fire extinguisher (Bajik II).",
+        price: 40000,
+        description: "CO2 5KG I ANGUS \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/CO2 5kg Fire Extinguisher.webp",
         featured: false
     },
-    {
-        id: "F067",
-        name: "DCP 50kg Angus III",
+        {
+        id: "F020",
+        name: "CO2 5KG ( BRYK)",
         category: "Fire",
-        price: 200000,
-        description: "50kg DCP fire extinguisher (Angus III).",
+        price: 52000,
+        description: "CO2 5KG ( BRYK) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/CO2 5kg Fire Extinguisher.webp",
         featured: false
     },
-    {
-        id: "F068",
-        name: "Dry Chemical Powder (Per KG)",
-        category: "Fire",
-        price: 1500,
-        description: "Dry chemical powder refill per kg.",
-        featured: false
-    },
-    {
-        id: "F069",
-        name: "Fire Blanket (1.8 x 1.8) Plastic Container",
-        category: "Fire",
-        price: 25000,
-        description: "Large 1.8m x 1.8m fire blanket in plastic container.",
-        featured: false
-    },
-    {
-        id: "F070",
-        name: "Fire Bucket (Big)",
-        category: "Fire",
-        price: 5500,
-        description: "Large red fire bucket.",
-        featured: false
-    },
-    {
-        id: "F071",
-        name: "Fire Extinguisher Labels",
-        category: "Fire",
-        price: 200,
-        description: "Labels for DCP 6kg/9kg and CO2 extinguishers.",
-        featured: false
-    },
-    {
-        id: "F072",
-        name: "Fire Hose (2.5\" 30m Red Canvas)",
-        category: "Fire",
-        price: 125000,
-        description: "2.5 inch 30m fire hose with adaptors.",
-        featured: false
-    },
-    {
-        id: "F073",
-        name: "Fire Hose (Duraline 2.5\" 30m)",
-        category: "Fire",
-        price: 169000,
-        description: "High pressure Duraline fire hose 2.5 inch.",
-        featured: false
-    },
-    {
-        id: "F074",
-        name: "Fire Hose Reel and Box (Capital Tell)",
-        category: "Fire",
-        price: 350000,
-        description: "Fire hose reel complete with box.",
-        featured: false
-    },
-    {
-        id: "F075",
-        name: "Flame Fighting Hose Adaptor 3\"x2\"",
-        category: "Fire",
-        price: 15000,
-        description: "Male/Female fire hose adaptor.",
-        featured: false
-    },
-    {
-        id: "F076",
-        name: "Foam 9 Litres Angus",
-        category: "Fire",
-        price: 55000,
-        description: "9 litre foam fire extinguisher (Angus).",
-        featured: false
-    },
-    {
-        id: "F077",
-        name: "Foam Compound 200 Litre",
-        category: "Fire",
-        price: 145000,
-        description: "200 litre foam concentrate.",
-        featured: false
-    },
-    {
-        id: "F078",
-        name: "Hand Control Nozzle (Metal/Plastic)",
-        category: "Fire",
-        price: 27500,
-        description: "Triple purpose branch nozzle.",
-        featured: false
-    },
-    {
-        id: "F079",
-        name: "Hanger (Round Head Red)",
-        category: "Fire",
-        price: 2000,
-        description: "Round head fire extinguisher hanger.",
-        featured: false
-    },
-    {
-        id: "F080",
-        name: "Hanger (Side Type Silver)",
-        category: "Fire",
-        price: 1500,
-        description: "Side type fire extinguisher hanger.",
-        featured: false
-    },
-    {
-        id: "F081",
-        name: "Horn (5kg CO2 China)",
-        category: "Fire",
-        price: 6500,
-        description: "Discharge horn for 5kg CO2 extinguisher.",
-        featured: false
-    },
-    {
-        id: "F082",
-        name: "Hose (6/9kg DCP Hose)",
-        category: "Fire",
-        price: 3500,
-        description: "Replacement hose for 6kg/9kg DCP extinguishers.",
-        featured: false
-    },
-    {
-        id: "F083",
-        name: "Hydrant (Pillar/Pedestrian)",
-        category: "Fire",
-        price: 400000,
-        description: "Above ground fire hydrant.",
-        featured: false
-    },
-    {
-        id: "F084",
-        name: "Landing Valve",
-        category: "Fire",
-        price: 95000,
-        description: "Fire landing valve.",
-        featured: false
-    },
-    {
-        id: "F085",
-        name: "Nipple 1kg/2kg DCP",
-        category: "Fire",
-        price: 500,
-        description: "DCP extinguisher nipple.",
-        featured: false
-    },
-    {
-        id: "F086",
-        name: "Spray Jet (Triple Purpose Branch)",
-        category: "Fire",
-        price: 70000,
-        description: "Triple purpose fire nozzle.",
-        featured: false
-    },
-    {
-        id: "F087",
-        name: "Valve CO2 (2kg, 3kg & 5kg)",
-        category: "Fire",
-        price: 9000,
-        description: "CO2 extinguisher valve.",
-        featured: false
-    },
-    {
-        id: "F088",
-        name: "Valve DCP 25kg/50kg",
-        category: "Fire",
-        price: 25000,
-        description: "Valve for large 25kg/50kg DCP extinguishers.",
-        featured: false
-    },
-    {
-        id: "F089",
-        name: "Water 9 Litre Angus",
+        {
+        id: "F021",
+        name: "CO2 5KG BAJIK I",
         category: "Fire",
         price: 50000,
-        description: "9 litre water fire extinguisher (Angus).",
+        description: "CO2 5KG BAJIK I \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/CO2 5kg Fire Extinguisher.webp",
         featured: false
     },
-    {
-        id: "F090",
-        name: "Water Sprinkler Heads",
-        category: "Fire",
-        price: 4000,
-        description: "Standard fire sprinkler head.",
-        featured: false
-    },
-    {
-        id: "F091",
-        name: "CO2 3kg Bizland I",
-        category: "Fire",
-        price: 38000,
-        description: "3kg CO2 fire extinguisher (Bizland I).",
-        featured: false
-    },
-    {
-        id: "F092",
-        name: "CO2 5kg Capital Tell",
+        {
+        id: "F022",
+        name: "CO2 5KG BAJIK II",
         category: "Fire",
         price: 45000,
-        description: "5kg CO2 fire extinguisher (Capital Tell).",
+        description: "CO2 5KG BAJIK II \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/CO2 5kg Fire Extinguisher.webp",
         featured: false
     },
-    {
-        id: "F093",
-        name: "CO2 9kg Bajik I",
+        {
+        id: "F023",
+        name: "CO2 5KG(ANGUS II)",
+        category: "Fire",
+        price: 46500,
+        description: "CO2 5KG(ANGUS II) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/CO2 5kg Fire Extinguisher.webp",
+        featured: false
+    },
+        {
+        id: "F024",
+        name: "CO2 9KG BAJIK I",
         category: "Fire",
         price: 135000,
-        description: "9kg CO2 fire extinguisher (Bajik I).",
+        description: "CO2 9KG BAJIK I \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/CO2 5kg Fire Extinguisher.webp",
+        featured: true
+    },
+        {
+        id: "F025",
+        name: "CO2 9KG (ANGUS II)",
+        category: "Fire",
+        price: 180000,
+        description: "CO2 9KG (ANGUS II) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/CO2 5kg Fire Extinguisher.webp",
         featured: false
     },
-    {
-        id: "F094",
-        name: "DCP 1kg Visa",
+        {
+        id: "F026",
+        name: "CO2 25 KG (FLAMESENSE)",
+        category: "Fire",
+        price: 180000,
+        description: "CO2 25 KG (FLAMESENSE) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/CO2 5kg Fire Extinguisher.webp",
+        featured: false
+    },
+        {
+        id: "F027",
+        name: "CO2 50KG",
+        category: "Fire",
+        price: 250000,
+        description: "CO2 50KG \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/CO2 5kg Fire Extinguisher.webp",
+        featured: false
+    },
+        {
+        id: "F028",
+        name: "COUPLINE [3\"X 2\" -OUTSIDE THREAD]",
+        category: "Fire",
+        price: 18000,
+        description: "COUPLINE [3\"X 2\" -OUTSIDE THREAD] \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F029",
+        name: "COUPLINE [3\"X 2 1/2\"- INSIDE THREAD ]",
+        category: "Fire",
+        price: 18000,
+        description: "COUPLINE [3\"X 2 1/2\"- INSIDE THREAD ] \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F030",
+        name: "COUPLINE [3\"X 2 1/2\"- OUTSIDE THREAD ]",
+        category: "Fire",
+        price: 18000,
+        description: "COUPLINE [3\"X 2 1/2\"- OUTSIDE THREAD ] \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F031",
+        name: "DCP 1KG VISA",
         category: "Fire",
         price: 7000,
-        description: "1kg DCP fire extinguisher (Visa).",
+        description: "DCP 1KG VISA \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
         featured: false
     },
-    {
-        id: "F095",
-        name: "DCP 6kg Automatic (Bajik)",
-        category: "Fire",
-        price: 60000,
-        description: "6kg Automatic DCP fire extinguisher (Bajik).",
-        featured: false
-    },
-    {
-        id: "F096",
-        name: "DCP 9kg Extintore",
-        category: "Fire",
-        price: 38000,
-        description: "9kg DCP fire extinguisher (Extintore).",
-        featured: false
-    },
-    {
-        id: "F097",
-        name: "DCP 25kg Flamesense",
-        category: "Fire",
-        price: 155000,
-        description: "25kg DCP fire extinguisher (Flamesense).",
-        featured: false
-    },
-    {
-        id: "F098",
-        name: "DCP 50kg Poztan",
-        category: "Fire",
-        price: 240000,
-        description: "50kg DCP fire extinguisher (Poztan).",
-        featured: false
-    },
-    {
-        id: "F099",
-        name: "Fire Blanket (1.0 x 1.0) Leather Container",
-        category: "Fire",
-        price: 10000,
-        description: "Fire blanket in leather container (1.0m x 1.0m).",
-        featured: false
-    },
-    {
-        id: "F100",
-        name: "Fire Blanket Chubb (3ft x 3ft)",
-        category: "Fire",
-        price: 25000,
-        description: "Chubb fire blanket 3ft x 3ft.",
-        featured: false
-    },
-    {
-        id: "F101",
-        name: "Fire Hose Reel (Bajik)",
-        category: "Fire",
-        price: 190000,
-        description: "Fire hose reel (Bajik brand).",
-        featured: false
-    },
-    {
-        id: "F102",
-        name: "Fire Hose Reel and Box (Fire Killer)",
-        category: "Fire",
-        price: 345000,
-        description: "Fire hose reel with box (Fire Killer).",
-        featured: false
-    },
-    {
-        id: "F103",
-        name: "Fire Hose Reel and Box (Angus)",
-        category: "Fire",
-        price: 400000,
-        description: "Fire hose reel with box (Angus).",
-        featured: false
-    },
-    {
-        id: "F104",
-        name: "Hose (1.5\" Canvas with Adaptors)",
-        category: "Fire",
-        price: 70000,
-        description: "1.5 inch canvas fire hose with complete adaptors.",
-        featured: false
-    },
-    {
-        id: "F105",
-        name: "Hose (Duraline 1.5\" 30m)",
-        category: "Fire",
-        price: 90000,
-        description: "Duraline fire hose 1.5 inch 30m.",
-        featured: false
-    },
-    {
-        id: "F106",
-        name: "Hose 50kg DCP",
-        category: "Fire",
-        price: 25000,
-        description: "High pressure hose for 50kg DCP extinguisher.",
-        featured: false
-    },
-    {
-        id: "F107",
-        name: "Hydrant Key & Bar (Aluminium)",
-        category: "Fire",
-        price: 0,
-        description: "Hydrant key and bar set.",
-        featured: false
-    },
-    {
-        id: "F108",
-        name: "Hydrant Stand Pipe (Aluminium)",
-        category: "Fire",
-        price: 0,
-        description: "Aluminium hydrant stand pipe.",
-        featured: false
-    },
-    {
-        id: "F109",
-        name: "Spaceman (Automatic Fire Extinguisher)",
-        category: "Fire",
-        price: 85000,
-        description: "Automatic fire extinguisher (Spaceman).",
-        featured: false
-    },
-    {
-        id: "F110",
-        name: "Valve DCP 25kg/50kg Steering",
-        category: "Fire",
-        price: 15000,
-        description: "Steering type valve for large DCP extinguishers.",
-        featured: false
-    },
-    {
-        id: "F111",
-        name: "Water Sprinkler Heads 3/4\"",
-        category: "Fire",
-        price: 6000,
-        description: "3/4 inch fire sprinkler head.",
-        featured: false
-    },
-    {
-        id: "F112",
-        name: "Water Sprinkler Heads Casing",
-        category: "Fire",
-        price: 1500,
-        description: "Casing for fire sprinkler heads.",
-        featured: false
-    },
-    {
-        id: "F113",
-        name: "Box for Flame Fighting Hose (Double Bajik)",
-        category: "Fire",
-        price: 110000,
-        description: "Storage box for double Bajik flame fighting hoses.",
-        featured: false
-    },
-    {
-        id: "F114",
-        name: "CO2 3kg Angus",
-        category: "Fire",
-        price: 35000,
-        description: "3kg CO2 fire extinguisher (Angus).",
-        featured: false
-    },
-    {
-        id: "F115",
-        name: "CO2 5kg Flame Point",
-        category: "Fire",
-        price: 40000,
-        description: "5kg CO2 fire extinguisher (Flame Point).",
-        featured: false
-    },
-    {
-        id: "F116",
-        name: "DCP 1kg PJV",
+        {
+        id: "F032",
+        name: "DCP 1KG PJV",
         category: "Fire",
         price: 7000,
-        description: "1kg DCP fire extinguisher (PJV).",
+        description: "DCP 1KG PJV \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
         featured: false
     },
-    {
-        id: "F117",
-        name: "DCP 2kg ECL Gold",
+        {
+        id: "F033",
+        name: "DCP 1KG (ANL GOLD) /KBI GOLD",
+        category: "Fire",
+        price: 8000,
+        description: "DCP 1KG (ANL GOLD) /KBI GOLD \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F034",
+        name: "DCP 1KG ECL MULTIPURPOSE",
+        category: "Fire",
+        price: 5000,
+        description: "DCP 1KG ECL MULTIPURPOSE \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F035",
+        name: "DCP 1KG BAJIK",
+        category: "Fire",
+        price: 11500,
+        description: "DCP 1KG BAJIK \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F036",
+        name: "DCP 2KG (ECL GOLD/GOLD STAR)",
         category: "Fire",
         price: 16000,
-        description: "2kg DCP fire extinguisher (ECL Gold).",
+        description: "DCP 2KG (ECL GOLD/GOLD STAR) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: true
+    },
+        {
+        id: "F037",
+        name: "DCP 2KG (BAJIK)",
+        category: "Fire",
+        price: 20500,
+        description: "DCP 2KG (BAJIK) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
         featured: false
     },
-    {
-        id: "F118",
-        name: "DCP 6kg Bizland",
+        {
+        id: "F038",
+        name: "DCP 3KG (BAJIK)",
+        category: "Fire",
+        price: 24000,
+        description: "DCP 3KG (BAJIK) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F039",
+        name: "DCP 6KG (BIZLAND)",
         category: "Fire",
         price: 35000,
-        description: "6kg DCP fire extinguisher (Bizland).",
+        description: "DCP 6KG (BIZLAND) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
         featured: false
     },
-    {
-        id: "F119",
-        name: "DCP 9kg Keenstop I",
+        {
+        id: "F040",
+        name: "DCP 6KG MBCI II",
+        category: "Fire",
+        price: 23000,
+        description: "DCP 6KG MBCI II \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F041",
+        name: "DCP 6KG ASI II",
+        category: "Fire",
+        price: 23000,
+        description: "DCP 6KG ASI II \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F042",
+        name: "DCP 6KG BAJIK II",
+        category: "Fire",
+        price: 26000,
+        description: "DCP 6KG BAJIK II \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F043",
+        name: "DCP 6KG AUTOMATIC FIRE EXTINGUISHER (BAJIK)",
+        category: "Fire",
+        price: 60000,
+        description: "DCP 6KG AUTOMATIC FIRE EXTINGUISHER (BAJIK) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F044",
+        name: "DCP 6KG (ANAF GROUP I)",
+        category: "Fire",
+        price: 30000,
+        description: "DCP 6KG (ANAF GROUP I) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F045",
+        name: "DCP 6KG (BRYK I)",
+        category: "Fire",
+        price: 26000,
+        description: "DCP 6KG (BRYK I) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F046",
+        name: "DCP 6KG (FIRE-KILLER I)",
+        category: "Fire",
+        price: 26500,
+        description: "DCP 6KG (FIRE-KILLER I) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F047",
+        name: "DCP 6KG ANGUS I ORIGINAL",
+        category: "Fire",
+        price: 50000,
+        description: "DCP 6KG ANGUS I ORIGINAL \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F048",
+        name: "DCP 6KG BAJIK I",
+        category: "Fire",
+        price: 30000,
+        description: "DCP 6KG BAJIK I \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: true
+    },
+        {
+        id: "F049",
+        name: "DCP 6KG DCP I KEENSTOP",
+        category: "Fire",
+        price: 23000,
+        description: "DCP 6KG DCP I KEENSTOP \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F050",
+        name: "DCP 6KG MOUNEX II",
+        category: "Fire",
+        price: 27000,
+        description: "DCP 6KG MOUNEX II \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F051",
+        name: "DCP 6KG PJV II",
+        category: "Fire",
+        price: 28000,
+        description: "DCP 6KG PJV II \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F052",
+        name: "DCP 6KG (UMENIC II)",
+        category: "Fire",
+        price: 25000,
+        description: "DCP 6KG (UMENIC II) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F053",
+        name: "DCP 6KG ANGUS II",
+        category: "Fire",
+        price: 26000,
+        description: "DCP 6KG ANGUS II \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F054",
+        name: "DCP 6KG EXTINTORE II",
+        category: "Fire",
+        price: 27000,
+        description: "DCP 6KG EXTINTORE II \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F055",
+        name: "DCP 6KG FLAME-SENSE II",
+        category: "Fire",
+        price: 30000,
+        description: "DCP 6KG FLAME-SENSE II \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F056",
+        name: "DCP 6KG GLORIA II",
+        category: "Fire",
+        price: 38500,
+        description: "DCP 6KG GLORIA II \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F057",
+        name: "DCP 9KG KEENSTOP I",
         category: "Fire",
         price: 40000,
-        description: "9kg DCP fire extinguisher (Keenstop).",
+        description: "DCP 9KG KEENSTOP I \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
         featured: false
     },
-    {
-        id: "F120",
-        name: "DCP 50kg Flame Sense",
+        {
+        id: "F058",
+        name: "DCP 9KG KABGOLD I",
+        category: "Fire",
+        price: 36000,
+        description: "DCP 9KG KABGOLD I \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F059",
+        name: "DCP 9KG EXTINTORE",
+        category: "Fire",
+        price: 38000,
+        description: "DCP 9KG EXTINTORE \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F060",
+        name: "DCP 9KG FIRE FIGHTER/UNIQUE/EVER SAFE",
+        category: "Fire",
+        price: 40000,
+        description: "DCP 9KG FIRE FIGHTER/UNIQUE/EVER SAFE \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: true
+    },
+        {
+        id: "F061",
+        name: "DCP 9KG ANGUS I",
+        category: "Fire",
+        price: 50000,
+        description: "DCP 9KG ANGUS I \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F062",
+        name: "DCP 9KG BAJIK I",
+        category: "Fire",
+        price: 38000,
+        description: "DCP 9KG BAJIK I \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F063",
+        name: "DCP 9KG BIZLAND I",
+        category: "Fire",
+        price: 37500,
+        description: "DCP 9KG BIZLAND I \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F064",
+        name: "DCP 9KG FESCO I",
+        category: "Fire",
+        price: 38000,
+        description: "DCP 9KG FESCO I \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F065",
+        name: "DCP 9KG (BRYK) I",
+        category: "Fire",
+        price: 39500,
+        description: "DCP 9KG (BRYK) I \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F066",
+        name: "DCP 9KG (FIRE KILLER) I",
+        category: "Fire",
+        price: 38500,
+        description: "DCP 9KG (FIRE KILLER) I \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F067",
+        name: "DCP 9KG (ANGUS) II",
+        category: "Fire",
+        price: 36000,
+        description: "DCP 9KG (ANGUS) II \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F068",
+        name: "DCP 9KG (SRI) II",
+        category: "Fire",
+        price: 45000,
+        description: "DCP 9KG (SRI) II \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F069",
+        name: "DCP 9KG BAJIK II",
+        category: "Fire",
+        price: 40000,
+        description: "DCP 9KG BAJIK II \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F070",
+        name: "DCP 9KG FLAMESENCE II",
+        category: "Fire",
+        price: 36500,
+        description: "DCP 9KG FLAMESENCE II \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F071",
+        name: "DCP 12 KG M-TEK PRODUCT",
+        category: "Fire",
+        price: 40000,
+        description: "DCP 12 KG M-TEK PRODUCT \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F072",
+        name: "DCP 25KG FLAMESENSE",
+        category: "Fire",
+        price: 155000,
+        description: "DCP 25KG FLAMESENSE \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: true
+    },
+        {
+        id: "F073",
+        name: "DCP 25KG (BAJIK) I",
+        category: "Fire",
+        price: 250000,
+        description: "DCP 25KG (BAJIK) I \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F074",
+        name: "DCP 25KG (ANGUS) II",
+        category: "Fire",
+        price: 150000,
+        description: "DCP 25KG (ANGUS) II \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F075",
+        name: "DCP 50KG ANGUS",
+        category: "Fire",
+        price: 250000,
+        description: "DCP 50KG ANGUS \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F076",
+        name: "DCP 50KG POZTAN",
+        category: "Fire",
+        price: 240000,
+        description: "DCP 50KG POZTAN \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F077",
+        name: "DCP 50KG FLAME SENSE",
         category: "Fire",
         price: 200000,
-        description: "50kg DCP fire extinguisher (Flame Sense).",
+        description: "DCP 50KG FLAME SENSE \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
         featured: false
     },
-    {
-        id: "F121",
-        name: "Fire Blanket (1.2 x 1.2) Leather Container",
+        {
+        id: "F078",
+        name: "DCP 50KG FIRE KILLER I",
         category: "Fire",
-        price: 14000,
-        description: "Fire blanket in leather container.",
+        price: 350000,
+        description: "DCP 50KG FIRE KILLER I \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
         featured: false
     },
-    {
-        id: "F122",
-        name: "Fire Hose Reel Cabinet SFPS",
+        {
+        id: "F079",
+        name: "DCP 50KG (BAJIK) I",
+        category: "Fire",
+        price: 250000,
+        description: "DCP 50KG (BAJIK) I \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F080",
+        name: "DCP 50KG (BAJIK) I",
+        category: "Fire",
+        price: 200000,
+        description: "DCP 50KG (BAJIK) I \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F081",
+        name: "DCP (DRY CHEMICAL POWDER) KG",
+        category: "Fire",
+        price: 1500,
+        description: "DCP (DRY CHEMICAL POWDER) KG \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F082",
+        name: "FIRE STOP 1KG",
+        category: "Fire",
+        price: 7000,
+        description: "FIRE STOP 1KG \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F083",
+        name: "FIRE BALL AFO/ELIDE",
+        category: "Fire",
+        price: 20000,
+        description: "FIRE BALL AFO/ELIDE \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Auto Fire Ball.jpg",
+        featured: false
+    },
+        {
+        id: "F084",
+        name: "FIRE BLANKET (1.2 X 1.8) PLASTIC CONTAINER",
+        category: "Fire",
+        price: 20000,
+        description: "FIRE BLANKET (1.2 X 1.8) PLASTIC CONTAINER \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: true
+    },
+        {
+        id: "F085",
+        name: "FIRE BLANKET (1X1) PLASTIC CONTAINER",
+        category: "Fire",
+        price: 10000,
+        description: "FIRE BLANKET (1X1) PLASTIC CONTAINER \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F086",
+        name: "FIRE BLANKET (1.0 X1.0) LEATHER CONTAINER",
+        category: "Fire",
+        price: 10000,
+        description: "FIRE BLANKET (1.0 X1.0) LEATHER CONTAINER \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F087",
+        name: "FIRE BLANKET (1.2X1.2) LEATHER CONTAINER",
+        category: "Fire",
+        price: 15000,
+        description: "FIRE BLANKET (1.2X1.2) LEATHER CONTAINER \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F088",
+        name: "FIRE BLANKET (1.2X1.2) PLASTIC CONTAINER",
+        category: "Fire",
+        price: 15000,
+        description: "FIRE BLANKET (1.2X1.2) PLASTIC CONTAINER \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F089",
+        name: "FIRE BLANKET (1.8 X1.8) PLASTIC CONTAINER",
+        category: "Fire",
+        price: 25000,
+        description: "FIRE BLANKET (1.8 X1.8) PLASTIC CONTAINER \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F090",
+        name: "FIRE BLANKET CHUBB (3FT X3FT)",
+        category: "Fire",
+        price: 25000,
+        description: "FIRE BLANKET CHUBB (3FT X3FT) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F091",
+        name: "FIRE BUCKET (BIG)",
+        category: "Fire",
+        price: 5500,
+        description: "FIRE BUCKET (BIG) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F092",
+        name: "FIRE BUCKET (SMALL)",
+        category: "Fire",
+        price: 5000,
+        description: "FIRE BUCKET (SMALL) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F093",
+        name: "FIRE EXTINGUISHER LABELS( DCP6&9+Co2 5&9)",
+        category: "Fire",
+        price: 200,
+        description: "FIRE EXTINGUISHER LABELS( DCP6&9+Co2 5&9) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/CO2 5kg Fire Extinguisher.webp",
+        featured: false
+    },
+        {
+        id: "F094",
+        name: "FIRE HOSE REEL [BRYK]",
+        category: "Fire",
+        price: 195000,
+        description: "FIRE HOSE REEL [BRYK] \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/hose reel.jpg",
+        featured: false
+    },
+        {
+        id: "F095",
+        name: "FIRE HOSE REEL (BAJIK)",
+        category: "Fire",
+        price: 185000,
+        description: "FIRE HOSE REEL (BAJIK) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/hose reel.jpg",
+        featured: false
+    },
+        {
+        id: "F096",
+        name: "FIRE HOSE REEL [NAFFCO]",
+        category: "Fire",
+        price: 350000,
+        description: "FIRE HOSE REEL [NAFFCO] \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/hose reel.jpg",
+        featured: true
+    },
+        {
+        id: "F097",
+        name: "FIRE HOSE REEL [STANGOZ]",
+        category: "Fire",
+        price: 180000,
+        description: "FIRE HOSE REEL [STANGOZ] \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/hose reel.jpg",
+        featured: false
+    },
+        {
+        id: "F098",
+        name: "FIRE HOSE REEL (CARBINET SFPS)",
         category: "Fire",
         price: 340000,
-        description: "Fire hose reel with cabinet.",
+        description: "FIRE HOSE REEL (CARBINET SFPS) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/hose reel.jpg",
         featured: false
     },
-    {
-        id: "F123",
-        name: "Horn (2/3kg CO2) Short Horn",
+        {
+        id: "F099",
+        name: "FIRE HOSE REEL AND BOX (FIRE KILLER)",
+        category: "Fire",
+        price: 345000,
+        description: "FIRE HOSE REEL AND BOX (FIRE KILLER) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Fire Hose Reel Cabinet.jpg",
+        featured: false
+    },
+        {
+        id: "F100",
+        name: "FIRE HOSE REEL AND BOX (STANGOZ)",
+        category: "Fire",
+        price: 365000,
+        description: "FIRE HOSE REEL AND BOX (STANGOZ) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Fire Hose Reel Cabinet.jpg",
+        featured: false
+    },
+        {
+        id: "F101",
+        name: "FIRE HOSE REEL AND BOX (CAPITAL TELL)",
+        category: "Fire",
+        price: 350000,
+        description: "FIRE HOSE REEL AND BOX (CAPITAL TELL) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Fire Hose Reel Cabinet.jpg",
+        featured: false
+    },
+        {
+        id: "F102",
+        name: "FIRE HOSE REEL AND BOX [BAJIK]",
+        category: "Fire",
+        price: 350000,
+        description: "FIRE HOSE REEL AND BOX [BAJIK] \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Fire Hose Reel Cabinet.jpg",
+        featured: false
+    },
+        {
+        id: "F103",
+        name: "FIRE HOSE REEL AND BOX [ANGUS]",
+        category: "Fire",
+        price: 400000,
+        description: "FIRE HOSE REEL AND BOX [ANGUS] \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Fire Hose Reel Cabinet.jpg",
+        featured: false
+    },
+        {
+        id: "F104",
+        name: "FIREMAN SUIT (BULLDOZER)",
+        category: "Fire",
+        price: 450000,
+        description: "FIREMAN SUIT (BULLDOZER) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Overall.jpg",
+        featured: false
+    },
+        {
+        id: "F105",
+        name: "FIRE TUNIC (BAJIK)",
+        category: "Fire",
+        price: 200000,
+        description: "FIRE TUNIC (BAJIK) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F106",
+        name: "FLAME FIGHTING HOSE ADAPTOR 3''X2'' MALE/FEMALE)",
+        category: "Fire",
+        price: 15000,
+        description: "FLAME FIGHTING HOSE ADAPTOR 3''X2'' MALE/FEMALE) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F107",
+        name: "FOAM 6LITRE II ANGUS",
+        category: "Fire",
+        price: 30000,
+        description: "FOAM 6LITRE II ANGUS \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Foam 9L Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F108",
+        name: "FOAM 6LITRES (MIXED BRANDS)",
+        category: "Fire",
+        price: 35000,
+        description: "FOAM 6LITRES (MIXED BRANDS) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Foam 9L Fire Extinguisher.jpg",
+        featured: true
+    },
+        {
+        id: "F109",
+        name: "FOAM 9 LITRES I ORIGINAL ANGUS",
+        category: "Fire",
+        price: 55000,
+        description: "FOAM 9 LITRES I ORIGINAL ANGUS \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Foam 9L Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F110",
+        name: "HAND CONTROL NOZZLE (METAL)",
+        category: "Fire",
+        price: 40000,
+        description: "HAND CONTROL NOZZLE (METAL) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F111",
+        name: "HAND CONTROL NOZZLE (METAL/PLASTIC)",
+        category: "Fire",
+        price: 27500,
+        description: "HAND CONTROL NOZZLE (METAL/PLASTIC) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F112",
+        name: "HANGER (U SHAPE WITH GOLDEN COLOUR)",
+        category: "Fire",
+        price: 1500,
+        description: "HANGER (U SHAPE WITH GOLDEN COLOUR) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F113",
+        name: "HANGER (L SHAPE BLACK FABRICATED )",
+        category: "Fire",
+        price: 1000,
+        description: "HANGER (L SHAPE BLACK FABRICATED ) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F114",
+        name: "HANGER (L SHAPE/SILVER/CYLINDRICAL TIP)",
+        category: "Fire",
+        price: 1500,
+        description: "HANGER (L SHAPE/SILVER/CYLINDRICAL TIP) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F115",
+        name: "HANGER (ROUND HEAD RED)",
+        category: "Fire",
+        price: 2000,
+        description: "HANGER (ROUND HEAD RED) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F116",
+        name: "HANGER (SIDE TYPE SILVER)",
+        category: "Fire",
+        price: 1000,
+        description: "HANGER (SIDE TYPE SILVER) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F117",
+        name: "HORN (2/3KG CO2 ) SHORT HORN",
         category: "Fire",
         price: 4000,
-        description: "Short discharge horn for CO2 extinguishers.",
+        description: "HORN (2/3KG CO2 ) SHORT HORN \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/CO2 5kg Fire Extinguisher.webp",
         featured: false
     },
-    {
-        id: "F124",
-        name: "Hose (5kg CO2 London Use)",
+        {
+        id: "F118",
+        name: "HORN (5KG CO2 CHINA)",
+        category: "Fire",
+        price: 6500,
+        description: "HORN (5KG CO2 CHINA) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/CO2 5kg Fire Extinguisher.webp",
+        featured: false
+    },
+        {
+        id: "F119",
+        name: "HOSE (5KG CO2 LONDON USE)",
         category: "Fire",
         price: 4500,
-        description: "Hose for 5kg CO2 extinguisher.",
+        description: "HOSE (5KG CO2 LONDON USE) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/CO2 5kg Fire Extinguisher.webp",
         featured: false
     },
-    {
-        id: "F125",
-        name: "Hose (Duraline 2.5\" 30m 10Bar)",
+        {
+        id: "F120",
+        name: "HOSE (6/9KG DCP HOSE)",
+        category: "Fire",
+        price: 3500,
+        description: "HOSE (6/9KG DCP HOSE) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: true
+    },
+        {
+        id: "F121",
+        name: "HOSE (CANVAS WITH COMPLETE ADAPTORS)",
+        category: "Fire",
+        price: 70000,
+        description: "HOSE (CANVAS WITH COMPLETE ADAPTORS) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F122",
+        name: "HOSE (DURALINE WITH COMPLETE ADAPTORS) 1.5/30/10BAR",
+        category: "Fire",
+        price: 90000,
+        description: "HOSE (DURALINE WITH COMPLETE ADAPTORS) 1.5/30/10BAR \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F123",
+        name: "HOSE (DURALINE WITH COMPLETE ADAPTORS) 2.5 /30M/13BAR",
+        category: "Fire",
+        price: 169000,
+        description: "HOSE (DURALINE WITH COMPLETE ADAPTORS) 2.5 /30M/13BAR \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F124",
+        name: "HOSE (DURALINE WITH COMPLETE ADAPTORS) 2.5/30M/10BAR",
         category: "Fire",
         price: 105000,
-        description: "Duraline fire hose 2.5 inch 30m.",
+        description: "HOSE (DURALINE WITH COMPLETE ADAPTORS) 2.5/30M/10BAR \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
         featured: false
     },
-    {
+        {
+        id: "F125",
+        name: "HOSE 50KG DCP",
+        category: "Fire",
+        price: 25000,
+        description: "HOSE 50KG DCP \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
         id: "F126",
-        name: "Hydrant (Underground)",
+        name: "HYDRANT (PILLAR/PEDESTRAIN)",
+        category: "Fire",
+        price: 400000,
+        description: "HYDRANT (PILLAR/PEDESTRAIN) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Pillar Hydrant.jpg",
+        featured: false
+    },
+        {
+        id: "F127",
+        name: "HYDRANT (UNDERGROUND AVR190809900)",
         category: "Fire",
         price: 0,
-        description: "Underground fire hydrant.",
+        description: "HYDRANT (UNDERGROUND AVR190809900) \u2014 Fire equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/one way pillar hydrant.jpg",
         featured: false
     },
-    {
-        id: "F127",
-        name: "Water Sprinkler Heads 3/4\"",
+        {
+        id: "F128",
+        name: "HYDRANT KEY & BAR(ALUMINIUM COLOUR) PAIR",
+        category: "Fire",
+        price: 0,
+        description: "HYDRANT KEY & BAR(ALUMINIUM COLOUR) PAIR \u2014 Fire equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F129",
+        name: "HYDRANT STAND PIPE (ALUMINIUM COLOUR)",
+        category: "Fire",
+        price: 0,
+        description: "HYDRANT STAND PIPE (ALUMINIUM COLOUR) \u2014 Fire equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F130",
+        name: "LANDING VALVE",
+        category: "Fire",
+        price: 95000,
+        description: "LANDING VALVE \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/landing valve.jpg",
+        featured: false
+    },
+        {
+        id: "F131",
+        name: "MAINTENANCE TAG (MULTIPLE COLOUR)",
+        category: "Fire",
+        price: 100,
+        description: "MAINTENANCE TAG (MULTIPLE COLOUR) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F132",
+        name: "MANOMETRE (PRESSURE GAUGE)",
+        category: "Fire",
+        price: 1500,
+        description: "MANOMETRE (PRESSURE GAUGE) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: true
+    },
+        {
+        id: "F133",
+        name: "NIPPLE 1KG/2KG DCP",
+        category: "Fire",
+        price: 500,
+        description: "NIPPLE 1KG/2KG DCP \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F134",
+        name: "SAFETY PIN",
+        category: "Fire",
+        price: 200,
+        description: "SAFETY PIN \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F135",
+        name: "STRAP (FIRE EXTINGUISHER)",
+        category: "Fire",
+        price: 1000,
+        description: "STRAP (FIRE EXTINGUISHER) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F136",
+        name: "SPRAY JET (TRIPLE PURPOSE BRANCH)",
+        category: "Fire",
+        price: 70000,
+        description: "SPRAY JET (TRIPLE PURPOSE BRANCH) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F137",
+        name: "SPACEMAN (AUTOMATIC FIRE EXSTINGUISHER)",
+        category: "Fire",
+        price: 85000,
+        description: "SPACEMAN (AUTOMATIC FIRE EXSTINGUISHER) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Auto Fire Ball.jpg",
+        featured: false
+    },
+        {
+        id: "F138",
+        name: "VALVE CO2 FOR: (2,3 & 5KG)",
+        category: "Fire",
+        price: 9000,
+        description: "VALVE CO2 FOR: (2,3 & 5KG) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/CO2 5kg Fire Extinguisher.webp",
+        featured: false
+    },
+        {
+        id: "F139",
+        name: "VALVE DCP 25KG/50KG",
+        category: "Fire",
+        price: 25000,
+        description: "VALVE DCP 25KG/50KG \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F140",
+        name: "VALVE DCP 25KG/50KG STEERING",
+        category: "Fire",
+        price: 15000,
+        description: "VALVE DCP 25KG/50KG STEERING \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F141",
+        name: "VALVE DCP (9KG/6KG)",
+        category: "Fire",
+        price: 5000,
+        description: "VALVE DCP (9KG/6KG) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F142",
+        name: "WATER 9LITRE I ANGUS (UK WATER H2O)",
+        category: "Fire",
+        price: 50000,
+        description: "WATER 9LITRE I ANGUS (UK WATER H2O) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "F143",
+        name: "WATER SPRINKLER HEADS 3/4",
         category: "Fire",
         price: 6000,
-        description: "Fire sprinkler heads.",
+        description: "WATER SPRINKLER HEADS 3/4 \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/sprinkler head.jpg",
         featured: false
     },
-    
+        {
+        id: "F144",
+        name: "WATER SPRINKLER HEADS",
+        category: "Fire",
+        price: 4000,
+        description: "WATER SPRINKLER HEADS \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/sprinkler head.jpg",
+        featured: true
+    },
+        {
+        id: "F145",
+        name: "WATER SPRINKLER HEADS (CASING)",
+        category: "Fire",
+        price: 1500,
+        description: "WATER SPRINKLER HEADS (CASING) \u2014 Fire equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/sprinkler head.jpg",
+        featured: false
+    },
+
     // SAFETY 
-    {
+        {
         id: "S001",
-        name: "Aviation Solar Powered Beacon",
+        name: "AVIATION SOLAR POWERED BEACON",
         category: "Safety",
         price: 20000,
-        description: "Solar powered aviation obstruction beacon for towers.",
+        description: "AVIATION SOLAR POWERED BEACON \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/solar bulb.jpg",
         featured: true
     },
-    {
+        {
         id: "S002",
-        name: "Caution Cone (50cm)",
+        name: "BAOFENG EARPIECE",
+        category: "Safety",
+        price: 3000,
+        description: "BAOFENG EARPIECE \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/ear muffs.jpg",
+        featured: true
+    },
+        {
+        id: "S003",
+        name: "BODY HARNESS",
+        category: "Safety",
+        price: 50000,
+        description: "BODY HARNESS \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Overall.jpg",
+        featured: false
+    },
+        {
+        id: "S004",
+        name: "CAUTION CONE (50CM)SINGLE RELECTOR NECK",
         category: "Safety",
         price: 18000,
-        description: "High visibility traffic caution cone 50cm.",
-        featured: true
-    },
-    {
-        id: "S003",
-        name: "Body Harness",
-        category: "Safety",
-        price: 25000,
-        description: "Full body safety harness for working at height.",
+        description: "CAUTION CONE (50CM)SINGLE RELECTOR NECK \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Muster Point Sign.jpg",
         featured: false
     },
-    {
-        id: "S004",
-        name: "Safety Helmet",
-        category: "Safety",
-        price: 8500,
-        description: "Industrial hard hat safety helmet.",
-        featured: true
-    },
-    {
+        {
         id: "S005",
-        name: "Reflective Jacket",
+        name: "CAUTION CONE (75CM)",
         category: "Safety",
-        price: 12000,
-        description: "High visibility reflective safety jacket.",
+        price: 16000,
+        description: "CAUTION CONE (75CM) \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Muster Point Sign.jpg",
         featured: false
     },
-    {
+        {
         id: "S006",
-        name: "Safety Boots",
+        name: "CAUTION TRIANGLE (RED PACK)",
         category: "Safety",
-        price: 18500,
-        description: "Steel toe industrial safety boots.",
+        price: 6000,
+        description: "CAUTION TRIANGLE (RED PACK) \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Muster Point Sign.jpg",
         featured: false
     },
-    {
+        {
         id: "S007",
-        name: "Ear Plugs",
+        name: "CAUTION TRIANGLE 2 In 1 (BULE PACK)",
+        category: "Safety",
+        price: 5000,
+        description: "CAUTION TRIANGLE 2 In 1 (BULE PACK) \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Muster Point Sign.jpg",
+        featured: false
+    },
+        {
+        id: "S008",
+        name: "COMPLETE OVERALL",
+        category: "Safety",
+        price: 23000,
+        description: "COMPLETE OVERALL \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Overall.jpg",
+        featured: false
+    },
+        {
+        id: "S009",
+        name: "EARTH CLAMP (MUREX SAFFIRE \\500A)",
+        category: "Safety",
+        price: 28000,
+        description: "EARTH CLAMP (MUREX SAFFIRE \\500A) \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Rocklander Safety Boots.jpg",
+        featured: false
+    },
+        {
+        id: "S010",
+        name: "EMERGENCY/EXIT LIGHT(WITHUOT SIGNAGE)",
+        category: "Safety",
+        price: 10000,
+        description: "EMERGENCY/EXIT LIGHT(WITHUOT SIGNAGE) \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Muster Point Sign.jpg",
+        featured: false
+    },
+        {
+        id: "S011",
+        name: "EXIT SIGN (SCHRACK [LUMINOUS TYPE])",
+        category: "Safety",
+        price: 20000,
+        description: "EXIT SIGN (SCHRACK [LUMINOUS TYPE]) \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Rocklander Safety Boots.jpg",
+        featured: false
+    },
+        {
+        id: "S012",
+        name: "FIRST AID BOX (BIG)",
+        category: "Safety",
+        price: 40000,
+        description: "FIRST AID BOX (BIG) \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/First Aid Box.jpg",
+        featured: true
+    },
+        {
+        id: "S013",
+        name: "FIRST AID BOX (SMALL)",
+        category: "Safety",
+        price: 32000,
+        description: "FIRST AID BOX (SMALL) \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/First Aid Box.jpg",
+        featured: false
+    },
+        {
+        id: "S014",
+        name: "FIRSTAID BOX (MEDIUM)",
+        category: "Safety",
+        price: 38000,
+        description: "FIRSTAID BOX (MEDIUM) \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Rocklander Safety Boots.jpg",
+        featured: false
+    },
+        {
+        id: "S015",
+        name: "HANDGLOVES (FABRICKS) IN PAIRS.",
+        category: "Safety",
+        price: 1000,
+        description: "HANDGLOVES (FABRICKS) IN PAIRS. \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Rocklander Safety Boots.jpg",
+        featured: false
+    },
+        {
+        id: "S016",
+        name: "HANDGLOVES (SHORT MIXED COLOUR)",
+        category: "Safety",
+        price: 3500,
+        description: "HANDGLOVES (SHORT MIXED COLOUR) \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Rocklander Safety Boots.jpg",
+        featured: false
+    },
+        {
+        id: "S017",
+        name: "HELMET (TOOLSMASTERS)",
+        category: "Safety",
+        price: 3000,
+        description: "HELMET (TOOLSMASTERS) \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/MSA Helmet (Green).jpg",
+        featured: false
+    },
+        {
+        id: "S018",
+        name: "HELMET(GOLDEN GULF)",
+        category: "Safety",
+        price: 5000,
+        description: "HELMET(GOLDEN GULF) \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/MSA Helmet (Green).jpg",
+        featured: false
+    },
+        {
+        id: "S019",
+        name: "HELMET(MSA) GREEN DARK, WHITE & BLULE",
+        category: "Safety",
+        price: 5000,
+        description: "HELMET(MSA) GREEN DARK, WHITE & BLULE \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/MSA Helmet (Green).jpg",
+        featured: false
+    },
+        {
+        id: "S020",
+        name: "METAL DETECTOR ( COVERED HANDLE)",
+        category: "Safety",
+        price: 20000,
+        description: "METAL DETECTOR ( COVERED HANDLE) \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/metal dectector.jpg",
+        featured: false
+    },
+        {
+        id: "S021",
+        name: "METAL DETECTOR ( GROOVED HANDLE)",
+        category: "Safety",
+        price: 3500,
+        description: "METAL DETECTOR ( GROOVED HANDLE) \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/metal dectector.jpg",
+        featured: false
+    },
+        {
+        id: "S022",
+        name: "MUSTER POINT (NON - LUMINOUS) M-TEK",
         category: "Safety",
         price: 1500,
-        description: "Disposable ear plugs for noise protection.",
+        description: "MUSTER POINT (NON - LUMINOUS) M-TEK \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Muster Point Sign.jpg",
         featured: false
     },
-    {
-        id: "S008",
-        name: "Safety Goggles",
-        category: "Safety",
-        price: 4500,
-        description: "Anti-fog safety goggles.",
-        featured: false
-    },
-    {
-        id: "S009",
-        name: "First Aid Kit",
-        category: "Safety",
-        price: 15000,
-        description: "Comprehensive workplace first aid kit.",
-        featured: true
-    },
-    {
-        id: "S010",
-        name: "Fire Exit Sign",
-        category: "Safety",
-        price: 6500,
-        description: "Photoluminescent fire exit sign.",
-        featured: false
-    },
-    {
-        id: "S011",
-        name: "Safety Gloves",
-        category: "Safety",
-        price: 3500,
-        description: "Cut resistant industrial safety gloves.",
-        featured: false
-    },
-    {
-        id: "S012",
-        name: "Dust Mask",
-        category: "Safety",
-        price: 1200,
-        description: "N95 disposable dust mask.",
-        featured: false
-    },
-    {
-        id: "S013",
-        name: "Warning Tape",
-        category: "Safety",
-        price: 4500,
-        description: "Caution and danger barricade tape.",
-        featured: false
-    },
-    {
-        id: "S014",
-        name: "Emergency Eye Wash Station",
-        category: "Safety",
-        price: 28000,
-        description: "Portable emergency eye wash station.",
-        featured: false
-    },
-    {
-        id: "S015",
-        name: "Safety Harness Lanyard",
-        category: "Safety",
-        price: 8500,
-        description: "Shock absorbing safety lanyard.",
-        featured: false
-    },
-    {
-        id: "S016",
-        name: "Ear Muffs",
-        category: "Safety",
-        price: 6500,
-        description: "Noise protection earmuffs.",
-        featured: false
-    },
-    {
-        id: "S017",
-        name: "Face Shield",
-        category: "Safety",
-        price: 7500,
-        description: "Clear face shield for impact protection.",
-        featured: false
-    },
-    {
-        id: "S018",
-        name: "Safety Vest",
-        category: "Safety",
-        price: 9500,
-        description: "High visibility safety vest.",
-        featured: false
-    },
-    {
-        id: "S019",
-        name: "Hard Hat Liner",
-        category: "Safety",
-        price: 3500,
-        description: "Winter liner for safety helmet.",
-        featured: false
-    },
-    {
-        id: "S020",
-        name: "Traffic Cone 75cm",
-        category: "Safety",
-        price: 25000,
-        description: "Large traffic cone 75cm.",
-        featured: false
-    },
-    {
-        id: "S021",
-        name: "Spill Kit",
-        category: "Safety",
-        price: 45000,
-        description: "Chemical spill containment kit.",
-        featured: false
-    },
-    {
-        id: "S022",
-        name: "Lockout Tagout Kit",
-        category: "Safety",
-        price: 32000,
-        description: "Lockout Tagout (LOTO) safety kit.",
-        featured: false
-    },
-    {
+        {
         id: "S023",
-        name: "Safety Sign Board",
+        name: "MUSTER POINT (PLASTIC) M-TEK",
         category: "Safety",
-        price: 8000,
-        description: "Various safety warning sign boards.",
+        price: 6000,
+        description: "MUSTER POINT (PLASTIC) M-TEK \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Muster Point Sign.jpg",
         featured: false
     },
-    {
+        {
         id: "S024",
-        name: "Respiratory Mask",
+        name: "NO SMOKING ( M-TEK) PLASTIC (NON-LUMINOUS)",
         category: "Safety",
-        price: 12500,
-        description: "Half face respiratory mask.",
-        featured: false
+        price: 6000,
+        description: "NO SMOKING ( M-TEK) PLASTIC (NON-LUMINOUS) \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Muster Point Sign.jpg",
+        featured: true
     },
-    {
+        {
         id: "S025",
-        name: "Fall Arrest Harness",
+        name: "NOSE MASK ( FILTER MASK)",
         category: "Safety",
-        price: 28000,
-        description: "Full body fall arrest harness.",
+        price: 500,
+        description: "NOSE MASK ( FILTER MASK) \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/MSA Helmet (Green).jpg",
         featured: false
     },
-    {
+        {
         id: "S026",
-        name: "Welding Helmet",
-        category: "Safety",
-        price: 18500,
-        description: "Auto darkening welding helmet.",
-        featured: false
-    },
-    {
-        id: "S027",
-        name: "Knee Pads",
-        category: "Safety",
-        price: 6500,
-        description: "Heavy duty knee protection pads.",
-        featured: false
-    },
-    {
-        id: "S028",
-        name: "Safety Harness Full Set",
-        category: "Safety",
-        price: 32000,
-        description: "Complete fall protection harness set.",
-        featured: false
-    },
-    {
-        id: "S029",
-        name: "Caution Wet Floor Sign",
-        category: "Safety",
-        price: 4500,
-        description: "A-frame wet floor caution sign.",
-        featured: false
-    },
-    {
-        id: "S030",
-        name: "Chemical Gloves",
-        category: "Safety",
-        price: 4200,
-        description: "Nitrile chemical resistant gloves.",
-        featured: false
-    },
-    {
-        id: "S031",
-        name: "Road Barrier",
-        category: "Safety",
-        price: 35000,
-        description: "Plastic road barrier / traffic barrier.",
-        featured: false
-    },
-    {
-        id: "S032",
-        name: "Emergency Torch Light",
-        category: "Safety",
-        price: 8500,
-        description: "Rechargeable emergency torch.",
-        featured: false
-    },
-    {
-        id: "S033",
-        name: "Safety Ear Defenders",
-        category: "Safety",
-        price: 7200,
-        description: "Industrial earmuffs.",
-        featured: false
-    },
-    {
-        id: "S034",
-        name: "Fire Action Sign",
-        category: "Safety",
-        price: 5500,
-        description: "Fire action notice sign.",
-        featured: false
-    },
-    {
-        id: "S035",
-        name: "Lifting Belt",
-        category: "Safety",
-        price: 9500,
-        description: "Back support lifting belt.",
-        featured: false
-    },
-    {
-        id: "S036",
-        name: "Anti-Slip Mat",
-        category: "Safety",
-        price: 12000,
-        description: "Industrial anti-slip safety mat.",
-        featured: false
-    },
-    {
-        id: "S037",
-        name: "Emergency Shower",
-        category: "Safety",
-        price: 125000,
-        description: "Emergency safety shower station.",
-        featured: false
-    },
-    {
-        id: "S038",
-        name: "Gas Detector",
-        category: "Safety",
-        price: 45000,
-        description: "Portable multi-gas detector.",
-        featured: true
-    },
-    {
-        id: "S039",
-        name: "Safety Rope",
-        category: "Safety",
-        price: 8500,
-        description: "High strength safety rope.",
-        featured: false
-    },
-    {
-        id: "S040",
-        name: "PPE Kit",
-        category: "Safety",
-        price: 28000,
-        description: "Complete personal protective equipment kit.",
-        featured: true
-    },
-    {
-        id: "S041",
-        name: "Caution Board",
-        category: "Safety",
-        price: 6500,
-        description: "Various caution safety boards.",
-        featured: false
-    },
-    {
-        id: "S042",
-        name: "Reflective Vest",
-        category: "Safety",
-        price: 9500,
-        description: "High visibility reflective vest.",
-        featured: false
-    },
-    {
-        id: "S043",
-        name: "Safety Harness Kit",
-        category: "Safety",
-        price: 42000,
-        description: "Full safety harness with lanyard kit.",
-        featured: false
-    },
-    {
-        id: "S044",
-        name: "Noise Meter",
-        category: "Safety",
-        price: 65000,
-        description: "Digital sound level meter.",
-        featured: false
-    },
-    {
-        id: "S045",
-        name: "First Aid Box Large",
-        category: "Safety",
-        price: 25000,
-        description: "Large industrial first aid box.",
-        featured: false
-    },
-    {
-        id: "S046",
-        name: "Traffic Barrier",
-        category: "Safety",
-        price: 28000,
-        description: "Heavy duty traffic road barrier.",
-        featured: false
-    },
-    {
-        id: "S047",
-        name: "Safety Torch",
-        category: "Safety",
-        price: 6500,
-        description: "Rechargeable LED safety torch light.",
-        featured: false
-    },
-    {
-        id: "S048",
-        name: "Welding Gloves",
-        category: "Safety",
-        price: 5500,
-        description: "Heat resistant welding gloves.",
-        featured: false
-    },
-    {
-        id: "S049",
-        name: "Evacuation Chair",
-        category: "Safety",
-        price: 185000,
-        description: "Emergency evacuation chair.",
-        featured: false
-    },
-    {
-        id: "S050",
-        name: "Safety Shower Sign",
-        category: "Safety",
-        price: 5500,
-        description: "Emergency safety shower sign.",
-        featured: false
-    },
-    {
-        id: "S051",
-        name: "Anti Fatigue Mat",
-        category: "Safety",
-        price: 18500,
-        description: "Anti-fatigue standing mat.",
-        featured: false
-    },
-    {
-        id: "S052",
-        name: "Gas Cylinder Chain",
-        category: "Safety",
-        price: 8500,
-        description: "Cylinder securing chain.",
-        featured: false
-    },
-    {
-        id: "S053",
-        name: "Emergency Eye Wash Sign",
-        category: "Safety",
-        price: 5500,
-        description: "Emergency eye wash station sign.",
-        featured: false
-    },
-    {
-        id: "S054",
-        name: "Reflective Arm Band",
+        name: "NOSE MASK (303[NP303])",
         category: "Safety",
         price: 2500,
-        description: "High visibility reflective armband.",
+        description: "NOSE MASK (303[NP303]) \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/MSA Helmet (Green).jpg",
         featured: false
     },
-    {
-        id: "S055",
-        name: "Safety Lock",
+        {
+        id: "S027",
+        name: "NOSE MASK (3M/6003)",
         category: "Safety",
-        price: 3200,
-        description: "Safety padlock for lockout tagout.",
+        price: 1000,
+        description: "NOSE MASK (3M/6003) \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/MSA Helmet (Green).jpg",
         featured: false
     },
-    {
-        id: "S056",
-        name: "Spill Pallet",
+        {
+        id: "S028",
+        name: "NOSE MASK 303 CATRIDGE",
         category: "Safety",
-        price: 95000,
-        description: "Chemical spill containment pallet.",
+        price: 2500,
+        description: "NOSE MASK 303 CATRIDGE \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/MSA Helmet (Green).jpg",
         featured: false
     },
-    {
-        id: "S057",
-        name: "Fire Blanket",
+        {
+        id: "S029",
+        name: "ORDINARY RAIN BOOT (BLACK) short",
+        category: "Safety",
+        price: 10000,
+        description: "ORDINARY RAIN BOOT (BLACK) short \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Rocklander Safety Boots.jpg",
+        featured: false
+    },
+        {
+        id: "S030",
+        name: "ORDINARY RAIN BOOT (BLACK) Long",
         category: "Safety",
         price: 12000,
-        description: "Fire blanket for emergency use.",
+        description: "ORDINARY RAIN BOOT (BLACK) Long \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Rocklander Safety Boots.jpg",
         featured: false
     },
-    {
+        {
+        id: "S031",
+        name: "PEPPER SPRAY (PS 007/PROSECURE/BODYGUARD)",
+        category: "Safety",
+        price: 3500,
+        description: "PEPPER SPRAY (PS 007/PROSECURE/BODYGUARD) \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Rocklander Safety Boots.jpg",
+        featured: false
+    },
+        {
+        id: "S032",
+        name: "RAIN COAT GOWN",
+        category: "Safety",
+        price: 12500,
+        description: "RAIN COAT GOWN \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Rocklander Safety Boots.jpg",
+        featured: false
+    },
+        {
+        id: "S033",
+        name: "RAIN COAT UP/DOWN",
+        category: "Safety",
+        price: 13000,
+        description: "RAIN COAT UP/DOWN \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Rocklander Safety Boots.jpg",
+        featured: false
+    },
+        {
+        id: "S034",
+        name: "REFLECTIVE JACKET (BLACK NECK 2) GREEN",
+        category: "Safety",
+        price: 3500,
+        description: "REFLECTIVE JACKET (BLACK NECK 2) GREEN \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/reflective jacket green.jpg",
+        featured: false
+    },
+        {
+        id: "S035",
+        name: "REFLECTIVE JACKET (BLACK NECK 1) ORANGE /GREEN",
+        category: "Safety",
+        price: 3500,
+        description: "REFLECTIVE JACKET (BLACK NECK 1) ORANGE /GREEN \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/reflective jacket green.jpg",
+        featured: false
+    },
+        {
+        id: "S036",
+        name: "REFLECTIVE JACKET (NORMAL) ORANGE /GREEN",
+        category: "Safety",
+        price: 3500,
+        description: "REFLECTIVE JACKET (NORMAL) ORANGE /GREEN \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/reflective jacket green.jpg",
+        featured: true
+    },
+        {
+        id: "S037",
+        name: "SAFETY BOOT(ARMSTRONG)",
+        category: "Safety",
+        price: 25000,
+        description: "SAFETY BOOT(ARMSTRONG) \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Rocklander Safety Boots.jpg",
+        featured: false
+    },
+        {
+        id: "S038",
+        name: "SAFETY BOOT(ROCK LANDER)",
+        category: "Safety",
+        price: 22000,
+        description: "SAFETY BOOT(ROCK LANDER) \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Rocklander Safety Boots.jpg",
+        featured: false
+    },
+        {
+        id: "S039",
+        name: "SAFTETY BODY HARNESS BELT",
+        category: "Safety",
+        price: 10000,
+        description: "SAFTETY BODY HARNESS BELT \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Overall.jpg",
+        featured: false
+    },
+        {
+        id: "S040",
+        name: "SAFTETY RAIN BOOT (YELLOW)",
+        category: "Safety",
+        price: 15000,
+        description: "SAFTETY RAIN BOOT (YELLOW) \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Rocklander Safety Boots.jpg",
+        featured: false
+    },
+        {
+        id: "S041",
+        name: "SECURITY BELT (BIG SIZE)",
+        category: "Safety",
+        price: 6000,
+        description: "SECURITY BELT (BIG SIZE) \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Overall.jpg",
+        featured: false
+    },
+        {
+        id: "S042",
+        name: "SECURITY PERSONNEL [ANKLET] PAIRS",
+        category: "Safety",
+        price: 5000,
+        description: "SECURITY PERSONNEL [ANKLET] PAIRS \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Rocklander Safety Boots.jpg",
+        featured: false
+    },
+        {
+        id: "S043",
+        name: "SECURITY BOOT (LEATHER /FABRICK)",
+        category: "Safety",
+        price: 15000,
+        description: "SECURITY BOOT (LEATHER /FABRICK) \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Rocklander Safety Boots.jpg",
+        featured: false
+    },
+        {
+        id: "S044",
+        name: "SECURITY BOOT (LEATHER ONLY)",
+        category: "Safety",
+        price: 10000,
+        description: "SECURITY BOOT (LEATHER ONLY) \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Rocklander Safety Boots.jpg",
+        featured: false
+    },
+        {
+        id: "S045",
+        name: "SECURITY PERSONNEL [BERET]",
+        category: "Safety",
+        price: 0,
+        description: "SECURITY PERSONNEL [BERET] \u2014 Safety equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/Rocklander Safety Boots.jpg",
+        featured: false
+    },
+        {
+        id: "S046",
+        name: "SECURITY PERSONNEL [LYNYARD]",
+        category: "Safety",
+        price: 0,
+        description: "SECURITY PERSONNEL [LYNYARD] \u2014 Safety equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/Rocklander Safety Boots.jpg",
+        featured: false
+    },
+        {
+        id: "S047",
+        name: "SECURITY PERSONNEL BELT (SMALL SIZE)",
+        category: "Safety",
+        price: 0,
+        description: "SECURITY PERSONNEL BELT (SMALL SIZE) \u2014 Safety equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/Overall.jpg",
+        featured: false
+    },
+        {
+        id: "S048",
+        name: "SINAGE BEWARE OF DOG (MOUNTED) [12 BY 12]",
+        category: "Safety",
+        price: 4000,
+        description: "SINAGE BEWARE OF DOG (MOUNTED) [12 BY 12] \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Muster Point Sign.jpg",
+        featured: true
+    },
+        {
+        id: "S049",
+        name: "SINAGE CAUTION (MOUNTED) 10 BY 12",
+        category: "Safety",
+        price: 7000,
+        description: "SINAGE CAUTION (MOUNTED) 10 BY 12 \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Muster Point Sign.jpg",
+        featured: false
+    },
+        {
+        id: "S050",
+        name: "SINAGE CCTV (MOUNTED) 10 BY 12",
+        category: "Safety",
+        price: 7000,
+        description: "SINAGE CCTV (MOUNTED) 10 BY 12 \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Muster Point Sign.jpg",
+        featured: false
+    },
+        {
+        id: "S051",
+        name: "SINAGE DANGER ELECTRIC SHOCK ... (MOUNTED) [6 BY 12]",
+        category: "Safety",
+        price: 4000,
+        description: "SINAGE DANGER ELECTRIC SHOCK ... (MOUNTED) [6 BY 12] \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Muster Point Sign.jpg",
+        featured: false
+    },
+        {
+        id: "S052",
+        name: "SINAGE FIRE BLANKET POINT (MOUNTED) [6 BY 12]",
+        category: "Safety",
+        price: 4000,
+        description: "SINAGE FIRE BLANKET POINT (MOUNTED) [6 BY 12] \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "S053",
+        name: "SINAGE FIRE EXIT (MOUNTED) [6 BY 12]",
+        category: "Safety",
+        price: 4000,
+        description: "SINAGE FIRE EXIT (MOUNTED) [6 BY 12] \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Muster Point Sign.jpg",
+        featured: false
+    },
+        {
+        id: "S054",
+        name: "SINAGE FIRE EXTINGUISHER POINT (MOUNTED) [6 BY 12]",
+        category: "Safety",
+        price: 4000,
+        description: "SINAGE FIRE EXTINGUISHER POINT (MOUNTED) [6 BY 12] \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP 6kg Fire Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "S055",
+        name: "SINAGE MUSTER POINT (MOUNTED) 12BY12",
+        category: "Safety",
+        price: 7000,
+        description: "SINAGE MUSTER POINT (MOUNTED) 12BY12 \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Muster Point Sign.jpg",
+        featured: false
+    },
+        {
+        id: "S056",
+        name: "SINAGE FILLING STATION CAUTION(MOUNTED)",
+        category: "Safety",
+        price: 6000,
+        description: "SINAGE FILLING STATION CAUTION(MOUNTED) \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Muster Point Sign.jpg",
+        featured: false
+    },
+        {
+        id: "S057",
+        name: "SINAGE RESTRICTED AREA (MOUNTED) 6 BY 12",
+        category: "Safety",
+        price: 4000,
+        description: "SINAGE RESTRICTED AREA (MOUNTED) 6 BY 12 \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Muster Point Sign.jpg",
+        featured: false
+    },
+        {
         id: "S058",
-        name: "Caution Tape Dispenser",
+        name: "SINAGE SOUND ALARM (MOUNTED) 6 BY 12",
         category: "Safety",
-        price: 8500,
-        description: "Barricade tape dispenser.",
+        price: 4000,
+        description: "SINAGE SOUND ALARM (MOUNTED) 6 BY 12 \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Muster Point Sign.jpg",
         featured: false
     },
-    {
+        {
         id: "S059",
-        name: "Safety Helmet with Visor",
+        name: "SINAGE VEHICLES PARKED AT OWNERS RISK (MOUNTED) [12 BY 12]",
         category: "Safety",
-        price: 12500,
-        description: "Safety helmet with face shield.",
+        price: 7000,
+        description: "SINAGE VEHICLES PARKED AT OWNERS RISK (MOUNTED) [12 BY 12] \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Muster Point Sign.jpg",
         featured: false
     },
-    {
+        {
         id: "S060",
-        name: "Emergency Response Kit",
+        name: "SINAGE VEHICLES PARKED AT OWNERS RISK (MOUNTED) [6 BY 12]",
         category: "Safety",
-        price: 42000,
-        description: "Full emergency response kit.",
+        price: 4000,
+        description: "SINAGE VEHICLES PARKED AT OWNERS RISK (MOUNTED) [6 BY 12] \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Muster Point Sign.jpg",
         featured: true
     },
-    {
+        {
         id: "S061",
-        name: "Hand Sanitizer Station",
+        name: "SINAGE WORKSHOP NO ENTRANCE (MOUNTED) 6 BY 12",
         category: "Safety",
-        price: 18500,
-        description: "Wall mounted hand sanitizer station.",
+        price: 4000,
+        description: "SINAGE WORKSHOP NO ENTRANCE (MOUNTED) 6 BY 12 \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Muster Point Sign.jpg",
         featured: false
     },
-    {
+        {
         id: "S062",
-        name: "Safety Ladder",
+        name: "UNDERCAR MIRROR SEARCH",
         category: "Safety",
-        price: 65000,
-        description: "Industrial safety ladder.",
+        price: 60000,
+        description: "UNDERCAR MIRROR SEARCH \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Rocklander Safety Boots.jpg",
         featured: false
     },
-    {
+        {
         id: "S063",
-        name: "PPE Storage Cabinet",
+        name: "VEHICULAR ''C'' CAUTION",
         category: "Safety",
-        price: 95000,
-        description: "Safety equipment storage cabinet.",
+        price: 3000,
+        description: "VEHICULAR ''C'' CAUTION \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Muster Point Sign.jpg",
         featured: false
     },
-    {
+        {
         id: "S064",
-        name: "Emergency Light",
+        name: "WARNING TAPE ( CAUTION TAPE)",
         category: "Safety",
-        price: 12500,
-        description: "Self-illuminating emergency exit light.",
+        price: 10000,
+        description: "WARNING TAPE ( CAUTION TAPE) \u2014 Safety equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Muster Point Sign.jpg",
         featured: false
-    },
-    {
-        id: "S065",
-        name: "First Aid Station",
-        category: "Safety",
-        price: 35000,
-        description: "Wall mounted first aid station.",
-        featured: true
     },
 
 // SECURITY
-    {
-      id: "Q001",
-      name: "Handheld Metal Detector",
-      category: "Security",
-      price: 20000,
-      description: "Hand held safety.",
-      featured: true
+        {
+        id: "Q001",
+        name: "Handheld Metal Detector",
+        category: "Security",
+        price: 20000,
+        description: "Hand held safety.",
+        image: "assets/products/metal dectector.jpg",
+        featured: true
     },
-    {
-      id: "Q002",
-      name: "Walk-Through Metal Detector Gate",
-      category: "Security",
-      price: 680000,
-      description: "Full-height walk-through detector gate for high-traffic entry points.",
-      featured: true
+        {
+        id: "Q002",
+        name: "Walk-Through Metal Detector Gate",
+        category: "Security",
+        price: 680000,
+        description: "Full-height walk-through detector gate for high-traffic entry points.",
+        image: "assets/products/metal dectector.jpg",
+        featured: true
     },
-    {
-      id: "Q003",
-      name: "Under Vehicle Inspection Mirror",
-      category: "Security",
-      price: 42000,
-      description: "Inspection mirror with torch for under-vehicle checks.",
-      featured: false
+        {
+        id: "Q003",
+        name: "Under Vehicle Inspection Mirror",
+        category: "Security",
+        price: 42000,
+        description: "Inspection mirror with torch for under-vehicle checks.",
+        image: "assets/products/cctv equipments.jpg",
+        featured: false
     },
-    {
-      id: "Q004",
-      name: "Security Torch – Rechargeable",
-      category: "Security",
-      price: 15000,
-      description: "Heavy-duty rechargeable torch for guards and patrols.",
-      featured: false
+        {
+        id: "Q004",
+        name: "Security Torch \u2013 Rechargeable",
+        category: "Security",
+        price: 15000,
+        description: "Heavy-duty rechargeable torch for guards and patrols.",
+        image: "assets/products/cctv equipments.jpg",
+        featured: false
     },
-    {
-      id: "Q005",
-      name: "Expandable Baton – Rubber Grip",
-      category: "Security",
-      price: 11500,
-      description: "Expandable baton for security personnel and patrol teams.",
-      featured: false
+        {
+        id: "Q005",
+        name: "Expandable Baton \u2013 Rubber Grip",
+        category: "Security",
+        price: 11500,
+        description: "Expandable baton for security personnel and patrol teams.",
+        image: "assets/products/cctv equipments.jpg",
+        featured: false
     },
-    {
-      id: "Q006",
-      name: "Traffic Baton – LED",
-      category: "Security",
-      price: 8500,
-      description: "Illuminated baton for traffic control and emergency scenes.",
-      featured: false
+        {
+        id: "Q006",
+        name: "Traffic Baton \u2013 LED",
+        category: "Security",
+        price: 8500,
+        description: "Illuminated baton for traffic control and emergency scenes.",
+        image: "assets/products/cctv equipments.jpg",
+        featured: false
     },
-    {
-      id: "Q007",
-      name: "Door Contact Sensor – Magnetic",
-      category: "Security",
-      price: 6500,
-      description: "Magnetic contact sensor for doors and windows.",
-      featured: false
+        {
+        id: "Q007",
+        name: "Door Contact Sensor \u2013 Magnetic",
+        category: "Security",
+        price: 6500,
+        description: "Magnetic contact sensor for doors and windows.",
+        image: "assets/products/cctv equipments.jpg",
+        featured: false
     },
-    {
-      id: "Q008",
-      name: "Vibration/Shock Sensor",
-      category: "Security",
-      price: 7200,
-      description: "Sensor to detect forced entry attempts on doors, windows or safes.",
-      featured: false
+        {
+        id: "Q008",
+        name: "Vibration/Shock Sensor",
+        category: "Security",
+        price: 7200,
+        description: "Sensor to detect forced entry attempts on doors, windows or safes.",
+        image: "assets/products/cctv equipments.jpg",
+        featured: false
     },
-    {
-      id: "Q009",
-      name: "Panic Button – Wired",
-      category: "Security",
-      price: 8000,
-      description: "Emergency panic button for offices, banks and receptions.",
-      featured: false
+        {
+        id: "Q009",
+        name: "Panic Button \u2013 Wired",
+        category: "Security",
+        price: 8000,
+        description: "Emergency panic button for offices, banks and receptions.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
     },
-    {
-      id: "Q010",
-      name: "Siren – 30W External",
-      category: "Security",
-      price: 16500,
-      description: "Loud external siren for security alarm systems.",
-      featured: false
+        {
+        id: "Q010",
+        name: "Siren \u2013 30W External",
+        category: "Security",
+        price: 16500,
+        description: "Loud external siren for security alarm systems.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
     },
-    {
-      id: "Q011",
-      name: "Standalone PIR Motion Sensor Alarm",
-      category: "Security",
-      price: 21000,
-      description: "Standalone PIR motion sensor with alarm.",
-      featured: false
+        {
+        id: "Q011",
+        name: "Standalone PIR Motion Sensor Alarm",
+        category: "Security",
+        price: 21000,
+        description: "Standalone PIR motion sensor with alarm.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
     },
 
     // SOLAR
-    {
+        {
         id: "L001",
-        name: "1000Watts Satchet Inverter",
+        name: "1,000WATTS(SATCHET INVERTER)(SOLAR POWER INVERTER)",
         category: "Solar",
-        price: 45000,
-        description: "1000Watts portable solar power inverter (Satchet type).",
+        price: 0,
+        description: "1,000WATTS(SATCHET INVERTER)(SOLAR POWER INVERTER) \u2014 Solar equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/Solar Inverter 3kVA.jpg",
         featured: true
     },
-    {
+        {
         id: "L002",
-        name: "1.0 KVA Inverter (Fami-Care)",
+        name: "1.0 KVA INVERTER (FAMI -CARE)",
         category: "Solar",
-        price: 65000,
-        description: "1.0 KVA pure sine wave inverter (Fami-Care).",
+        price: 0,
+        description: "1.0 KVA INVERTER (FAMI -CARE) \u2014 Solar equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/Solar Inverter 3kVA.jpg",
         featured: true
     },
-    {
+        {
         id: "L003",
-        name: "1.5KVA 24Volts PSW Inverter",
+        name: "1.5KVA/24VOLTS/PSW",
         category: "Solar",
-        price: 95000,
-        description: "1.5KVA 24Volts Pure Sine Wave inverter.",
+        price: 0,
+        description: "1.5KVA/24VOLTS/PSW \u2014 Solar equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/solar bulb.jpg",
         featured: false
     },
-    {
+        {
         id: "L004",
-        name: "100AH DCB Suntest Battery",
+        name: "100AHS DCB SUNTEST",
         category: "Solar",
-        price: 85000,
-        description: "100AH deep cycle solar battery (DCB Suntest).",
-        featured: true
+        price: 0,
+        description: "100AHS DCB SUNTEST \u2014 Solar equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/solar bulb.jpg",
+        featured: false
     },
-    {
+        {
         id: "L005",
-        name: "150AH DCB Suntest Battery",
+        name: "150AHS DCB SUNTEST",
         category: "Solar",
-        price: 125000,
-        description: "150AH deep cycle solar battery (DCB Suntest).",
+        price: 0,
+        description: "150AHS DCB SUNTEST \u2014 Solar equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/solar bulb.jpg",
         featured: false
     },
-    {
+        {
         id: "L006",
-        name: "150AH DCB Toplight Battery",
+        name: "150AHS DCB TOPLIGHT",
         category: "Solar",
-        price: 120000,
-        description: "150AH deep cycle solar battery (DCB Toplight).",
+        price: 0,
+        description: "150AHS DCB TOPLIGHT \u2014 Solar equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/solar bulb.jpg",
         featured: false
     },
-    {
+        {
         id: "L007",
-        name: "20A Charge Controller",
+        name: "20AHS CHARGE CONTROLLER",
         category: "Solar",
-        price: 8500,
-        description: "20 Amps solar charge controller.",
+        price: 10,
+        description: "20AHS CHARGE CONTROLLER \u2014 Solar equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Solar Inverter 3kVA.jpg",
         featured: false
     },
-    {
+        {
         id: "L008",
-        name: "2200Watts 12Volts Modified Inverter",
+        name: "2200WATTS/12VOLTS/MODIFIED",
         category: "Solar",
-        price: 75000,
-        description: "2200Watts 12Volts modified sine wave inverter.",
+        price: 220000,
+        description: "2200WATTS/12VOLTS/MODIFIED \u2014 Solar equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/solar bulb.jpg",
         featured: false
     },
-    {
+        {
         id: "L009",
-        name: "3.5KVA 24Volts PSW Inverter",
+        name: "3.5KVA/24VOLTS/PSW",
         category: "Solar",
-        price: 185000,
-        description: "3.5KVA 24Volts Pure Sine Wave inverter.",
+        price: 0,
+        description: "3.5KVA/24VOLTS/PSW \u2014 Solar equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/solar bulb.jpg",
+        featured: false
+    },
+        {
+        id: "L010",
+        name: "3000WATTS/ 24VOLTS/ MODIFIED",
+        category: "Solar",
+        price: 300000,
+        description: "3000WATTS/ 24VOLTS/ MODIFIED \u2014 Solar equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/solar bulb.jpg",
+        featured: false
+    },
+        {
+        id: "L011",
+        name: "30AHS CHARGE CONTROLLER",
+        category: "Solar",
+        price: 20000,
+        description: "30AHS CHARGE CONTROLLER \u2014 Solar equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Solar Inverter 3kVA.jpg",
+        featured: false
+    },
+        {
+        id: "L012",
+        name: "30WATTS LED SOLAR LIGHT",
+        category: "Solar",
+        price: 25000,
+        description: "30WATTS LED SOLAR LIGHT \u2014 Solar equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/solar bulb.jpg",
         featured: true
     },
-    {
-        id: "L010",
-        name: "3000Watts 24Volts Modified Inverter",
-        category: "Solar",
-        price: 135000,
-        description: "3000Watts 24Volts modified sine wave inverter.",
-        featured: false
-    },
-    {
-        id: "L011",
-        name: "30A Charge Controller",
-        category: "Solar",
-        price: 12500,
-        description: "30 Amps solar charge controller.",
-        featured: false
-    },
-    {
-        id: "L012",
-        name: "30Watts LED Solar Light",
-        category: "Solar",
-        price: 18500,
-        description: "30Watts LED solar street light.",
-        featured: false
-    },
-    {
+        {
         id: "L013",
-        name: "36Watts LED Solar Light",
+        name: "36WATTS LED SOLAR LIGHT",
         category: "Solar",
-        price: 22000,
-        description: "36Watts LED solar light.",
+        price: 30000,
+        description: "36WATTS LED SOLAR LIGHT \u2014 Solar equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/solar bulb.jpg",
         featured: false
     },
-    {
+        {
         id: "L014",
-        name: "3Watts DC Bulb (Plastic)",
+        name: "3WATTS DC BULB [PLASTIC]",
         category: "Solar",
-        price: 2500,
-        description: "3Watts DC solar bulb (plastic).",
+        price: 1500,
+        description: "3WATTS DC BULB [PLASTIC] \u2014 Solar equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/solar bulb.jpg",
         featured: false
     },
-    {
+        {
         id: "L015",
-        name: "3Watts DC Bulb (Metal)",
-        category: "Solar",
-        price: 3200,
-        description: "3Watts DC solar bulb (metal).",
-        featured: false
-    },
-    {
-        id: "L016",
-        name: "40A Charge Controller",
-        category: "Solar",
-        price: 18500,
-        description: "40 Amps solar charge controller.",
-        featured: false
-    },
-    {
-        id: "L017",
-        name: "500Watts Solar Inverter",
-        category: "Solar",
-        price: 35000,
-        description: "500Watts 12V DC to 220V AC solar inverter.",
-        featured: false
-    },
-    {
-        id: "L018",
-        name: "5Watts DC Bulb",
+        name: "3WATTS DC BULB [METAL]",
         category: "Solar",
         price: 1800,
-        description: "5Watts DC solar bulb.",
+        description: "3WATTS DC BULB [METAL] \u2014 Solar equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/solar bulb.jpg",
         featured: false
     },
-    {
+        {
+        id: "L016",
+        name: "40AHS CHARGE CONTROLLER",
+        category: "Solar",
+        price: 30000,
+        description: "40AHS CHARGE CONTROLLER \u2014 Solar equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Solar Inverter 3kVA.jpg",
+        featured: false
+    },
+        {
+        id: "L017",
+        name: "500WATTS SOLAR INVERTER (12VDC TO AC 220)",
+        category: "Solar",
+        price: 25000,
+        description: "500WATTS SOLAR INVERTER (12VDC TO AC 220) \u2014 Solar equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Solar Inverter 3kVA.jpg",
+        featured: false
+    },
+        {
+        id: "L018",
+        name: "5WATTS DC BULB",
+        category: "Solar",
+        price: 2000,
+        description: "5WATTS DC BULB \u2014 Solar equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/solar bulb.jpg",
+        featured: false
+    },
+        {
         id: "L019",
-        name: "7Watts DC Bulb",
+        name: "7WATTS DC BULB",
         category: "Solar",
-        price: 2200,
-        description: "7Watts DC solar bulb.",
+        price: 2500,
+        description: "7WATTS DC BULB \u2014 Solar equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/solar bulb.jpg",
         featured: false
     },
-    {
+        {
         id: "L020",
-        name: "Solar Power Pack",
+        name: "SOLAR POWER PACK",
         category: "Solar",
-        price: 45000,
-        description: "Complete solar power backup pack.",
-        featured: true
+        price: 50000,
+        description: "SOLAR POWER PACK \u2014 Solar equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/solar bulb.jpg",
+        featured: false
     },
-    {
+        {
         id: "L021",
-        name: "Solar Fan",
+        name: "SOLAR FAN",
         category: "Solar",
-        price: 28500,
-        description: "12V DC solar powered fan.",
+        price: 0,
+        description: "SOLAR FAN \u2014 Solar equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/solar bulb.jpg",
         featured: false
     },
-    {
+        {
         id: "L022",
-        name: "100Watts Mono Solar Panel",
+        name: "SOLAR PANEL 100WATTS MONO",
         category: "Solar",
-        price: 45000,
-        description: "100Watts monocrystalline solar panel.",
+        price: 0,
+        description: "SOLAR PANEL 100WATTS MONO \u2014 Solar equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/Solar Panel 200W.jpg",
         featured: false
     },
-    {
+        {
         id: "L023",
-        name: "200Watts Mono Solar Panel",
+        name: "SOLAR PANEL 200WATTS MONO",
         category: "Solar",
-        price: 85000,
-        description: "200Watts monocrystalline solar panel.",
-        featured: true
-    },
-    {
-        id: "L024",
-        name: "220AH Afriipower Tubular Battery",
-        category: "Solar",
-        price: 185000,
-        description: "220AH Afriipower tubular solar battery.",
+        price: 0,
+        description: "SOLAR PANEL 200WATTS MONO \u2014 Solar equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/Solar Panel 200W.jpg",
         featured: false
     },
-    {
-        id: "L025",
-        name: "2KVA Inverter",
+        {
+        id: "L024",
+        name: "220AHS AFRIIPOWER TABULARBATTERY",
         category: "Solar",
-        price: 145000,
-        description: "2KVA solar power inverter.",
+        price: 280000,
+        description: "220AHS AFRIIPOWER TABULARBATTERY \u2014 Solar equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Solar Battery 200Ah.jpg",
         featured: true
     },
-    {
-        id: "L026",
-        name: "200AH Mono Panel Battery",
+        {
+        id: "L025",
+        name: "2KVA INVERTER",
         category: "Solar",
-        price: 165000,
-        description: "200AH solar battery compatible with mono panels.",
+        price: 250000,
+        description: "2KVA INVERTER \u2014 Solar equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Solar Inverter 3kVA.jpg",
+        featured: false
+    },
+        {
+        id: "L026",
+        name: "200AH MONO PANEL",
+        category: "Solar",
+        price: 50000,
+        description: "200AH MONO PANEL \u2014 Solar equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Solar Panel 200W.jpg",
         featured: false
     },
     
     //HOME AUTOMATION, ALARM & SURVEILANCE
-    {
+        {
         id: "H001",
-        name: "Baofeng Two Way Radio BF-888",
-        category: "Home Automation, Alarm & Surveillance",
-        price: 19000,
-        description: "Professional Baofeng BF-888 two-way radio for communication.",
-        featured: true
-    },
-    {
-        id: "H002",
-        name: "Battery for Baofeng Radio",
-        category: "Home Automation, Alarm & Surveillance",
-        price: 5000,
-        description: "Replacement battery for Baofeng two-way radio.",
-        featured: false
-    },
-    {
-        id: "H003",
-        name: "Bell 24VDC Chloride UK",
-        category: "Home Automation, Alarm & Surveillance",
-        price: 15000,
-        description: "24VDC fire alarm bell (Chloride UK).",
-        featured: false
-    },
-    {
-        id: "H004",
-        name: "Bell 24VDC Zeta 6\"",
-        category: "Home Automation, Alarm & Surveillance",
-        price: 10000,
-        description: "24VDC Zeta 6 inch alarm bell.",
-        featured: false
-    },
-    {
-        id: "H005",
-        name: "Call Point Zeta Resettable",
+        name: "BAOFENG TWO WAY RADIO BF-7775",
         category: "Home Automation, Alarm & Surveillance",
         price: 18000,
-        description: "Resettable manual call point (Zeta).",
-        featured: false
-    },
-    {
-        id: "H006",
-        name: "Camera Solar PTZ",
-        category: "Home Automation, Alarm & Surveillance",
-        price: 150000,
-        description: "Solar powered PTZ security camera.",
+        description: "BAOFENG TWO WAY RADIO BF-7775 \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Baofeng Radio.jpg",
         featured: true
     },
-    {
+        {
+        id: "H002",
+        name: "BAOFENG TWO WAY RADIO BF-888",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 19000,
+        description: "BAOFENG TWO WAY RADIO BF-888 \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Baofeng Radio.jpg",
+        featured: true
+    },
+        {
+        id: "H003",
+        name: "BATTERY (12VOLTS/7.2AH)PANASONIC/EVERGOOD/TIRELESS",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 18000,
+        description: "BATTERY (12VOLTS/7.2AH)PANASONIC/EVERGOOD/TIRELESS \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Solar Battery 200Ah.jpg",
+        featured: false
+    },
+        {
+        id: "H004",
+        name: "BATTERY (9VOLTS/6F22M[HI-WATTS)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 1000,
+        description: "BATTERY (9VOLTS/6F22M[HI-WATTS) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Solar Battery 200Ah.jpg",
+        featured: false
+    },
+        {
+        id: "H005",
+        name: "BATTERY for BAOFENG RADIO",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 5000,
+        description: "BATTERY for BAOFENG RADIO \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Solar Battery 200Ah.jpg",
+        featured: false
+    },
+        {
+        id: "H006",
+        name: "BELL (24 VDC CHLORIDE UK)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 15000,
+        description: "BELL (24 VDC CHLORIDE UK) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
         id: "H007",
-        name: "Camera Outdoor Winpossee 2.0MP",
+        name: "BELL (24 VDC JORDY B4:H104DY)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 12000,
+        description: "BELL (24 VDC JORDY B4:H104DY) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H008",
+        name: "BELL (24 VDC ZETA 6\")",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 10000,
+        description: "BELL (24 VDC ZETA 6\") \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H009",
+        name: "CABLE (FIRE ALARM/1.5MM x2/100M/100% COPPER KUBIX)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 120000,
+        description: "CABLE (FIRE ALARM/1.5MM x2/100M/100% COPPER KUBIX) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H010",
+        name: "CABLE (FIRE ALARM\\1.5MMx2\\100M (ACCESS KING)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 56000,
+        description: "CABLE (FIRE ALARM\\1.5MMx2\\100M (ACCESS KING) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H011",
+        name: "CABLE (FIRE ALARM\\1.5MMx2\\100M\\KUBIX(NON COPPER",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 56000,
+        description: "CABLE (FIRE ALARM\\1.5MMx2\\100M\\KUBIX(NON COPPER \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H012",
+        name: "CABLE (HDMI CABLE) 2m",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 3000,
+        description: "CABLE (HDMI CABLE) 2m \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: true
+    },
+        {
+        id: "H013",
+        name: "CABLE (TELEPHONE \\2P\\300 YARDS\\ACCESS KING)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 36000,
+        description: "CABLE (TELEPHONE \\2P\\300 YARDS\\ACCESS KING) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H014",
+        name: "CABLE (TELEPHONE\\2P\\100M KUBIX)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 16000,
+        description: "CABLE (TELEPHONE\\2P\\100M KUBIX) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H015",
+        name: "CABLE (TELEPHONE\\2P\\200 YARDS\\ACCESS KING)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 30000,
+        description: "CABLE (TELEPHONE\\2P\\200 YARDS\\ACCESS KING) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H016",
+        name: "CABLE (VGA CABLE)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 5000,
+        description: "CABLE (VGA CABLE) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H017",
+        name: "CABLE TELEPHONE 2P/200 YARDS /ACCESS KING",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 32000,
+        description: "CABLE TELEPHONE 2P/200 YARDS /ACCESS KING \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H018",
+        name: "CALL POINT (KIDI FIRE BOX)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 10500,
+        description: "CALL POINT (KIDI FIRE BOX) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Beak Glass.jpg",
+        featured: false
+    },
+        {
+        id: "H019",
+        name: "CALL POINT (ZETA RESETTABLE)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 18000,
+        description: "CALL POINT (ZETA RESETTABLE) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Beak Glass.jpg",
+        featured: false
+    },
+        {
+        id: "H020",
+        name: "CALL POINT CHLORIDE UK (CP-387)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 8500,
+        description: "CALL POINT CHLORIDE UK (CP-387) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Beak Glass.jpg",
+        featured: false
+    },
+        {
+        id: "H021",
+        name: "CAMERA (BATTERY CAM IP V380)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 36000,
+        description: "CAMERA (BATTERY CAM IP V380) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Solar Battery 200Ah.jpg",
+        featured: true
+    },
+        {
+        id: "H022",
+        name: "CAMERA (BULB CAM IPC-V380-E27)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 30000,
+        description: "CAMERA (BULB CAM IPC-V380-E27) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/bulb camera.jpg",
+        featured: false
+    },
+        {
+        id: "H023",
+        name: "CAMERA (INDOOR 2.0MP/WP-AH5536TC WINPOSSEE)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 21000,
+        description: "CAMERA (INDOOR 2.0MP/WP-AH5536TC WINPOSSEE) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/bulb camera.jpg",
+        featured: false
+    },
+        {
+        id: "H024",
+        name: "CAMERA (INDOOR CAMERA V380 World Vision)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 50000,
+        description: "CAMERA (INDOOR CAMERA V380 World Vision) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/bulb camera.jpg",
+        featured: true
+    },
+        {
+        id: "H025",
+        name: "CAMERA (INDOOR SEARCH/420TVL/SH-HLD)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 15000,
+        description: "CAMERA (INDOOR SEARCH/420TVL/SH-HLD) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/bulb camera.jpg",
+        featured: false
+    },
+        {
+        id: "H026",
+        name: "CAMERA (INDOOR SOON: 6MM/3.6MM/220B)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 20000,
+        description: "CAMERA (INDOOR SOON: 6MM/3.6MM/220B) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/bulb camera.jpg",
+        featured: false
+    },
+        {
+        id: "H027",
+        name: "CAMERA (INDOOR SOON:3.6MM/OO3G)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 18000,
+        description: "CAMERA (INDOOR SOON:3.6MM/OO3G) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/bulb camera.jpg",
+        featured: false
+    },
+        {
+        id: "H028",
+        name: "CAMERA (INDOOR VR CAM)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 30000,
+        description: "CAMERA (INDOOR VR CAM) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/bulb camera.jpg",
+        featured: false
+    },
+        {
+        id: "H029",
+        name: "CAMERA INDOOR WINPOSSEE : WP- AH5624 VMH\\1.3MP",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 21500,
+        description: "CAMERA INDOOR WINPOSSEE : WP- AH5624 VMH\\1.3MP \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/bulb camera.jpg",
+        featured: false
+    },
+        {
+        id: "H030",
+        name: "CAMERA INDOOR WINPOSSEE :WP-AH5006TC\\2.0MP",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 22000,
+        description: "CAMERA INDOOR WINPOSSEE :WP-AH5006TC\\2.0MP \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/bulb camera.jpg",
+        featured: false
+    },
+        {
+        id: "H031",
+        name: "CAMERA INDOOR WINPOSSEE 4MP F5024VK4",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 35200,
+        description: "CAMERA INDOOR WINPOSSEE 4MP F5024VK4 \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/bulb camera.jpg",
+        featured: false
+    },
+        {
+        id: "H032",
+        name: "CAMERA OUTDOOR SOON \\3.6MM\\K702",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 0,
+        description: "CAMERA OUTDOOR SOON \\3.6MM\\K702 \u2014 Home Automation, Alarm & Surveillance equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/Outdoor CCTV Camera.jpg",
+        featured: false
+    },
+        {
+        id: "H033",
+        name: "CAMERA OUTDOOR SOON \\6MM\\007B",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 0,
+        description: "CAMERA OUTDOOR SOON \\6MM\\007B \u2014 Home Automation, Alarm & Surveillance equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/Outdoor CCTV Camera.jpg",
+        featured: false
+    },
+        {
+        id: "H034",
+        name: "CAMERA OUTDOOR WINPOSSEE : WP 6036TC- U\\2.0 MP",
         category: "Home Automation, Alarm & Surveillance",
         price: 22500,
-        description: "Outdoor 2.0MP Winpossee security camera.",
+        description: "CAMERA OUTDOOR WINPOSSEE : WP 6036TC- U\\2.0 MP \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Outdoor CCTV Camera.jpg",
         featured: false
     },
-    {
-        id: "H008",
-        name: "DVR Eight Channels Winpossee",
+        {
+        id: "H035",
+        name: "CAMERA OUTDOOR WINPOSSEE \\0.2MP\\WP-6136 TS-A ( IP CAM)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 38000,
+        description: "CAMERA OUTDOOR WINPOSSEE \\0.2MP\\WP-6136 TS-A ( IP CAM) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Outdoor CCTV Camera.jpg",
+        featured: false
+    },
+        {
+        id: "H036",
+        name: "CAMERA OUTDOOR WINPOSSEE \\1.8MP\\AH6036 MH-S",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 0,
+        description: "CAMERA OUTDOOR WINPOSSEE \\1.8MP\\AH6036 MH-S \u2014 Home Automation, Alarm & Surveillance equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/Outdoor CCTV Camera.jpg",
+        featured: true
+    },
+        {
+        id: "H037",
+        name: "CAMERA OUTDOOR WINPOSSEE \\2.0MP\\WP- AH6024 TC",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 22000,
+        description: "CAMERA OUTDOOR WINPOSSEE \\2.0MP\\WP- AH6024 TC \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Outdoor CCTV Camera.jpg",
+        featured: false
+    },
+        {
+        id: "H038",
+        name: "CAMERA OUTDOOR WINPOSSEE \\4MP \\WP-F6024K4",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 35200,
+        description: "CAMERA OUTDOOR WINPOSSEE \\4MP \\WP-F6024K4 \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Outdoor CCTV Camera.jpg",
+        featured: false
+    },
+        {
+        id: "H039",
+        name: "CAMERA OUTDOOR WINPOSSEE\\1.3MP\\WP-6036MC-S (IP CAM)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 38000,
+        description: "CAMERA OUTDOOR WINPOSSEE\\1.3MP\\WP-6036MC-S (IP CAM) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Outdoor CCTV Camera.jpg",
+        featured: true
+    },
+        {
+        id: "H040",
+        name: "CAMERA POWER ADAPTOR (WINPOSSEE)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 0,
+        description: "CAMERA POWER ADAPTOR (WINPOSSEE) \u2014 Home Automation, Alarm & Surveillance equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/bulb camera.jpg",
+        featured: false
+    },
+        {
+        id: "H041",
+        name: "CAMERA SOLAR PTZ",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 150000,
+        description: "CAMERA SOLAR PTZ \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/bulb camera.jpg",
+        featured: false
+    },
+        {
+        id: "H042",
+        name: "CAMERA WI-FI SMART CAMERA",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 25000,
+        description: "CAMERA WI-FI SMART CAMERA \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/bulb camera.jpg",
+        featured: false
+    },
+        {
+        id: "H043",
+        name: "DVR EIGHT CHANNELS (WINPOSSEE)",
         category: "Home Automation, Alarm & Surveillance",
         price: 73600,
-        description: "8-channel digital video recorder (Winpossee).",
+        description: "DVR EIGHT CHANNELS (WINPOSSEE) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DVR 8 Channel.jpg",
         featured: false
     },
-    {
-        id: "H009",
-        name: "Heat Detector Chloride UK",
+        {
+        id: "H044",
+        name: "DVR FOUR CHANNELS (CHLORIDE UK)",
         category: "Home Automation, Alarm & Surveillance",
-        price: 13000,
-        description: "Heat detector (Chloride UK).",
+        price: 50000,
+        description: "DVR FOUR CHANNELS (CHLORIDE UK) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DVR 8 Channel.jpg",
         featured: false
     },
-    {
-        id: "H010",
-        name: "Smoke Detector Chloride UK",
+        {
+        id: "H045",
+        name: "DVR FOUR CHANNELS (NON - BRANDED)",
         category: "Home Automation, Alarm & Surveillance",
-        price: 15000,
-        description: "Smoke detector (Chloride UK).",
+        price: 55000,
+        description: "DVR FOUR CHANNELS (NON - BRANDED) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DVR 8 Channel.jpg",
+        featured: false
+    },
+        {
+        id: "H046",
+        name: "DVR FOUR CHANNELS WINPOSSEE",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 70000,
+        description: "DVR FOUR CHANNELS WINPOSSEE \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DVR 8 Channel.jpg",
+        featured: false
+    },
+        {
+        id: "H047",
+        name: "DVR SIXTEEN CHANNEL (WINPOSSEE)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 0,
+        description: "DVR SIXTEEN CHANNEL (WINPOSSEE) \u2014 Home Automation, Alarm & Surveillance equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/DVR 8 Channel.jpg",
+        featured: false
+    },
+        {
+        id: "H048",
+        name: "DVR SIXTEEN CHANNEL (CHLORIDE UK)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 0,
+        description: "DVR SIXTEEN CHANNEL (CHLORIDE UK) \u2014 Home Automation, Alarm & Surveillance equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/DVR 8 Channel.jpg",
         featured: true
     },
-    {
-        id: "H011",
-        name: "Siren Kidi",
+        {
+        id: "H049",
+        name: "DVR SIXTEEN CHANNEL (CODY -XUN)",
         category: "Home Automation, Alarm & Surveillance",
-        price: 15000,
-        description: "Kidi fire alarm siren.",
+        price: 115000,
+        description: "DVR SIXTEEN CHANNEL (CODY -XUN) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DVR 8 Channel.jpg",
         featured: false
     },
-    {
-        id: "H012",
-        name: "Fire Alarm Panel 2 Zone Chloride UK",
+        {
+        id: "H050",
+        name: "DVR SIXTEEN CHANNEL (WINPOSSEE) 5MP",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 0,
+        description: "DVR SIXTEEN CHANNEL (WINPOSSEE) 5MP \u2014 Home Automation, Alarm & Surveillance equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/DVR 8 Channel.jpg",
+        featured: false
+    },
+        {
+        id: "H051",
+        name: "EMERGENCY/EXIT LIGHT (WITHOUT SIGNAGE)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 25000,
+        description: "EMERGENCY/EXIT LIGHT (WITHOUT SIGNAGE) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Muster Point Sign.jpg",
+        featured: false
+    },
+        {
+        id: "H052",
+        name: "FIRE ALARM (CHLORIDE UK SOUNDER/STROBE - CP 313-SF)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 26000,
+        description: "FIRE ALARM (CHLORIDE UK SOUNDER/STROBE - CP 313-SF) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H053",
+        name: "FIRE ALARM SOUNDER FLASHER (CHLORIDE uk} MODEL:CP 408-CS/F)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 25000,
+        description: "FIRE ALARM SOUNDER FLASHER (CHLORIDE uk} MODEL:CP 408-CS/F) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H054",
+        name: "FLASHER (12 VOLTS)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 6500,
+        description: "FLASHER (12 VOLTS) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H055",
+        name: "FLASHER (24 VOLTS)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 6000,
+        description: "FLASHER (24 VOLTS) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H056",
+        name: "HARD DRIVE ( 1TB)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 45000,
+        description: "HARD DRIVE ( 1TB) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DVR 8 Channel.jpg",
+        featured: false
+    },
+        {
+        id: "H057",
+        name: "HEAT DETECTOR (CHLORIDE UK/AH-751-2)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 0,
+        description: "HEAT DETECTOR (CHLORIDE UK/AH-751-2) \u2014 Home Automation, Alarm & Surveillance equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H058",
+        name: "INDUSTRIAL SAFETY BELT(SAFETY HARNESS BELT)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 0,
+        description: "INDUSTRIAL SAFETY BELT(SAFETY HARNESS BELT) \u2014 Home Automation, Alarm & Surveillance equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/Overall.jpg",
+        featured: false
+    },
+        {
+        id: "H059",
+        name: "INFRARED (PIR-9822 PASSIVE INFRARED INTRUSION DETECTOR",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 20000,
+        description: "INFRARED (PIR-9822 PASSIVE INFRARED INTRUSION DETECTOR \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H060",
+        name: "MAGNETIC DOOR CONTACT ( 2 FOR A PAIR)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 7500,
+        description: "MAGNETIC DOOR CONTACT ( 2 FOR A PAIR) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: true
+    },
+        {
+        id: "H061",
+        name: "MANUAL CALL POINT (INFINITY PLUS) IP -04 Resetable",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 12000,
+        description: "MANUAL CALL POINT (INFINITY PLUS) IP -04 Resetable \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Beak Glass.jpg",
+        featured: false
+    },
+        {
+        id: "H062",
+        name: "NVR EIGHT CHANNELS (WINPOSSEE/POE)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 96000,
+        description: "NVR EIGHT CHANNELS (WINPOSSEE/POE) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DVR 8 Channel.jpg",
+        featured: false
+    },
+        {
+        id: "H063",
+        name: "PANEL ( VICA UK 6 ZONE [FAP])",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 200000,
+        description: "PANEL ( VICA UK 6 ZONE [FAP]) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Solar Panel 200W.jpg",
+        featured: false
+    },
+        {
+        id: "H064",
+        name: "PANEL (1 ZONE FAP CHLORIDE UK)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 120000,
+        description: "PANEL (1 ZONE FAP CHLORIDE UK) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Solar Panel 200W.jpg",
+        featured: false
+    },
+        {
+        id: "H065",
+        name: "PANEL (2 ZONE FAP CHLORIDE UK)",
         category: "Home Automation, Alarm & Surveillance",
         price: 125000,
-        description: "2 Zone fire alarm panel (Chloride UK).",
+        description: "PANEL (2 ZONE FAP CHLORIDE UK) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Solar Panel 200W.jpg",
+        featured: false
+    },
+        {
+        id: "H066",
+        name: "PANEL (2 ZONE FAP ZETA)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 0,
+        description: "PANEL (2 ZONE FAP ZETA) \u2014 Home Automation, Alarm & Surveillance equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/Solar Panel 200W.jpg",
+        featured: false
+    },
+        {
+        id: "H067",
+        name: "PANEL (CHLORIDE OPTICAL UK 4 ZONE [FAP])",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 0,
+        description: "PANEL (CHLORIDE OPTICAL UK 4 ZONE [FAP]) \u2014 Home Automation, Alarm & Surveillance equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/Solar Panel 200W.jpg",
+        featured: false
+    },
+        {
+        id: "H068",
+        name: "PANEL (C-TECH-FF380-2) 2 ZONE FAP",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 95000,
+        description: "PANEL (C-TECH-FF380-2) 2 ZONE FAP \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Solar Panel 200W.jpg",
+        featured: false
+    },
+        {
+        id: "H069",
+        name: "PANEL (MAXLOGIC 2 ZONE FIRE ALARM PANEL [FAP])",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 0,
+        description: "PANEL (MAXLOGIC 2 ZONE FIRE ALARM PANEL [FAP]) \u2014 Home Automation, Alarm & Surveillance equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/Solar Panel 200W.jpg",
+        featured: false
+    },
+        {
+        id: "H070",
+        name: "PANEL (TEXECOM/VARITAS 8 BUGLAR ALARM PANEL)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 0,
+        description: "PANEL (TEXECOM/VARITAS 8 BUGLAR ALARM PANEL) \u2014 Home Automation, Alarm & Surveillance equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/Solar Panel 200W.jpg",
+        featured: false
+    },
+        {
+        id: "H071",
+        name: "PANEL (VICA UK 1 ZONE [FAP])",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 0,
+        description: "PANEL (VICA UK 1 ZONE [FAP]) \u2014 Home Automation, Alarm & Surveillance equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/Solar Panel 200W.jpg",
+        featured: false
+    },
+        {
+        id: "H072",
+        name: "PANEL (VICA UK 2 ZONE [FAP])",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 95000,
+        description: "PANEL (VICA UK 2 ZONE [FAP]) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Solar Panel 200W.jpg",
         featured: true
+    },
+        {
+        id: "H073",
+        name: "PANEL (VICA UK 4 ZONE [FAP])",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 145000,
+        description: "PANEL (VICA UK 4 ZONE [FAP]) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Solar Panel 200W.jpg",
+        featured: false
+    },
+        {
+        id: "H074",
+        name: "PANIC BUTTON",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 5000,
+        description: "PANIC BUTTON \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H075",
+        name: "PSU EIGHT CHANNELS",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 26000,
+        description: "PSU EIGHT CHANNELS \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H076",
+        name: "PSU EIGHTEEN CHANNEL (20A /30A)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 32000,
+        description: "PSU EIGHTEEN CHANNEL (20A /30A) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H077",
+        name: "PSU FOUR CHANNELS",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 21000,
+        description: "PSU FOUR CHANNELS \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H078",
+        name: "SIREN (MINI MOTOR SIREN MS 190)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 0,
+        description: "SIREN (MINI MOTOR SIREN MS 190) \u2014 Home Automation, Alarm & Surveillance equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H079",
+        name: "SIREN (MOTOR SIREN (MS- 290 12VDC)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 30000,
+        description: "SIREN (MOTOR SIREN (MS- 290 12VDC) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H080",
+        name: "SIREN (MOTOR SIREN MS -290 220VAC/240VAC)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 0,
+        description: "SIREN (MOTOR SIREN MS -290 220VAC/240VAC) \u2014 Home Automation, Alarm & Surveillance equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H081",
+        name: "SIREN (MOTOR SIREN: MS 290 24VDC)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 25000,
+        description: "SIREN (MOTOR SIREN: MS 290 24VDC) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H082",
+        name: "SIREN KIDI",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 15000,
+        description: "SIREN KIDI \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H083",
+        name: "SIREN (ONE TONE SIREN HORN)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 15000,
+        description: "SIREN (ONE TONE SIREN HORN) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "H084",
+        name: "SIREN (ZETA CYLINDRICAL SHAPE)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 25000,
+        description: "SIREN (ZETA CYLINDRICAL SHAPE) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: true
+    },
+        {
+        id: "H085",
+        name: "SIREN (ZETA SQUARE SHAPE)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 20000,
+        description: "SIREN (ZETA SQUARE SHAPE) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H086",
+        name: "SIREN HORN SPEAKER",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 0,
+        description: "SIREN HORN SPEAKER \u2014 Home Automation, Alarm & Surveillance equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/DCP_50kg_Fire_Extinguisher.jpg",
+        featured: false
+    },
+        {
+        id: "H087",
+        name: "SIREN INFINITY PLUS 24V/IR -065",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 30000,
+        description: "SIREN INFINITY PLUS 24V/IR -065 \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H088",
+        name: "SIREN TWO (2) TONES 12V/30WATTS",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 20000,
+        description: "SIREN TWO (2) TONES 12V/30WATTS \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H089",
+        name: "SIREN TWO TONES 24V/DC 30WATTS",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 22000,
+        description: "SIREN TWO TONES 24V/DC 30WATTS \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H090",
+        name: "SIREN ZETA (CYLINDRICAL SHAPE)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 28000,
+        description: "SIREN ZETA (CYLINDRICAL SHAPE) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H091",
+        name: "SIX TONE SIREN (ES 200 ELECTRONIC SIREN)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 25000,
+        description: "SIX TONE SIREN (ES 200 ELECTRONIC SIREN) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H092",
+        name: "SMOKE ALARM (STAND ALONE [CEMAT/LX98B])",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 12000,
+        description: "SMOKE ALARM (STAND ALONE [CEMAT/LX98B]) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H093",
+        name: "SMOKE ALARM (CSD-218 CHLORIDE UK)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 13000,
+        description: "SMOKE ALARM (CSD-218 CHLORIDE UK) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H094",
+        name: "SMOKE ALARM (FSD-418 CHLORIDE UK)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 11000,
+        description: "SMOKE ALARM (FSD-418 CHLORIDE UK) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H095",
+        name: "SMOKE ALARM (STAND ALONE [CONFIDENCE UK/AH/8ND500])",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 6000,
+        description: "SMOKE ALARM (STAND ALONE [CONFIDENCE UK/AH/8ND500]) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H096",
+        name: "SMOKE ALARM (STAND ALONE [GENERAL PURPOSE])",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 6000,
+        description: "SMOKE ALARM (STAND ALONE [GENERAL PURPOSE]) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: true
+    },
+        {
+        id: "H097",
+        name: "SMOKE ALARM (STAND ALONE [JABO/JB-8O3])",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 0,
+        description: "SMOKE ALARM (STAND ALONE [JABO/JB-8O3]) \u2014 Home Automation, Alarm & Surveillance equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H098",
+        name: "SMOKE ALARM (STAND ALONE [SUPER PROTECH/85DB])",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 0,
+        description: "SMOKE ALARM (STAND ALONE [SUPER PROTECH/85DB]) \u2014 Home Automation, Alarm & Surveillance equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H099",
+        name: "SMOKE ALARM (VICA UK) STAND ALONE",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 0,
+        description: "SMOKE ALARM (VICA UK) STAND ALONE \u2014 Home Automation, Alarm & Surveillance equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H100",
+        name: "SMOKE ALARM CHLORIDE UK (CSD-218)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 9000,
+        description: "SMOKE ALARM CHLORIDE UK (CSD-218) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H101",
+        name: "SMOKE ALARM(STAND ALONE[COMOT])",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 0,
+        description: "SMOKE ALARM(STAND ALONE[COMOT]) \u2014 Home Automation, Alarm & Surveillance equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H102",
+        name: "SMOKE DETECTOR (NUMENS/SNC300-52)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 0,
+        description: "SMOKE DETECTOR (NUMENS/SNC300-52) \u2014 Home Automation, Alarm & Surveillance equipment. Price on request. Contact M-Tek for current price and availability.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H103",
+        name: "SMOKE DETECTOR ( GENT NON-ADDRESSABLE)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 20000,
+        description: "SMOKE DETECTOR ( GENT NON-ADDRESSABLE) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H104",
+        name: "SMOKE DETECTOR (CHLORIDE UK [AH-388-2])",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 15000,
+        description: "SMOKE DETECTOR (CHLORIDE UK [AH-388-2]) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H105",
+        name: "SMOKE DETECTOR (ZETA P/ PART NO:80-022)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 18000,
+        description: "SMOKE DETECTOR (ZETA P/ PART NO:80-022) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H106",
+        name: "SMOKE DETECTOR (ZETA/ PART NO: 80-200)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 20000,
+        description: "SMOKE DETECTOR (ZETA/ PART NO: 80-200) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H107",
+        name: "SMOKE DETECTOR CHLORIDE MODEL: CSD-588-2",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 10000,
+        description: "SMOKE DETECTOR CHLORIDE MODEL: CSD-588-2 \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H108",
+        name: "SOUND LIGHT (FIRE SIREN ALARM)",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 40000,
+        description: "SOUND LIGHT (FIRE SIREN ALARM) \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: true
+    },
+        {
+        id: "H109",
+        name: "SOUNDER BEACON (CHLORIDE UK) [AH-318-SF]",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 30000,
+        description: "SOUNDER BEACON (CHLORIDE UK) [AH-318-SF] \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/solar bulb.jpg",
+        featured: false
+    },
+        {
+        id: "H110",
+        name: "SOUNDER BEACON (WR -06BS VICA UK ) 24VDC",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 30000,
+        description: "SOUNDER BEACON (WR -06BS VICA UK ) 24VDC \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/solar bulb.jpg",
+        featured: false
+    },
+        {
+        id: "H111",
+        name: "TABLE PHONE (HUAWEI)F316",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 18000,
+        description: "TABLE PHONE (HUAWEI)F316 \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
+    },
+        {
+        id: "H112",
+        name: "VIDEO BALLON",
+        category: "Home Automation, Alarm & Surveillance",
+        price: 4000,
+        description: "VIDEO BALLON \u2014 Home Automation, Alarm & Surveillance equipment from M-Tek Fire & Safety Ltd.",
+        image: "assets/products/Zeta Smoke Detector.jpg",
+        featured: false
     },
 ];
 
