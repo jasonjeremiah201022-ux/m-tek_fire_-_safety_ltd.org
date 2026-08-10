@@ -247,4 +247,28 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll("[data-year]").forEach((el) => {
     el.textContent = new Date().getFullYear();
   });
+
+  /* ---------------------------------------------------------------
+     10. Legal TOC scroll spy
+  --------------------------------------------------------------- */
+  const legalSections = document.querySelectorAll(".legal-section[id]");
+  const legalTocLinks = document.querySelectorAll(".legal-toc-list a[href^='#']");
+  if (legalSections.length && legalTocLinks.length) {
+    const onLegalScroll = () => {
+      let currentId = "";
+      const pos = window.scrollY + 160;
+      legalSections.forEach((section) => {
+        if (pos >= section.offsetTop) currentId = section.id;
+      });
+      if (!currentId && legalSections[0]) {
+        currentId = legalSections[0].id;
+      }
+      legalTocLinks.forEach((link) => {
+        const href = link.getAttribute("href");
+        link.classList.toggle("active", href === `#${currentId}`);
+      });
+    };
+    window.addEventListener("scroll", onLegalScroll, { passive: true });
+    onLegalScroll();
+  }
 });
