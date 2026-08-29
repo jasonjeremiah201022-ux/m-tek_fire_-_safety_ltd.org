@@ -185,6 +185,7 @@ Invoice — and export unalterable PDFs for WhatsApp/email dispatch.
 | Blueprint item | Reconciliation |
 |---|---|
 | Digital signing | **Signature Passcode gate (§6.1) runs before PDF generation**; stamp `✓ Digitally signed by <name> + signature image` on every page footer |
+| Ad-hoc documents | **Admin only** (decided Aug 2026). Sales staff issue documents only from recorded transactions (sales, invoice payments, MILS jobs); Admin can additionally write up freehand docs, as with the paper books |
 | Local DB "isar or sqflite" | **Drift (SQLite)** — already chosen (§5); type-safe, reactive, **web/PWA-compatible** (Isar's web support is weak) — one DB serves history + inventory + sync queue |
 | Serial formats | Continue `MTK-REC-####` / `MTK-INV-####` / `MTK-MILS-####`; IRN + LPO are additional stored fields |
 | Doc ↔ business data | Documents generated **from** app records (sale, invoice payment, MILS log) pre-fill automatically; **ad-hoc documents** also allowed (see open questions) |
@@ -197,6 +198,7 @@ Invoice — and export unalterable PDFs for WhatsApp/email dispatch.
 ### 12.3 Execution order
 
 1. **Phase A (next)** — Generator UI + PDF painters + signature gate + share/dispatch (Parts 1–2 + §6.1).
+   **Gated on owner's photos of the 3 physical forms** (decided Aug 2026) — build once, zero rework.
 2. **Phase B** — Drift history ledger, serial service, validation & fallbacks (Part 3) — same Drift layer as TXT import.
 3. **Phase C** — Supabase doc-ledger sync, customer auto-complete, audit log (Part 4 = §5 M3).
 4. **Phase D** — Analytics, QA suite, template versioning, archival (Part 5).
