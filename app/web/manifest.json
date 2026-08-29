@@ -1,0 +1,30 @@
+{
+  "name": "M-Tek Inventory",
+  "short_name": "M-Tek",
+  "description": "Inventory, sales, invoices, receipts, MILS maintenance and insights for M-Tek Fire & Safety Ltd.",
+  "start_url": ".",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0A1220",
+  "theme_color": "#0A1220",
+  "categories": ["business", "productivity"],
+  "icons": [
+    {
+      "src": "icons/logo-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/logo-256.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

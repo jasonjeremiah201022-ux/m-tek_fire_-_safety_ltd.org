@@ -1,0 +1,76 @@
+name: Build & Deploy App PWA
+
+# Builds the Flutter web (PWA) build of /app on every push that touches it.
+# The "deploy" job assembles website + PWA (under /app/) and publishes both
+# to GitHub Pages — run it manually (workflow_dispatch) when ready to ship.
+
+on:
+  push:
+    branches: [main]
+    paths: ["app/**", ".github/workflows/build-app.yml"]
+  workflow_dispatch:
+    inputs:
+      deploy_pages:
+        description: "Deploy website + PWA to GitHub Pages"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Build PWA (base href /app/)
+        working-directory: app
+        run: |
+          flutter pub get
+          flutter build web --release --base-href=/app/
+
+      - name: Stage site + app for Pages
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_pages }}
+        run: |
+          mkdir -p staging/app
+          # static website (repo root), minus non-site folders
+          rsync -a --exclude '.git' --exclude 'app' --exclude 'backend' \
+                --exclude 'docs' --exclude 'seed' --exclude 'preview' \
+                --exclude '.github' ./ staging/
+          # PWA under /app/
+          cp -r app/build/web/* staging/app/
+          touch staging/.nojekyll
+
+      - name: Upload PWA artifact (every build)
+        uses: actions/upload-artifact@v4
+        with:
+          name: mtek-pwa
+          path: app/build/web
+
+      - name: Upload Pages artifact
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_pages }}
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: staging
+
+  deploy:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.deploy_pages }}
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!--
+    PWA shell for the M-Tek Inventory app.
+    `flutter build web --base-href=/app/` rewrites the base path so the
+    app lives at m-tekfireandsafety.org/app (see .github/workflows).
+  -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="M-Tek Fire & Safety Ltd — inventory, sales, invoices, receipts, MILS maintenance and insights.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="M-Tek Inventory">
+  <meta name="theme-color" content="#0a1220">
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icons/favicon-32.png">
+  <link rel="apple-touch-icon" href="icons/logo-256.png">
+
+  <title>M-Tek Inventory</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <style>
+    body { background:#0a1220; }
+    .boot { position:fixed; inset:0; display:flex; flex-direction:column; gap:18px;
+            align-items:center; justify-content:center; color:#fff;
+            font-family: system-ui, sans-serif; }
+    .boot .dot { width:46px; height:46px; border-radius:12px; background:#c8102e;
+                 display:flex; align-items:center; justify-content:center;
+                 font-weight:800; font-size:20px; }
+  </style>
+</head>
+<body>
+  <div class="boot"><div class="dot">M</div><span>Loading M-Tek Inventory…</span></div>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

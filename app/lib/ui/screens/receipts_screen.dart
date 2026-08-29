@@ -1,0 +1,163 @@
+import 'package:flutter/material.dart';
+
+import '../../core/format.dart' as fmt;
+import '../../core/theme.dart';
+import '../../data/models.dart';
+import '../../data/sample_store.dart';
+import '../widgets.dart';
+
+/// RECEIPTS — proof of payment, auto-numbered MTK-REC-####.
+/// M4 renders these as branded PDFs (print + WhatsApp/email share).
+class ReceiptsScreen extends StatelessWidget {
+  const ReceiptsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final store = SampleStore.instance;
+    final receipts = store.receipts.reversed.toList();
+
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const PageHeader(
+            title: 'Receipts',
+            subtitle: 'Auto-issued when money is received',
+          ),
+          const SizedBox(height: 14),
+          Expanded(
+            child: Card(
+              clipBehavior: Clip.antiAlias,
+              child: receipts.isEmpty
+                  ? const EmptyHint('No receipts yet — complete a sale first')
+                  : ListView.separated(
+                      itemCount: receipts.length,
+                      separatorBuilder: (_, __) => const Divider(height: 1, color: Mtek.gray100),
+                      itemBuilder: (context, i) {
+                        final r = receipts[i];
+                        return ListTile(
+                          leading: const CircleAvatar(
+                            backgroundColor: Mtek.successTint,
+                            child: Icon(Icons.receipt_long, size: 18, color: Mtek.success),
+                          ),
+                          title: Text('${r.number} — ${r.customer.name}',
+                              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                          subtitle: Text(
+                              '${fmt.fmtDate(r.date)} · ${MethodIcon.label(r.method)} · for ${r.forDoc} · by ${r.issuedBy}'),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              AmountText(r.amount),
+                              const SizedBox(width: 12),
+                              IconButton(
+                                tooltip: 'Preview PDF (M4)',
+                                icon: const Icon(Icons.picture_as_pdf_outlined, color: Mtek.brand600),
+                                onPressed: () => _preview(context, r),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _preview(BuildContext context, Receipt r) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => Dialog(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 420),
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(color: Mtek.brand600, borderRadius: BorderRadius.circular(10)),
+                    child: const Icon(Icons.local_fire_department, color: Colors.white),
+                  ),
+                  const SizedBox(width: 12),
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('M-TEK FIRE & SAFETY LTD', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                      Text('Kaduna, Nigeria · RC 1082534', style: TextStyle(fontSize: 11, color: Mtek.gray500)),
+                    ],
+                  ),
+                ],
+              ),
+              const Divider(height: 28),
+              const Text('OFFICIAL RECEIPT', style: TextStyle(letterSpacing: 2, fontSize: 12, fontWeight: FontWeight.w700, color: Mtek.brand600)),
+              const SizedBox(height: 4),
+              Text(r.number, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 20)),
+              const SizedBox(height: 16),
+              _row('Received from', r.customer.name),
+              _row('Date', fmt.fmtDate(r.date)),
+              _row('Being payment for', r.forDoc),
+              _row('Method', MethodIcon.label(r.method)),
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(color: Mtek.brandTint, borderRadius: BorderRadius.circular(12)),
+                child: Text('TOTAL: ${fmt.naira(r.amount)}',
+                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: Mtek.brand700)),
+              ),
+              const SizedBox(height: 16),
+              const Text('Issued by: Admin — thank you for your business.',
+                  style: TextStyle(fontSize: 11, color: Mtek.gray500)),
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {},
+                      icon: const Icon(Icons.chat_outlined, size: 18),
+                      label: const Text('WhatsApp'),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {},
+                      icon: const Icon(Icons.mail_outline, size: 18),
+                      label: const Text('Email'),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: FilledButton.icon(
+                      onPressed: () {},
+                      icon: const Icon(Icons.print_outlined, size: 18),
+                      label: const Text('Print'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _row(String k, String v) => Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: Row(
+          children: [
+            SizedBox(width: 140, child: Text(k, style: const TextStyle(color: Mtek.gray500, fontSize: 12))),
+            Expanded(child: Text(v, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13))),
+          ],
+        ),
+      );
+}
