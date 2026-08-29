@@ -120,6 +120,9 @@ class AuthStore extends ChangeNotifier {
     current = null;
     notifyListeners();
   }
+
+  /// Public notification for external listeners (boot/data-load events).
+  void ping() => notifyListeners();
 }
 
 extension _FirstOrNull<T> on Iterable<T> {

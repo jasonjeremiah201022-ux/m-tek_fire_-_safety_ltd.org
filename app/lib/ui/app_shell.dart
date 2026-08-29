@@ -10,6 +10,7 @@ import 'screens/mils_screen.dart';
 import 'screens/receipts_screen.dart';
 import 'screens/sales_screen.dart';
 import 'screens/stock_screen.dart';
+import 'screens/settings_screen.dart';
 import 'screens/summary_screen.dart';
 import 'screens/transactions_screen.dart';
 import 'watermark_background.dart';
@@ -33,9 +34,25 @@ const _stock = Destination('Stock', Icons.inventory_2_outlined, Icons.inventory_
 const _summary = Destination('Summary', Icons.summarize_outlined, Icons.summarize, SummaryScreen());
 const _docs = Destination('Documents', Icons.draw_outlined, Icons.draw, GeneratorScreen());
 
+const _settings = Destination('Settings', Icons.settings_outlined, Icons.settings, SettingsScreen());
+
+/// Admin sees everything; Sales never sees revenue/profit/settings (SPEC §6).
+List<Destination> destinationsFor(String? role) {
+  if (role == 'admin') {
+    return const [
+      _insights, _transactions, _customers, _receipts, _invoices,
+      _mils, _sales, _stock, _summary, _docs, _settings,
+    ];
+  }
+  return const [
+    _sales, _stock, _customers, _receipts, _invoices, _docs,
+  ];
+}
+
+/// Kept for backwards compatibility (admin view).
 const destinations = <Destination>[
   _insights, _transactions, _customers, _receipts, _invoices,
-  _mils, _sales, _stock, _summary, _docs,
+  _mils, _sales, _stock, _summary, _docs, _settings,
 ];
 
 /// Primary destinations for the phone bottom bar; everything else lives
@@ -58,13 +75,17 @@ class _AppShellState extends State<AppShell> {
   int _index = 0;
   final _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  List<Destination> get _visible => destinationsFor(AuthStore.instance.current?.role);
+
   @override
   Widget build(BuildContext context) {
     final w = MediaQuery.of(context).size.width;
     final extended = w >= 1280;
     final useRail = w >= 1000;
     final useBottomBar = w < 640;
-    final dest = destinations[_index];
+    final visible = _visible;
+    if (_index >= visible.length) _index = 0;
+    final dest = visible[_index];
 
     final appBar = AppBar(
       title: Row(
@@ -83,6 +104,13 @@ class _AppShellState extends State<AppShell> {
         const Padding(
           padding: EdgeInsets.only(right: 8),
           child: Center(child: Text('Admin', style: TextStyle(fontSize: 13))),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: Center(
+            child: Text(AuthStore.instance.current?.role.toUpperCase() ?? '',
+                style: const TextStyle(fontSize: 11, letterSpacing: 1)),
+          ),
         ),
         IconButton(
           tooltip: 'Sign out',
@@ -140,7 +168,7 @@ class _AppShellState extends State<AppShell> {
         ),
       ),
       destinations: [
-        for (final d in destinations)
+        for (final d in _visible)
           NavigationRailDestination(
             icon: Icon(d.icon),
             selectedIcon: Icon(d.selectedIcon),
@@ -152,24 +180,27 @@ class _AppShellState extends State<AppShell> {
 
   Widget _bottomBar() {
     final moreSelected = !_bottomBarIndexes.contains(_index);
+    final visibleBottom = AuthStore.instance.current?.role == 'admin'
+        ? _bottomBarIndexes.where((i) => i < _visible.length).toList()
+        : [for (var i = 0; i < _visible.length && i < 4; i++) i];
     return NavigationBar(
       height: 64,
-      selectedIndex: _bottomBarIndexes.indexOf(_index) == -1
-          ? _bottomBarIndexes.length
-          : _bottomBarIndexes.indexOf(_index),
+      selectedIndex: visibleBottom.indexOf(_index) == -1
+          ? visibleBottom.length
+          : visibleBottom.indexOf(_index),
       onDestinationSelected: (i) {
-        if (i < _bottomBarIndexes.length) {
-          setState(() => _index = _bottomBarIndexes[i]);
+        if (i < visibleBottom.length) {
+          setState(() => _index = visibleBottom[i]);
         } else {
           _scaffoldKey.currentState?.openDrawer();
         }
       },
       destinations: [
-        for (final idx in _bottomBarIndexes)
+        for (final idx in visibleBottom)
           NavigationDestination(
-            icon: Icon(destinations[idx].icon),
-            selectedIcon: Icon(destinations[idx].selectedIcon),
-            label: destinations[idx].label,
+            icon: Icon(_visible[idx].icon),
+            selectedIcon: Icon(_visible[idx].selectedIcon),
+            label: _visible[idx].label,
           ),
         const NavigationDestination(
           icon: Icon(Icons.menu),
@@ -193,7 +224,7 @@ class _AppShellState extends State<AppShell> {
           child: Text('M-Tek Fire & Safety',
               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: Colors.white)),
         ),
-        for (final d in destinations)
+        for (final d in _visible)
           NavigationDrawerDestination(icon: Icon(d.icon), label: Text(d.label)),
       ],
     );

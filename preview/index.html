@@ -33,12 +33,12 @@
 
     <div class="main">
       <div class="topbar">
-        <button class="hamb" onclick="openDrawer()">☰</button>
+        <button class="hamb" onclick="openDrawer()" aria-label="Menu"><svg class="ic" style="width:20px;height:20px"><use href="/icons.svg#menu"/></svg></button>
         <span class="pagetitle" id="pagetitle">Insights</span>
         <span class="spacer"></span>
-        <span class="bell">🔔</span>
+        <span class="bell"><svg class="ic" style="width:17px;height:17px"><use href="/icons.svg#bell"/></svg></span>
         <span class="userchip" id="userchip"><span class="uname" id="uname"></span><span class="urole" id="urole"></span></span>
-        <button class="logoutbtn" id="logoutbtn" onclick="signOut()" title="Sign out">⏻</button>
+        <button class="logoutbtn" id="logoutbtn" onclick="signOut()" title="Sign out"><svg class="ic" style="width:17px;height:17px"><use href="/icons.svg#close"/></svg></button>
       </div>
       <div class="content" id="app"></div>
     </div>

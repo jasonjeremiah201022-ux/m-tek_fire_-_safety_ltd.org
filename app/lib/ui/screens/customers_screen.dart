@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/format.dart' as fmt;
 import '../../core/theme.dart';
 import '../../data/models.dart';
-import '../../data/sample_store.dart';
+import '../../data/store.dart';
 import '../widgets.dart';
 
 /// CUSTOMERS — individuals & corporates, contacts, credit balance,
@@ -20,7 +20,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final store = SampleStore.instance;
+    final store = AppStore.instance;
     final list = store.customers
         .where((c) => c.name.toLowerCase().contains(_query.toLowerCase()))
         .toList();
@@ -102,15 +102,15 @@ class _CustomersScreenState extends State<CustomersScreen> {
           FilledButton(
             onPressed: () {
               if (name.text.trim().isNotEmpty) {
-                SampleStore.instance.customers.add(Customer(
-                  id: 'C${SampleStore.instance.customers.length + 1}',
+                AppStore.instance.customers.add(Customer(
+                  id: 'C${AppStore.instance.customers.length + 1}',
                   name: name.text.trim(),
                   isCorporate: name.text.toLowerCase().contains('ltd') || name.text.toLowerCase().contains('depot'),
                   phone: phone.text.trim(),
                   email: '',
                   address: '',
                 ));
-                SampleStore.instance.notifyListeners();
+                AppStore.instance.notifyListeners();
               }
               Navigator.pop(context);
             },
@@ -122,7 +122,7 @@ class _CustomersScreenState extends State<CustomersScreen> {
   }
 
   void _showDetail(BuildContext context, Customer c) {
-    final store = SampleStore.instance;
+    final store = AppStore.instance;
     final history = store.sales.where((s) => s.customer.id == c.id).toList();
     showModalBottomSheet<void>(
       context: context,

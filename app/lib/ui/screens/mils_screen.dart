@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/format.dart' as fmt;
 import '../../core/theme.dart';
 import '../../data/models.dart';
-import '../../data/sample_store.dart';
+import '../../data/store.dart';
 import '../widgets.dart';
 
 /// MILS — Maintenance Information Log Sheet.
@@ -21,7 +21,7 @@ class _MilsScreenState extends State<MilsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final store = SampleStore.instance;
+    final store = AppStore.instance;
     final now = DateTime.now();
     final overdueCount = store.milsLogs.where((l) => l.isOverdue(now)).length;
 

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/format.dart' as fmt;
 import '../../core/theme.dart';
 import '../../data/models.dart';
-import '../../data/sample_store.dart';
+import '../../data/store.dart';
 import '../signature_dialog.dart';
 import '../widgets.dart';
 
@@ -14,7 +14,7 @@ class InvoicesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final store = SampleStore.instance;
+    final store = AppStore.instance;
     final invoices = store.invoices.reversed.toList();
 
     return Padding(
@@ -128,7 +128,7 @@ class InvoicesScreen extends StatelessWidget {
       }
       return;
     }
-    SampleStore.instance.payInvoice(inv, inv.balance, signedBy: signer.name);
+    AppStore.instance.payInvoice(inv, inv.balance, signedBy: signer.name);
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(
             'Payment recorded — receipt issued & signed by ${signer.name}, stock untouched.')));

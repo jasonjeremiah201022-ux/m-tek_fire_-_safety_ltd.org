@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/format.dart' as fmt;
 import '../../core/theme.dart';
-import '../../data/sample_store.dart';
+import '../../data/store.dart';
 import '../widgets.dart';
 
 /// SUMMARY — period report: totals, profit estimate, top products,
@@ -19,7 +19,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final store = SampleStore.instance;
+    final store = AppStore.instance;
     final now = DateTime.now();
     final (from, label) = switch (_period) {
       'today' => (DateTime(now.year, now.month, now.day), 'Today'),

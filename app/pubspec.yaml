@@ -33,3 +33,4 @@ flutter:
     - assets/branding/logo.png
     - assets/fonts/DejaVuSans.ttf
     - assets/fonts/DejaVuSans-Bold.ttf
+    - assets/seed/products_seed.txt

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/format.dart' as fmt;
 import '../../core/theme.dart';
 import '../../data/models.dart';
-import '../../data/sample_store.dart';
+import '../../data/store.dart';
 import '../widgets.dart';
 
 /// STOCK — quantities, prices, low-stock alerts, adjustments (audit trail).
@@ -21,7 +21,7 @@ class _StockScreenState extends State<StockScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final store = SampleStore.instance;
+    final store = AppStore.instance;
     final lowCount = store.products.where((p) => p.isLow).length;
 
     final list = store.products.where((p) {
@@ -154,7 +154,7 @@ class _StockScreenState extends State<StockScreen> {
               onPressed: () {
                 final delta = int.tryParse(qtyCtrl.text) ?? 0;
                 if (delta != 0) {
-                  SampleStore.instance.adjustStock(p, delta, reason, 'Manual adjustment');
+                  AppStore.instance.adjustStock(p, delta, reason, 'Manual adjustment');
                   ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Stock adjusted (${delta >= 0 ? '+' : ''}$delta) — logged in audit trail.')));
                 }

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/format.dart' as fmt;
 import '../../core/theme.dart';
 import '../../data/models.dart';
-import '../../data/sample_store.dart';
+import '../../data/store.dart';
 import '../signature_dialog.dart';
 import '../widgets.dart';
 
@@ -23,7 +23,7 @@ class _SalesScreenState extends State<SalesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final store = SampleStore.instance;
+    final store = AppStore.instance;
     final sellable = store.products.where((p) => !p.isOutOfStock || p.isService);
     final subtotal = _cart.values.fold(0, (s, i) => s + i.total);
 
@@ -99,7 +99,7 @@ class _SalesScreenState extends State<SalesScreen> {
     );
   }
 
-  Widget _cartPanel(SampleStore store, int subtotal) {
+  Widget _cartPanel(AppStore store, int subtotal) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(18),
@@ -217,7 +217,7 @@ class _SalesScreenState extends State<SalesScreen> {
       }
       return;
     }
-    final store = SampleStore.instance;
+    final store = AppStore.instance;
     store.completeSale(
       customer: _customer!,
       items: _cart.values.toList(),

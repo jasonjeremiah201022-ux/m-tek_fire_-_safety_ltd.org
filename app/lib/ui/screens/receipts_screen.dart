@@ -8,7 +8,7 @@ import '../../core/format.dart' as fmt;
 import '../../core/theme.dart';
 import '../../data/auth_store.dart';
 import '../../data/models.dart';
-import '../../data/sample_store.dart';
+import '../../data/store.dart';
 import '../widgets.dart';
 
 Uint8List? _signatureImage(String signerName) {
@@ -33,7 +33,7 @@ class ReceiptsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final store = SampleStore.instance;
+    final store = AppStore.instance;
     final receipts = store.receipts.reversed.toList();
 
     return Padding(

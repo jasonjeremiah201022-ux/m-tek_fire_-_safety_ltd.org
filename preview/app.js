@@ -4,99 +4,44 @@
 // ---------- sample data (identical numbers to the Flutter store) ----------
 const CATS = { Fire: 'Fire', Safety: 'Safety', Security: 'Security', Solar: 'Solar', Automation: 'Automation & Surveillance' };
 const CAT_COLOR = { Fire: '#c8102e', Safety: '#f0a92e', Security: '#1a2a4a', Solar: '#15803d', Automation: '#ff5b66' };
-const METHOD_META = { cash: ['💵', 'Cash'], transfer: ['🏦', 'Transfer'], pos: ['🏧', 'POS'], credit: ['🧾', 'Credit'] };
+const METHOD_META = { cash: ['cash', 'Cash'], transfer: ['bank', 'Transfer'], pos: ['pos', 'POS'], credit: ['credit', 'Credit'] };
+const methodIc = m => icSvg((METHOD_META[m] || [])[0] || 'cash', 15);
 
-const products = [
-  { id: 'F002', name: 'BOX FOR 6KG FIRE EXTINGUISHER', cat: 'Fire', cost: 38000, price: 55000, qty: 24, reorder: 10, unit: 'pcs' },
-  { id: 'F003', name: 'BOX FOR 9KG FIRE EXTINGUISHER', cat: 'Fire', cost: 45000, price: 65000, qty: 12, reorder: 8, unit: 'pcs' },
-  { id: 'F008', name: 'BREATHING APPARATUS', cat: 'Fire', cost: 260000, price: 350000, qty: 4, reorder: 2, unit: 'pcs' },
-  { id: 'S003', name: 'BODY HARNESS', cat: 'Safety', cost: 34000, price: 50000, qty: 18, reorder: 6, unit: 'pcs' },
-  { id: 'S005', name: 'CAUTION CONE (75CM)', cat: 'Safety', cost: 10000, price: 16000, qty: 40, reorder: 15, unit: 'pcs' },
-  { id: 'S008', name: 'COMPLETE OVERALL', cat: 'Safety', cost: 15500, price: 23000, qty: 9, reorder: 12, unit: 'pcs' },
-  { id: 'Q002', name: 'WALK-THROUGH METAL DETECTOR GATE', cat: 'Security', cost: 500000, price: 680000, qty: 2, reorder: 1, unit: 'unit' },
-  { id: 'L011', name: '30AHS CHARGE CONTROLLER', cat: 'Solar', cost: 13500, price: 20000, qty: 14, reorder: 5, unit: 'pcs' },
-  { id: 'L012', name: '30 WATTS LED SOLAR LIGHT', cat: 'Solar', cost: 17000, price: 25000, qty: 3, reorder: 8, unit: 'pcs' },
-  { id: 'H001', name: 'BAOFENG TWO WAY RADIO BF-7775', cat: 'Automation', cost: 12000, price: 18000, qty: 30, reorder: 10, unit: 'pcs' },
-  { id: 'H006', name: 'BELL (24 VDC CHLORIDE UK)', cat: 'Automation', cost: 9800, price: 15000, qty: 11, reorder: 5, unit: 'pcs' },
-  { id: 'SRV-1', name: 'DCP 6KG REFILL SERVICE', cat: 'Fire', cost: 3000, price: 7500, qty: 0, reorder: 0, unit: 'job', service: true },
-];
-const P = Object.fromEntries(products.map(p => [p.id, p]));
 
-const customers = [
-  { id: 'C001', name: 'Nigerian Breweries — Kaduna Depot', corp: true, phone: '+234 803 415 2288', balance: 360000 },
-  { id: 'C002', name: 'Kaduna Refining & Petrochemical Co.', corp: true, phone: '+234 803 552 0117', balance: 300000 },
-  { id: 'C003', name: 'Alhaji Musa Ibrahim', corp: false, phone: '+234 806 113 4478', balance: 0 },
-  { id: 'C004', name: 'Engr. Chuka Okafor', corp: false, phone: '+234 802 930 5561', balance: 0 },
-  { id: 'C005', name: 'Mrs. Grace Adeyemi', corp: false, phone: '+234 805 780 2234', balance: 0 },
-  { id: 'C006', name: 'Barr. Sani Bello', corp: false, phone: '+234 807 442 8890', balance: 396000 },
-];
-const C = Object.fromEntries(customers.map(c => [c.id, c]));
 
-const sales = [
-  { id: 'S001', day: 2, hour: 10, cust: 'C003', method: 'cash', items: [['F002', 2], ['SRV-1', 1]] },
-  { id: 'S002', day: 5, hour: 11, cust: 'C001', method: 'transfer', items: [['S003', 4]] },
-  { id: 'S003', day: 8, hour: 14, cust: 'C005', method: 'pos', items: [['L012', 1], ['L011', 1]] },
-  { id: 'S005', day: 14, hour: 10, cust: 'C004', method: 'transfer', items: [['Q002', 1]] },
-  { id: 'S006', day: 18, hour: 12, cust: 'C003', method: 'cash', items: [['S005', 6]] },
-  { id: 'S007', day: 22, hour: 15, cust: 'C005', method: 'transfer', items: [['H001', 2], ['H006', 1]] },
-  { id: 'S008', day: 26, hour: 11, cust: 'C001', method: 'pos', items: [['S005', 10], ['S003', 5]] },
-  { id: 'S009', day: 28, hour: 13, cust: 'C004', method: 'cash', items: [['L011', 2], ['L012', 1]] },
-  { id: 'S010', day: 29, hour: 10, cust: 'C003', method: 'transfer', items: [['F003', 1], ['F002', 2]] },
-  { id: 'S011', day: 29, hour: 11, cust: 'C005', method: 'cash', items: [['H001', 3]] },
-  { id: 'S012', day: 29, hour: 13, cust: 'C002', method: 'cash', items: [['SRV-1', 12]] },
-];
 
-const invoices = [
-  { no: 'MTK-INV-0001', issued: 11, due: 25, cust: 'C002', items: [['F008', 3]], paid: 1050000 },
-  { no: 'MTK-INV-0002', issued: 14, due: 28, cust: 'C001', items: [['Q002', 2]], paid: 1000000 },
-  { no: 'MTK-INV-0003', issued: 19, due: '2 Sep 2026', cust: 'C002', items: [['SRV-1', 40]], paid: 0 },
-  { no: 'MTK-INV-0004', issued: 5, due: 19, cust: 'C006', items: [['F008', 1], ['S008', 2]], paid: 0 },
-];
 
 // chronological payments (sale payments + invoice payments + refunds)
-const txns = [
-  { d: '2 Aug, 10:20', type: 'sale', amt: 117500, m: 'cash', ref: 'S001' },
-  { d: '5 Aug, 11:05', type: 'sale', amt: 200000, m: 'transfer', ref: 'S002' },
-  { d: '8 Aug, 14:12', type: 'sale', amt: 45000, m: 'pos', ref: 'S003' },
-  { d: '14 Aug, 10:44', type: 'sale', amt: 680000, m: 'transfer', ref: 'S005' },
-  { d: '18 Aug, 12:30', type: 'sale', amt: 96000, m: 'cash', ref: 'S006' },
-  { d: '20 Aug, 09:15', type: 'invoice', amt: 1050000, m: 'transfer', ref: 'MTK-INV-0001' },
-  { d: '22 Aug, 15:02', type: 'sale', amt: 51000, m: 'transfer', ref: 'S007' },
-  { d: '24 Aug, 10:08', type: 'invoice', amt: 1000000, m: 'transfer', ref: 'MTK-INV-0002' },
-  { d: '24 Aug, 16:40', type: 'refund', amt: -32000, m: 'cash', ref: 'Return — S006 (2× caution cone)' },
-  { d: '26 Aug, 11:26', type: 'sale', amt: 410000, m: 'pos', ref: 'S008' },
-  { d: '28 Aug, 13:51', type: 'sale', amt: 65000, m: 'cash', ref: 'S009' },
-  { d: '29 Aug, 10:14', type: 'sale', amt: 175000, m: 'transfer', ref: 'S010' },
-  { d: '29 Aug, 11:37', type: 'sale', amt: 54000, m: 'cash', ref: 'S011' },
-  { d: '29 Aug, 13:09', type: 'sale', amt: 90000, m: 'cash', ref: 'S012' },
-];
-txns.forEach((t, i) => (t.id = 'TXN-' + String(i + 1).padStart(4, '0')));
 
 // receipts mirror txns 1:1 (same order)
-const receipts = txns.map((t, i) => ({
-  no: 'MTK-REC-' + String(i + 1).padStart(4, '0'),
-  d: t.d, amt: Math.abs(t.amt), m: t.m, signed: 'Admin',
-  cust: t.ref.startsWith('MTK-INV')
-    ? C[invoices.find(v => v.no === t.ref).cust].name
-    : (t.type === 'refund' ? C.C003.name : C[sales.find(s => s.id === t.ref).cust].name),
-  for: t.ref, by: 'Admin',
-}));
 
-const mils = [
-  { id: 'MTK-MILS-0001', date: '6 Aug', equip: 'DCP 6kg Fire Extinguisher ×24', serial: 'DCP6-2026-118', client: 'Nigerian Breweries — Kaduna Depot', loc: 'Depot yard, stations 1–12', action: 'REFILL', tech: 'Ibrahim Kabeer', next: '6 Feb 2027', overdue: false, findings: '12 units at zero pressure, valves replaced' },
-  { id: 'MTK-MILS-0002', date: '12 Aug', equip: 'Maxlogic 2-Zone Fire Alarm Panel', serial: 'FAP-ML2-0091', client: 'Kaduna Refining & Petrochemical Co.', loc: 'Control room, block B', action: 'INSPECTION', tech: 'Sunday Ademola', next: '12 Nov 2026', overdue: false, findings: 'Zone 2 detector sensitivity low; battery OK' },
-  { id: 'MTK-MILS-0003', date: '15 Aug', equip: 'Flame Fighting Hose Reel + Cabinet', client: 'Barr. Sani Bello', loc: 'Residence, Barnawa', action: 'INSTALLATION', tech: 'Ibrahim Kabeer', next: '15 Aug 2027', overdue: false, findings: 'New install; pressure test passed' },
-  { id: 'MTK-MILS-0004', date: '20 Aug', equip: 'CCTV (8ch DVR, 6 cameras)', serial: 'DVR8-5521', client: 'Mrs. Grace Adeyemi', loc: 'Shop plaza, Kawo', action: 'REPAIR', tech: 'Sunday Ademola', next: '20 Feb 2027', overdue: false, findings: 'Cam 3 lens condensation; replaced' },
-  { id: 'MTK-MILS-0005', date: '25 Aug', equip: 'Walk-Through Metal Detector Gate', serial: 'WTMD-Q2-011', client: 'Nigerian Breweries — Kaduna Depot', loc: 'Main gate', action: 'CALIBRATION', tech: 'Musa Danjuma', next: '28 Aug 2026', overdue: true, findings: 'Sensitivity re-calibrated; zone 4 sensor drifting' },
-  { id: 'MTK-MILS-0006', date: '29 Aug', equip: 'Solar Inverter 3kVA + 200Ah Battery', serial: 'INV3K-88412', client: 'Mrs. Grace Adeyemi', loc: 'Residence, Ungwan Rimi', action: 'INSPECTION', tech: 'Musa Danjuma', next: '29 Nov 2026', overdue: false, findings: 'Battery water topped up; panels cleaned' },
-];
 
-const adjustments = [
-  { id: 'ADJ-1', d: '10 Aug', pid: 'F002', delta: 24, reason: 'RESTOCK', note: 'PO-2214 — Bajik supply' },
-  { id: 'ADJ-2', d: '16 Aug', pid: 'S005', delta: -2, reason: 'DAMAGE', note: 'Crushed in storage' },
-  { id: 'ADJ-3', d: '21 Aug', pid: 'S003', delta: 6, reason: 'RESTOCK', note: 'PO-2220' },
-  { id: 'ADJ-4', d: '25 Aug', pid: 'H006', delta: -1, reason: 'CORRECTION', note: 'Shelf count correction' },
-];
+
+// ---------- LIVE DATA (Phase B) — served by preview/server.js (persisted) ----------
+let products = [], customers = [], sales = [], invoices = [], txns = [], mils = [],
+    adjustments = [], receipts = [], docs = [];
+let serials = { receipt: 2131, invoice: 4335, mils: 925 };
+let settings = { vatEnabled: true, vatRate: 0.075, watermark: true };
+let P = {}, C = {};
+function rebuildMaps() {
+  P = Object.fromEntries(products.map(p => [p.id, p]));
+  C = Object.fromEntries(customers.map(c => [c.id, c]));
+}
+async function api(path, body) {
+  const res = await fetch(path, body === undefined
+    ? { headers: { 'Content-Type': 'application/json' } }
+    : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || ('Request failed: ' + res.status));
+  return data;
+}
+async function refreshState() {
+  const s = await api('/api/state');
+  products = s.products; customers = s.customers; sales = s.sales; invoices = s.invoices;
+  txns = s.txns; mils = s.mils; adjustments = s.adjustments; receipts = s.receiptsIssue || [];
+  docs = s.docs || []; serials = s.serials; settings = s.settings;
+  rebuildMaps();
+}
 
 // ---------- derived math (same as SampleStore) ----------
 const naira = n => '₦' + Math.round(n).toLocaleString('en-NG');
@@ -154,16 +99,81 @@ function topProducts(limit = 5) {
     .map(([name, v]) => [`${name} ×${qty[name]}`, v]);
 }
 
+window.toggleFab = () => $('#fab-dial')?.classList.toggle('open');
+window.startDoc = t => {
+  $('#fab-dial')?.classList.remove('open');
+  docsTab = t;
+  go('docs');
+};
+
+// ---------- SETTINGS (real: VAT, watermark, serial reseed, reset) ----------
+function settingsScreen() {
+  const s = settings;
+  return `
+    <div class="grid cols-2" style="align-items:start">
+      <div class="card form-card">
+        <div class="fc-t">FINANCIAL</div>
+        <label style="display:flex;gap:10px;align-items:center;font-size:13px;font-weight:600">
+          <input type="checkbox" ${s.vatEnabled ? 'checked' : ''} onchange="setSetting('vatEnabled', this.checked)"> Apply 7.5% VAT on invoices &amp; MILS sheets
+        </label>
+        <div style="font-size:11.5px;color:var(--gray-500);margin-top:6px">Per-document override arrives with the PDF painter settings (M2+).</div>
+      </div>
+      <div class="card form-card">
+        <div class="fc-t">APPEARANCE</div>
+        <label style="display:flex;gap:10px;align-items:center;font-size:13px;font-weight:600">
+          <input type="checkbox" ${s.watermark ? 'checked' : ''} onchange="setSetting('watermark', this.checked)"> Faint brand watermark on documents &amp; app UI
+        </label>
+      </div>
+      <div class="card form-card">
+        <div class="fc-t">DOCUMENT SERIALS — continue the paper books</div>
+        ${[['receipt', 'Payment Receipt', 2131], ['invoice', 'Sales Invoice', 4335], ['mils', 'MILS Sheet', 925]].map(([k, label, seed]) => `
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+            <span style="flex:1;font-size:12.5px">${label}</span>
+            <input class="f-in" style="max-width:110px;margin:0" id="seed-${k}" type="number" value="${serials[k]}">
+            <button class="btn ghost sm" onclick="reseedSerial('${k}', ${seed})">Set</button>
+          </div>`).join('')}
+        <div style="font-size:11.5px;color:var(--gray-500)">Next issued: receipt <b>${serials.receipt + 1}</b> · invoice <b>${serials.invoice + 1}</b> · MILS <b>${serials.mils + 1}</b></div>
+      </div>
+      <div class="card form-card">
+        <div class="fc-t">DANGER ZONE</div>
+        <button class="btn ghost" style="width:100%;justify-content:center" onclick="resetDemo()">${icSvg('reset', 15)} Reset preview data to seed</button>
+        <div style="font-size:11.5px;color:var(--gray-500);margin-top:8px">Server database (preview/.data/db.json) is restored to the sample dataset.</div>
+      </div>
+    </div>`;
+}
+window.setSetting = async (k, v) => {
+  try { const r = await api('/api/settings', { [k]: v }); settings = r.settings; toast('Setting saved.', 'success'); } catch (e) { toast(e.message); }
+};
+window.reseedSerial = async (type, seedVal) => {
+  const el = document.getElementById('seed-' + type);
+  try {
+    const r = await api('/api/settings', { reseed: { type, value: parseInt(el.value) || seedVal } });
+    serials = r.serials;
+    toast('Serial counter updated — next ' + type + ' will be ' + (r.serials[type] + 1) + '.', 'success');
+    render();
+  } catch (e) { toast(e.message); }
+};
+window.resetDemo = async () => {
+  await api('/api/reset', {});
+  await refreshState();
+  render();
+  toast('Preview data reset to seed.', 'success');
+};
+
 // ---------- tiny framework ----------
 const $ = sel => document.querySelector(sel);
+
+// SVG icon sprite helper (owner: no emojis anywhere — assets/icons)
+const icSvg = (name, size = 16, style = '') =>
+  `<svg class="ic" style="width:${size}px;height:${size}px;${style}" aria-hidden="true"><use href="/icons.svg#${name}"/></svg>`;
 const app = $('#app');
 let route = 'insights';
 
 const NAV = [
-  ['insights', '📊', 'Insights'], ['transactions', '🔁', 'Transactions'], ['customers', '👥', 'Customers'],
-  ['receipts', '🧾', 'Receipts'], ['invoices', '📑', 'Invoices'], ['mils', '🛠️', 'MILS'],
-  ['sales', '🛒', 'Sales'], ['stock', '📦', 'Stock'], ['summary', '📈', 'Summary'],
-  ['docs', '📝', 'Documents'],
+  ['insights', 'chart', 'Insights'], ['transactions', 'swap', 'Transactions'], ['customers', 'people', 'Customers'],
+  ['receipts', 'doc', 'Receipts'], ['invoices', 'quote', 'Invoices'], ['mils', 'wrench', 'MILS'],
+  ['sales', 'cart', 'Sales'], ['stock', 'box', 'Stock'], ['summary', 'report', 'Summary'],
+  ['docs', 'pen', 'Documents'], ['settings', 'cog', 'Settings'],
 ];
 const SUBTITLES = {
   insights: 'Money in — today, this week, this month',
@@ -176,13 +186,14 @@ const SUBTITLES = {
   stock: 'Quantities, prices, low-stock alerts, audit trail',
   summary: 'Business report — export or share as PDF (M4)',
   docs: 'Write up a Receipt, Invoice or MILS sheet — PDF mirrors your paper books',
+  settings: 'Company profile, VAT, watermark & document serial counters',
 };
 
 function render() {
   const screens = {
     insights, transactions, customers: customersScreen, receipts: receiptsScreen,
     invoices: invoicesScreen, mils: milsScreen, sales: salesScreen,
-    stock: stockScreen, summary: summaryScreen, docs: docsScreen,
+    stock: stockScreen, summary: summaryScreen, docs: docsScreen, settings: settingsScreen,
   };
   const body = screens[route]();
   app.innerHTML = `
@@ -201,21 +212,22 @@ function routeButtons() {
   if (route === 'customers') return `<button class="btn primary" onclick="newCustomer()">＋ New customer</button>`;
   if (route === 'invoices') return `<button class="btn primary" onclick="toast('New invoice — full builder arrives in M2')">＋ New invoice</button>`;
   if (route === 'mils') return `<button class="btn primary" onclick="toast('MILS entry form — M2 (stored as Mongo documents in M3)')">＋ Log service</button>`;
-  if (route === 'stock') return `<button class="btn ghost" onclick="toast('Opens the products_seed.txt importer in M2')">⬆ Import TXT</button>`;
-  if (route === 'summary') return `<button class="btn ghost" onclick="toast('PDF export & share — Milestone M4')">⤓ Export PDF</button>`;
-  if (route === 'docs') return `<button class="btn ghost" onclick="toast('Serial counters are Admin-seedable in Settings (M2) — continuing paper books: 2131 / 925 / 4335')">#️⃣ Serials</button>`;
+  if (route === 'stock') return `<button class="btn ghost" onclick="toast('Opens the products_seed.txt importer in M2')">Import TXT</button>`;
+  if (route === 'summary') return `<button class="btn ghost" onclick="toast('PDF export & share — Milestone M4')">Export PDF</button>`;
+  if (route === 'docs') return `<button class="btn ghost" onclick="toast('Serial counters are Admin-seedable in Settings (M2) — continuing paper books: 2131 / 925 / 4335')">Serials</button>`;
   return '';
 }
 
 // ---------- screens ----------
 function statCards() {
   return `<div class="grid cols-3">
-    ${stat('📅', 'Revenue — today', naira(revToday()), TODAY.label, '#c8102e')}
-    ${stat('🗓️', 'Revenue — this week', naira(revWeek()), 'Mon 24 – Sat 29 Aug', '#1a2a4a')}
-    ${stat('📆', 'Revenue — this month', naira(revAll()), 'Net of refunds', '#f0a92e')}
-    ${stat('📈', 'Avg. transaction value', naira(atv()), 'Net revenue ÷ paying txns', '#15803d')}
-    ${stat('⏳', 'Outstanding invoices', naira(outstanding()), 'Credit to collect', '#b45309')}
-    ${stat('📦', 'Stock value (cost)', naira(stockValue()), `${products.filter(p => !p.service).length} physical items`, '#1a2a4a')}
+    ${stat(icSvg('calendar', 15), 'Revenue — today', naira(revToday()), TODAY.label, '#c8102e')}
+    ${stat(icSvg('calendar', 15), 'Revenue — this week', naira(revWeek()), 'Mon – Sat this week', '#1a2a4a')}
+    ${stat(icSvg('calendar', 15), 'Revenue — this month', naira(revAll()), 'Net of refunds', '#f0a92e')}
+    ${stat(icSvg('trend', 15), 'Avg. transaction value', naira(atv()), 'Net revenue ÷ paying txns', '#15803d')}
+    ${stat(icSvg('hourglass', 15), 'Outstanding invoices', naira(outstanding()), 'Credit to collect', '#b45309')}
+    ${stat(icSvg('box', 15), 'Stock value (cost)', naira(stockValue()), `${products.filter(p => !p.service).length} physical items`, '#1a2a4a')}
+    ${stat(icSvg('cash', 15), 'Documents issued', String((docs || []).length), 'Receipts + invoices + MILS', '#c8102e')}
   </div>`;
 }
 const stat = (ic, lbl, val, hint, color) => `
@@ -248,6 +260,14 @@ function insights() {
   const byCat = revByCat(), byMethod = revByMethod();
   const mTotal = Object.values(byMethod).reduce((a, b) => a + b, 0) || 1;
   return `
+    <div class="fab-dial" id="fab-dial">
+      <div class="fab-menu" id="fab-menu">
+        <button class="fab-item" style="--i:3" onclick="startDoc('invoice')">${icSvg('quote', 16)} New Invoice <b>₦</b></button>
+        <button class="fab-item" style="--i:2" onclick="startDoc('receipt')">${icSvg('doc', 16)} New Receipt</button>
+        <button class="fab-item" style="--i:1" onclick="startDoc('mils')">${icSvg('wrench', 16)} New MILS Sheet</button>
+      </div>
+      <button class="fab-main" onclick="toggleFab()" title="Start a transaction">${icSvg('plus', 22)}</button>
+    </div>
     ${statCards()}
     <div class="section-lbl">REVENUE BREAKDOWN</div>
     <div class="grid" style="grid-template-columns:1fr 1fr;align-items:start">
@@ -267,7 +287,7 @@ function insights() {
           ${Object.entries(byMethod).map(([m, v]) => `
             <div class="bar-row">
               <div style="display:flex;align-items:center;gap:8px;font-size:13px">
-                <span>${METHOD_META[m][0]}</span><b>${METHOD_META[m][1]}</b>
+                <span>${methodIc(m)}</span><b>${METHOD_META[m][1]}</b>
                 <span style="flex:1"></span><span class="money" style="font-size:13px">${naira(v)}</span>
                 <span style="color:var(--gray-500);font-size:11.5px">${Math.round(v / mTotal * 100)}%</span>
               </div>
@@ -346,19 +366,34 @@ function bindCustSearch() {
   const el = $('#custq');
   if (el) el.addEventListener('input', e => { custQuery = e.target.value; const pos = el.selectionStart; render(); const n = $('#custq'); n.focus(); n.setSelectionRange(pos, pos); });
 }
-window.newCustomer = () => toast('New customer form — fully editable in M2 (Supabase `customers` in M3)');
+window.newCustomer = () => {
+  modal('New customer', `
+    <input class="search" id="nc-name" placeholder="Name / Company *">
+    <input class="search" id="nc-phone" placeholder="Phone (WhatsApp)" style="margin-top:6px">
+    <label style="display:flex;gap:8px;align-items:center;font-size:12.5px;color:var(--gray-600);margin-top:4px"><input type="checkbox" id="nc-corp"> Corporate customer</label>
+    <button class="btn primary" style="width:100%;justify-content:center;margin-top:12px" onclick="saveCustomer()">Save customer</button>`);
+};
+window.saveCustomer = async () => {
+  try {
+    await api('/api/customers', { name: $('#nc-name').value, phone: $('#nc-phone').value, corp: $('#nc-corp').checked });
+    closeModal();
+    await refreshState();
+    render();
+    toast('Customer saved.', 'success');
+  } catch (e) { toast(e.message); }
+};
 
 function receiptsScreen() {
   return `<div class="card list">
     ${receipts.slice().reverse().map(r => `
       <div class="item" onclick="receiptPreview('${r.no}')">
-        <div class="avatar" style="background:var(--success-tint);color:var(--success)">🧾</div>
+        <div class="avatar" style="background:var(--success-tint);color:var(--success)">${icSvg('doc', 16)}</div>
         <div class="grow">
           <div class="t">${r.no} — ${r.cust}</div>
           <div class="s">${r.d} · ${METHOD_META[r.m][1]} · for ${r.for} · by ${r.by}</div>
         </div>
         <div class="money">${naira(r.amt)}</div>
-        <button class="btn ghost sm" onclick="event.stopPropagation();receiptPreview('${r.no}')">👁 Preview</button>
+        <button class="btn ghost sm" onclick="event.stopPropagation();receiptPreview('${r.no}')">Preview</button>
       </div>`).join('')}
   </div>`;
 }
@@ -381,9 +416,9 @@ window.receiptPreview = no => {
     ${(users.find(u => u.name === (r.signed || r.by)) || {}).signaturePng ? `<img class="stamp" src="${users.find(u => u.name === (r.signed || r.by)).signaturePng}" style="margin:4px 0 8px">` : ''}
     <div style="font-size:11px;color:var(--gray-500)">Issued by: ${r.by} — thank you for your business. VAT configurable per document (M2 setting).</div>
     <div style="display:flex;gap:8px;margin-top:16px">
-      <button class="btn ghost sm" style="flex:1" onclick="toast('Sharing via wa.me — wired in M4')">💬 WhatsApp</button>
-      <button class="btn ghost sm" style="flex:1" onclick="toast('mailto: share — wired in M4')">✉ Email</button>
-      <button class="btn primary sm" style="flex:1" onclick="toast('Print dialog — wired in M4')">🖨 Print</button>
+      <button class="btn ghost sm" style="flex:1" onclick="toast('Sharing via wa.me — wired in M4')">WhatsApp</button>
+      <button class="btn ghost sm" style="flex:1" onclick="toast('mailto: share — wired in M4')">Email</button>
+      <button class="btn primary sm" style="flex:1" onclick="toast('Print dialog — wired in M4')">Print</button>
     </div>`);
 };
 
@@ -397,7 +432,7 @@ function invoicesScreen() {
       const status = bal <= 0 ? ['PAID', 'paid'] : overdue ? ['OVERDUE', 'bad'] : v.paid > 0 ? ['PARTIAL', 'pending'] : ['UNPAID', ''];
       return `
       <div class="item" onclick="invPay('${v.no}')">
-        <div class="avatar" style="background:var(--brand-tint);color:var(--brand-600)">📑</div>
+        <div class="avatar" style="background:var(--brand-tint);color:var(--brand-600)">${icSvg('quote', 16)}</div>
         <div class="grow">
           <div class="t">${v.no} — ${C[v.cust].name}</div>
           <div class="s">Issued ${v.issued} Aug · Due ${typeof v.due === 'number' ? v.due + ' Aug' : v.due}</div>
@@ -421,28 +456,26 @@ window.invPay = no => {
     <div class="kv"><b>Invoice total</b><span>${naira(invTotal(v))}</span></div>
     <div class="kv"><b>Balance</b><span>${naira(bal)}</span></div>
     <p style="font-size:12.5px;color:var(--gray-500);margin:10px 0 16px">Recording a payment posts a <b>Transaction</b>, issues a <b>Receipt</b> (MTK-REC-…) and clears credit on the customer — automatically.</p>
-    <button class="btn primary" style="width:100%" onclick="signThenPay('${no}')">✍️ Continue — sign &amp; record payment</button>`);
+    <button class="btn primary" style="width:100%" onclick="signThenPay('${no}')">Continue — sign &amp; record payment</button>`);
 };
 window.signThenPay = no => {
   const v = invoices.find(x => x.no === no);
   const bal = invTotal(v) - v.paid;
   signGate(`Payment of ${naira(bal)} on ${no} (${C[v.cust].name})`, () => doInvPay(no));
 };
-window.doInvPay = no => {
+window.doInvPay = async no => {
   const signer = currentUser().name;
-  const v = invoices.find(x => x.no === no);
-  const bal = invTotal(v) - v.paid;
-  v.paid += bal;
-  const cust = customers.find(c => c.id === v.cust);
-  cust.balance -= bal;
-  txns.push({ id: 'TXN-' + String(txns.length + 1).padStart(4, '0'), d: '29 Aug, 14:0' + txns.length, type: 'invoice', amt: bal, m: 'transfer', ref: no });
-  receipts.push({ no: 'MTK-REC-' + String(receipts.length + 1).padStart(4, '0'), d: '29 Aug, 14:0' + (txns.length - 1), amt: bal, m: 'transfer', cust: cust.name, for: no, by: signer, signed: signer });
-  closeModal();
-  toast(`Payment recorded — receipt issued to ${cust.name}, signed by ${signer}.`, 'success');
-  render();
+  try {
+    const r = await api('/api/invoices/pay', { no, signedBy: signer });
+    if (r.receipt) receipts.push(r.receipt);
+    await refreshState();
+    render();
+    toast(`Payment recorded — receipt ${r.receipt.no} issued, signed by ${signer}.`, 'success');
+  } catch (e) { toast(e.message); }
 };
 
-const ACTION_IC = { REFILL: '🔥', INSTALLATION: '🔧', INSPECTION: '✅', REPAIR: '🛠', CALIBRATION: '🎯' };
+const ACTION_IC = { REFILL: 'fire', INSTALLATION: 'wrench', INSPECTION: 'check', REPAIR: 'wrench', CALIBRATION: 'trend' };
+const actionIc = a => icSvg(ACTION_IC[a] || 'wrench', 15);
 let milsFilter = 'all';
 function milsScreen() {
   const rows = mils.filter(l => milsFilter === 'all' ||
@@ -456,7 +489,7 @@ function milsScreen() {
     <div class="card list">
       ${rows.map(l => `
         <div class="item" onclick="milsDetail('${l.id}')">
-          <div class="avatar" style="background:${l.overdue ? 'var(--danger-tint);color:var(--danger)' : '#e8edf5;color:var(--navy-700)'}">${ACTION_IC[l.action]}</div>
+          <div class="avatar" style="background:${l.overdue ? 'var(--danger-tint);color:var(--danger)' : '#e8edf5;color:var(--navy-700)'}">${actionIc(l.action)}</div>
           <div class="grow">
             <div class="t">${l.equip}</div>
             <div class="s">${l.client} · ${l.loc}<br>${l.action} ${l.date} — ${l.tech}</div>
@@ -478,10 +511,10 @@ window.milsDetail = id => {
     <div class="kv"><b>Serviced</b><span>${l.date} 2026</span></div>
     <div class="kv"><b>Technician</b><span>${l.tech}</span></div>
     <div class="kv"><b>Findings</b><span>${l.findings}</span></div>
-    <div class="kv"><b>Next due</b><span>${l.next} ${l.overdue ? '⚠ OVERDUE' : ''}</span></div>
+    <div class="kv"><b>Next due</b><span>${l.next} ${l.overdue ? '— OVERDUE' : ''}</span></div>
     <div style="display:flex;gap:8px;margin-top:14px">
-      <button class="btn ghost sm" onclick="closeModal();route='invoices';render();toast('Link a MILS job to an invoice — M2')">📑 Invoice this job</button>
-      <button class="btn ghost sm" onclick="toast('Site photos stored in Mongo/GridFS — M3')">📷 Photos (M3)</button>
+      <button class="btn ghost sm" onclick="closeModal();route='invoices';render();toast('Link a MILS job to an invoice — M2')">${icSvg('quote', 14)} Invoice this job</button>
+      <button class="btn ghost sm" onclick="toast('Site photos stored in Mongo/GridFS — M3')">Photos (M3)</button>
     </div>`);
 };
 
@@ -510,7 +543,7 @@ function salesScreen() {
         </div>`).join('')}
     </div>
     <div class="card cart-box ${cartOpen ? 'open' : ''}" id="cart-box">
-      <div class="ttl" onclick="toggleCart(event)">🛒 CURRENT SALE <span class="badge-count">${Object.keys(cart).length}</span>
+      <div class="ttl" onclick="toggleCart(event)">${icSvg('cart', 15)} CURRENT SALE <span class="badge-count">${Object.keys(cart).length}</span>
         ${Object.keys(cart).length ? `<span class="grand">· ${naira(cartTotal())}</span>` : ''}
         <span style="flex:1"></span>
         ${Object.keys(cart).length ? `<button style="color:var(--brand-600);font-size:12px;font-weight:600" onclick="event.stopPropagation();cart={};cartOpen=false;render()">Clear</button>` : ''}
@@ -528,7 +561,7 @@ function salesScreen() {
         <span style="color:var(--gray-500)">Subtotal</span><span class="money">${naira(cartTotal())}</span>
       </div>
       <div class="mchips">
-        ${Object.keys(METHOD_META).map(m => `<button class="fchip ${posMethod === m ? 'active' : ''}" onclick="posMethod='${m}';render()">${METHOD_META[m][0]} ${METHOD_META[m][1]}</button>`).join('')}
+        ${Object.keys(METHOD_META).map(m => `<button class="fchip ${posMethod === m ? 'active' : ''}" onclick="posMethod='${m}';render()">${methodIc(m)} ${METHOD_META[m][1]}</button>`).join('')}
       </div>
       <button class="btn primary" style="width:100%;margin-top:14px;justify-content:center" ${!Object.keys(cart).length || !posCust ? 'disabled' : ''} onclick="completeSale()">
         ${posMethod === 'credit' ? 'Complete — bill on invoice' : 'Complete sale — ' + naira(cartTotal())}
@@ -553,23 +586,19 @@ window.completeSale = () => {
   if (!Object.keys(cart).length || !posCust) return;
   signGate(`Sale of ${naira(cartTotal())} to ${C[posCust].name}`, () => doCompleteSale());
 };
-window.doCompleteSale = () => {
+window.doCompleteSale = async () => {
   const signer = currentUser().name;
   const items = Object.values(cart).map(l => [l.p.id, l.qty]);
-  // decrement stock
-  items.forEach(([pid, q]) => { if (!P[pid].service) P[pid].qty -= q; });
-  if (posMethod === 'credit') {
-    invoices.unshift({ no: 'MTK-INV-' + String(invoices.length + 1).padStart(4, '0'), issued: 29, due: '12 Sep 2026', cust: posCust, items, paid: 0 });
-    C[posCust].balance += items.reduce((s, [pid, q]) => s + P[pid].price * q, 0);
-    toast(`Invoice created & signed by ${signer} — payable later. Stock deducted.`, 'success');
-  } else {
-    txns.push({ id: 'TXN-' + String(txns.length + 1).padStart(4, '0'), d: '29 Aug, now', type: 'sale', amt: cartTotal(), m: posMethod, ref: 'S' + (sales.length + 1) });
-    sales.push({ id: 'S' + (sales.length + 1), day: 29, hour: 14, cust: posCust, method: posMethod, items });
-    receipts.push({ no: 'MTK-REC-' + String(receipts.length + 1).padStart(4, '0'), d: '29 Aug, now', amt: cartTotal(), m: posMethod, cust: C[posCust].name, for: 'S' + sales.length, by: signer, signed: signer });
-    toast(`Sale complete — ${naira(cartTotal())}. Receipt signed by ${signer}, stock updated.`, 'success');
-  }
-  cart = {}; posCust = null; cartOpen = false;
-  render();
+  try {
+    const r = await api('/api/sales', { customerId: posCust, method: posMethod, items, signedBy: signer });
+    if (r.receipt) receipts.push(r.receipt);
+    cart = {}; posCust = null; cartOpen = false;
+    await refreshState();
+    render();
+    toast(r.invoice
+      ? `Invoice ${r.invoice.no} created & signed by ${signer} — payable later. Stock deducted.`
+      : `Sale complete — ${naira(r.total)}. Receipt ${r.receipt.no} signed by ${signer}, stock updated.`, 'success');
+  } catch (e) { toast(e.message); }
 };
 
 // ---------- stock ----------
@@ -591,7 +620,7 @@ function stockScreen() {
         const out = !p.service && p.qty <= 0, isLow = !p.service && p.qty <= p.reorder;
         return `
         <div class="item">
-          <div class="avatar" style="border-radius:12px;background:${out ? 'var(--danger-tint);color:var(--danger)' : isLow ? 'var(--warn-tint);color:var(--warn)' : 'var(--brand-tint);color:var(--brand-600)'}">${p.service ? '🛠' : p.qty}</div>
+          <div class="avatar" style="border-radius:12px;background:${out ? 'var(--danger-tint);color:var(--danger)' : isLow ? 'var(--warn-tint);color:var(--warn)' : 'var(--brand-tint);color:var(--brand-600)'}">${p.service ? icSvg('wrench', 14) : p.qty}</div>
           <div class="grow">
             <div class="t">${p.name}</div>
             <div class="s">${p.id} · ${p.cat.toUpperCase()} · cost ${naira(p.cost)} · reorder @ ${p.reorder}</div>
@@ -628,13 +657,14 @@ window.adjustStock = pid => {
     </select>
     <button class="btn primary" style="width:100%;margin-top:10px;justify-content:center" onclick="doAdjust('${pid}')">Apply — log to audit trail</button>`);
 };
-window.doAdjust = pid => {
-  const p = P[pid];
+window.doAdjust = async pid => {
   const delta = parseInt($('#adj-q').value) || 0;
   if (delta !== 0) {
-    p.qty += delta;
-    adjustments.unshift({ id: 'ADJ-' + (adjustments.length + 1), d: '29 Aug', pid, delta, reason: $('#adj-r').value, note: 'Manual adjustment' });
-    toast(`Stock adjusted (${delta >= 0 ? '+' : ''}${delta}) — logged in audit trail.`, 'success');
+    try {
+      await api('/api/stock/adjust', { id: pid, delta, reason: $('#adj-r').value, note: 'Manual adjustment', signedBy: currentUser().name });
+      await refreshState();
+      toast(`Stock adjusted (${delta >= 0 ? '+' : ''}${delta}) — logged in audit trail.`, 'success');
+    } catch (e) { toast(e.message); }
   }
   closeModal();
   render();
@@ -652,10 +682,10 @@ function summaryScreen() {
         .map(([k, l]) => `<button class="fchip ${sumPeriod === k ? 'active' : ''}" onclick="sumPeriod='${k}';render()">${l}</button>`).join('')}
     </div>
     <div class="grid cols-4">
-      ${stat('💰', 'Revenue (net)', naira(rev), '', '#c8102e')}
-      ${stat('📈', 'Profit estimate', naira(profit), 'Sales − item cost', '#15803d')}
-      ${stat('📦', 'Stock value (cost)', naira(stockValue()), '', '#1a2a4a')}
-      ${stat('⏳', 'Outstanding invoices', naira(outstanding()), '', '#b45309')}
+      ${stat(icSvg('cash', 15), 'Revenue (net)', naira(rev), '', '#c8102e')}
+      ${stat(icSvg('trend', 15), 'Profit estimate', naira(profit), 'Sales − item cost', '#15803d')}
+      ${stat(icSvg('box', 15), 'Stock value (cost)', naira(stockValue()), '', '#1a2a4a')}
+      ${stat(icSvg('hourglass', 15), 'Outstanding invoices', naira(outstanding()), '', '#b45309')}
     </div>
     <div class="grid two-col" style="grid-template-columns:1fr 1fr;margin-top:16px;align-items:start">
       <div class="card" style="padding:18px">
@@ -673,13 +703,13 @@ function summaryScreen() {
         <div style="margin-top:8px">
           ${products.filter(p => !p.service && p.qty <= p.reorder).map(p => `
             <div class="item" style="padding:9px 0;border-top:none">
-              <div>${p.qty <= 0 ? '⛔' : '⚠️'}</div>
+              <div>${p.qty <= 0 ? 'Out' : 'Low'}</div>
               <div class="grow"><div class="t" style="font-size:12.5px">${p.name}</div><div class="s">${p.qty} left · reorder level ${p.reorder}</div></div>
               <span class="chip ${p.qty <= 0 ? 'bad' : 'pending'}">${p.qty <= 0 ? 'OUT' : 'LOW'}</span>
             </div>`).join('')}
           ${invoices.filter(v => invTotal(v) - v.paid > 0).map(v => `
             <div class="item" style="padding:9px 0">
-              <div>📑</div>
+              <div>${icSvg('quote', 15)}</div>
               <div class="grow"><div class="t" style="font-size:12.5px">${v.no} — ${C[v.cust].name}</div><div class="s">Due ${typeof v.due === 'number' ? v.due + ' Aug' : v.due}</div></div>
               <div class="money neg" style="font-size:12.5px">${naira(invTotal(v) - v.paid)}</div>
             </div>`).join('')}
@@ -713,8 +743,8 @@ window.openDrawer = () => { $('#m-drawer').classList.add('open'); $('#drawer-bac
 window.closeDrawer = () => { $('#m-drawer')?.classList.remove('open'); $('#drawer-back')?.classList.remove('open'); };
 
 function buildNav() {
-  const html = NAV.map(([id, ic, label]) =>
-    `<button class="${route === id ? 'active' : ''}" onclick="go('${id}')"><span class="ic">${ic}</span>${label}</button>`).join('');
+  const html = NAV.map(([id, icon, label]) =>
+    `<button class="${route === id ? 'active' : ''}" onclick="go('${id}')"><span class="ic">${icSvg(icon, 17)}</span>${label}</button>`).join('');
   $('#nav').innerHTML = html;
   $('#m-nav').innerHTML = html;
   $('#pagetitle').textContent = NAV.find(n => n[0] === route)[2];
@@ -726,34 +756,20 @@ window.addEventListener('hashchange', () => {
 });
 
 // =====================================================================
-// AUTH — account password + separate SIGNATURE PASSCODE (SPEC §6.1)
-// Preview mirrors app/lib/data/auth_store.dart. Demo hashing only;
-// M3 moves verification to Supabase Auth with salted hashes.
+// AUTH — server-side accounts (salted scrypt hashes) + SIGNATURE PASSCODE
+// verified by the API before any document is issued (SPEC §6.1).
 // =====================================================================
-const djb2 = s => { let h = 5381; for (const c of 'mtek::' + s) { h = ((h << 5) + h + c.charCodeAt(0)) >>> 0; } return h.toString(16); };
-const LS_USERS = 'mtek_users_v1', LS_SESSION = 'mtek_session_v1';
+const LS_SESSION = 'mtek_session_v1';
+let sessionUser = null;
+const currentUser = () => sessionUser;
+const sessionEmail = () => { try { return localStorage.getItem(LS_SESSION); } catch (e) { return null; } };
 
-function loadUsers() {
-  try { const raw = localStorage.getItem(LS_USERS); if (raw) return JSON.parse(raw); } catch (e) { /* fresh */ }
-  const seed = [{ name: 'Admin', email: 'admin@mtek.demo', role: 'admin',
-    passwordHash: djb2('admin123'), sigHash: djb2('1234'), signaturePng: null }];
-  try { localStorage.setItem(LS_USERS, JSON.stringify(seed)); } catch (e) {}
-  return seed;
-}
-let users = loadUsers();
-const saveUsers = () => { try { localStorage.setItem(LS_USERS, JSON.stringify(users)); } catch (e) {} };
-const currentUser = () => {
-  const email = (() => { try { return localStorage.getItem(LS_SESSION); } catch (e) { return null; } })();
-  return users.find(u => u.email === email) || null;
-};
-
-// ---------- login / signup UI ----------
 function renderAuth(mode = 'login') {
   const auth = $('#auth');
   auth.innerHTML = `
     <div class="auth-overlay">
       <div class="auth-card">
-        <div class="lg">M</div>
+        <div class="lg"><svg class="ic" style="width:30px;height:30px"><use href="/icons.svg#mround"/></svg></div>
         <div class="co">M-TEK FIRE &amp; SAFETY LTD</div>
         <div class="sub">${mode === 'login' ? 'Sign in to your workspace' : 'Create your account'}</div>
         ${mode === 'login' ? `
@@ -767,7 +783,7 @@ function renderAuth(mode = 'login') {
           <label>Email</label><input id="a-email" type="email" placeholder="you@mtek…">
           <label>Account password (min 6)</label><input id="a-pass" type="password">
           <div class="goldbox">
-            <div class="gt">✍️ SIGNATURE PASSCODE</div>
+            <div class="gt"><svg class="ic" style="width:15px;height:15px"><use href="/icons.svg#sign"/></svg> SIGNATURE PASSCODE</div>
             <div class="gd">Used to digitally sign receipts, invoices &amp; MILS logs — no more signing on paper. Must differ from your password.</div>
             <label>Signature passcode (min 4)</label><input id="a-sig" type="password">
             <label>Repeat signature passcode</label><input id="a-sig2" type="password">
@@ -816,8 +832,7 @@ function initSigCanvas() {
   cv.onpointerdown = e => { drawing = true; ctx.beginPath(); ctx.moveTo(...pos(e)); };
   cv.onpointermove = e => { if (drawing) { ctx.lineTo(...pos(e)); ctx.stroke(); } };
   cv.onpointerup = cv.onpointerleave = () => { drawing = false; };
-  cv._onUp = () => { try { drawnSig = cv.toDataURL('image/png'); $('#sig-saved').textContent = drawnSig ? 'Signature saved ✓' : ''; } catch (e) {} };
-  cv.addEventListener('pointerup', cv._onUp);
+  cv.addEventListener('pointerup', () => { try { drawnSig = cv.toDataURL('image/png'); const s = $('#sig-saved'); if (s) s.textContent = drawnSig ? 'Signature saved ✓' : ''; } catch (e) {} });
 }
 window.clearSig = () => {
   const cv = $('#sig-canvas'); if (!cv) return;
@@ -826,34 +841,37 @@ window.clearSig = () => {
   drawnSig = null; const s = $('#sig-saved'); if (s) s.textContent = '';
 };
 
-window.doLogin = () => {
-  const email = $('#a-email').value.trim().toLowerCase();
-  const user = users.find(u => u.email === email);
+window.doLogin = async () => {
   const err = m => { $('#a-err').textContent = m; };
-  if (!user) return err('No account with that email');
-  if (user.passwordHash !== djb2($('#a-pass').value)) return err('Wrong password');
-  try { localStorage.setItem(LS_SESSION, user.email); } catch (e) {}
-  enterApp();
+  try {
+    const r = await api('/api/auth/login', { email: $('#a-email').value, password: $('#a-pass').value });
+    sessionUser = r.user;
+    try { localStorage.setItem(LS_SESSION, r.user.email); } catch (e) {}
+    enterApp();
+  } catch (e) { err(e.message); }
 };
 
-window.doSignup = () => {
+window.doSignup = async () => {
   const err = m => { $('#a-err').textContent = m; };
-  const name = $('#a-name').value.trim(), email = $('#a-email').value.trim().toLowerCase();
   const pass = $('#a-pass').value, sig = $('#a-sig').value, sig2 = $('#a-sig2').value;
-  if (!name) return err('Enter your full name');
-  if (!email.includes('@')) return err('Enter a valid email');
-  if (pass.length < 6) return err('Password must be at least 6 characters');
-  if (sig.length < 4) return err('Signature passcode must be at least 4 characters');
-  if (sig === pass) return err('Signature passcode must be different from your password');
-  if (sig !== sig2) return err('Signature passcodes do not match');
-  if (users.some(u => u.email === email)) return err('An account with that email already exists');
-  users.push({ name, email, role: pickedRole, passwordHash: djb2(pass), sigHash: djb2(sig), signaturePng: drawnSig });
-  saveUsers();
-  try { localStorage.setItem(LS_SESSION, email); } catch (e) {}
-  enterApp();
+  try {
+    const r = await api('/api/auth/signup', {
+      name: $('#a-name').value, email: $('#a-email').value,
+      password: pass, signature: sig, role: pickedRole, signaturePng: drawnSig,
+    });
+    if (sig !== sig2) { // client-side UX nicety; server enforces the rest
+      err('Signature passcodes do not match'); return;
+    }
+    sessionUser = r.user;
+    try { localStorage.setItem(LS_SESSION, r.user.email); } catch (e) {}
+    enterApp();
+  } catch (e) {
+    err(e.message.includes('match') ? e.message : e.message);
+  }
 };
 
 window.signOut = () => {
+  sessionUser = null;
   try { localStorage.removeItem(LS_SESSION); } catch (e) {}
   updateUserChip();
   renderAuth('login');
@@ -866,7 +884,7 @@ function updateUserChip() {
   $('#logoutbtn').style.display = u ? '' : 'none';
 }
 
-// ---------- SIGNATURE GATE (issues documents) ----------
+// ---------- SIGNATURE GATE (server-verified) ----------
 window.signGate = (what, onSigned) => {
   const u = currentUser();
   if (!u) return;
@@ -878,49 +896,40 @@ window.signGate = (what, onSigned) => {
     <div class="auth-err" id="gate-err"></div>
     <div style="display:flex;gap:8px;margin-top:14px">
       <button class="btn ghost" style="flex:1;justify-content:center" onclick="closeModal()">Cancel</button>
-      <button class="btn primary" style="flex:1;justify-content:center" onclick="gateSubmit('${what.replace(/'/g, '')}')">✍️ Sign &amp; issue</button>
+      <button class="btn primary" style="flex:1;justify-content:center" onclick="gateSubmit('${what.replace(/'/g, '')}')"><svg class="ic" style="width:15px;height:15px"><use href="/icons.svg#sign"/></svg>&nbsp;Sign &amp; issue</button>
     </div>
-    <div style="font-size:11px;color:var(--gray-400);margin-top:10px">Signing: ${what}</div>`);
+    <div style="font-size:11px;color:var(--gray-400);margin-top:10px">Signing: ${what} · verified server-side</div>`);
   window._gateCb = onSigned;
 };
-window.gateSubmit = () => {
+window.gateSubmit = async () => {
   const u = currentUser();
-  if (u && djb2($('#gate-sig').value) === u.sigHash) {
+  if (!u) return;
+  try {
+    const r = await api('/api/auth/signature', { email: u.email, passcode: $('#gate-sig').value });
     const cb = window._gateCb; window._gateCb = null;
     closeModal();
-    cb(u);
-  } else {
-    $('#gate-err').textContent = 'Signature passcode does not match — document NOT issued';
+    cb(r.user);
+  } catch (e) {
+    $('#gate-err').textContent = e.message;
   }
 };
 
-function enterApp() {
-  $('#auth').style.display = 'none';
-  updateUserChip();
-  route = location.hash.replace('#/', '') || 'insights';
-  if (!NAV.some(n => n[0] === route)) route = 'insights';
-  render();
-  buildNav();
-  toast(`Signed in as ${currentUser().name} — documents require your Signature Passcode.`);
-}
 
 // =====================================================================
-// DOCS GENERATOR (Phase A) — serials continue the paper books
+// DOCS GENERATOR — serials continue the paper books, counted server-side
+// (persisted; Admin reseedable in Settings)
 // =====================================================================
-const LS_SERIALS = 'mtek_serials_v1';
-const SERIAL_SEEDS = { receipt: 2131, invoice: 4335, mils: 925 };
-function serials() {
-  try { const raw = localStorage.getItem(LS_SERIALS); if (raw) return JSON.parse(raw); } catch (e) {}
-  try { localStorage.setItem(LS_SERIALS, JSON.stringify(SERIAL_SEEDS)); } catch (e) {}
-  return { ...SERIAL_SEEDS };
-}
-window.nextSerial = type => {
-  const s = serials();
-  s[type] = (s[type] || 0) + 1;
-  try { localStorage.setItem(LS_SERIALS, JSON.stringify(s)); } catch (e) {}
-  return s[type];
+window.nextSerial = async type => {
+  const r = await api('/api/docs/issue', {
+    type, signedBy: currentUser().name,
+    customer: docsTab === 'receipt' ? docState.receipt.name : docsTab === 'invoice' ? docState.invoice.name : docState.mils.name,
+    total: docsTab === 'receipt' ? docState.receipt.amount : docsTab === 'invoice' ? invGrand() : milsSub() * 1.075,
+    hash: (Date.now() ^ Math.floor(Math.random() * 1e9)).toString(16),
+  });
+  serials = r.serials; docs = r.docs;
+  return r.serial;
 };
-window.peekSerial = type => (serials()[type] || 0) + 1;
+window.peekSerial = type => (serials[type] || 0) + 1;
 const nairaWords = n => {
   const nw = Math.floor(n), kb = Math.round((n - nw) * 100);
   return (nw.toLocaleString('en-NG')) + ' naira' + (kb ? ` ${kb} kobo` : '') + ' (in words — full text on PDF)';
@@ -948,12 +957,12 @@ const milsSub = () => {
 function docsScreen() {
   return `
     <div class="seg">
-      ${[['receipt', '🧾 Payment Receipt'], ['invoice', '📑 Sales Invoice'], ['mils', '🛠️ MILS Sheet']]
+      ${[[['receipt', icSvg('doc', 14) + ' Payment Receipt'], ['invoice', icSvg('quote', 14) + ' Sales Invoice'], ['mils', icSvg('wrench', 14) + ' MILS Sheet']]]
         .map(([k, l]) => `<button class="${docsTab === k ? 'active' : ''}" onclick="docsTab='${k}';render()">${l}</button>`).join('')}
     </div>
     ${docsTab === 'receipt' ? docsReceipt() : docsTab === 'invoice' ? docsInvoice() : docsMils()}
     <div class="card" style="padding:14px;margin-top:14px">
-      <button class="btn primary" style="width:100%;justify-content:center" onclick="generateDoc()">✍️ Sign &amp; generate PDF</button>
+      <button class="btn primary" style="width:100%;justify-content:center" onclick="generateDoc()">Sign &amp; generate PDF</button>
       <div style="font-size:11px;color:var(--gray-500);text-align:center;margin-top:8px">
         Requires your Signature Passcode · PDF gets the dual-office header, watermark, signature stamp &amp; verification QR · shared straight to WhatsApp/email
       </div>
@@ -963,7 +972,7 @@ function docsScreen() {
 function docsReceipt() {
   const d = docState.receipt;
   return `
-    <div class="serial-banner">🏷️ Receipt No: <b>${peekSerial('receipt')}</b><span style="flex:1"></span><span style="font-weight:400;color:var(--gray-500)">continues book numbering (last printed: 2131)</span></div>
+    <div class="serial-banner">Receipt No: <b>${peekSerial('receipt')}</b><span style="flex:1"></span><span style="font-weight:400;color:var(--gray-500)">continues book numbering (last printed: 2131)</span></div>
     <div class="card form-card">
       <div class="fc-t">CUSTOMER & PAYMENT</div>
       <input class="f-in" placeholder="IRN (Invoice Reference Number)" value="${d.irn}" oninput="docState.receipt.irn=this.value">
@@ -982,7 +991,7 @@ function docsReceipt() {
 function docsInvoice() {
   const d = docState.invoice;
   return `
-    <div class="serial-banner">🏷️ Invoice No: <b>${peekSerial('invoice')}</b><span style="flex:1"></span><span style="font-weight:400;color:var(--gray-500)">continues book numbering (last printed: 4335)</span></div>
+    <div class="serial-banner">Invoice No: <b>${peekSerial('invoice')}</b><span style="flex:1"></span><span style="font-weight:400;color:var(--gray-500)">continues book numbering (last printed: 4335)</span></div>
     <div class="card form-card">
       <div class="fc-t">DOCUMENT TYPE</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -1010,7 +1019,7 @@ function docsInvoice() {
           <td><input type="number" value="${r.q}" oninput="docState.invoice.rows[${i}].q=parseFloat(this.value)||0;updateInvTotals()"></td>
           <td><input type="number" value="${r.r || ''}" oninput="docState.invoice.rows[${i}].r=parseFloat(this.value)||0;updateInvTotals()"></td>
           <td class="amt" style="font-weight:700">₦${(r.q * (r.r || 0)).toLocaleString()}</td>
-          <td>${d.rows.length > 1 ? `<button style="color:var(--danger)" onclick="docState.invoice.rows.splice(${i},1);render()">✕</button>` : ''}</td>
+          <td>${d.rows.length > 1 ? `<button style="color:var(--danger)" onclick="docState.invoice.rows.splice(${i},1);render()">×</button>` : ''}</td>
         </tr>`).join('')}
       </tbody></table>
       <button class="btn ghost sm" onclick="docState.invoice.rows.push({d:'',q:1,r:0});render()">＋ Add row</button>
@@ -1035,7 +1044,7 @@ window.updateInvTotals = () => {
 function docsMils() {
   const d = docState.mils;
   return `
-    <div class="serial-banner">🏷️ MILS No: <b>${peekSerial('mils')}</b><span style="flex:1"></span><span style="font-weight:400;color:var(--gray-500)">continues book numbering (last printed: 925)</span></div>
+    <div class="serial-banner">MILS No: <b>${peekSerial('mils')}</b><span style="flex:1"></span><span style="font-weight:400;color:var(--gray-500)">continues book numbering (last printed: 925)</span></div>
     <div class="card form-card">
       <div class="fc-t">DATES & REFERENCES</div>
       <div class="frow">
@@ -1092,9 +1101,10 @@ window.generateDoc = () => {
   signGate(`${t.charAt(0).toUpperCase() + t.slice(1)} — ${d.name}`, () => showDocPreview(t));
 };
 
-function showDocPreview(t) {
-  const serial = nextSerial(t);
+async function showDocPreview(t) {
   const u = currentUser();
+  let serial;
+  try { serial = await nextSerial(t); } catch (e) { return toast(e.message); }
   const sigImg = (u && u.signaturePng) ? `<img src="${u.signaturePng}">` : '';
   let body = '';
   if (t === 'receipt') {
@@ -1110,7 +1120,7 @@ function showDocPreview(t) {
       <div class="ds-field"><b>The Sum of</b>${nairaWords(d.amount)}</div>
       <div class="ds-field"><b>Being Payment for</b>${d.forWhat || '—'}</div>
       <div class="frow" style="margin:8px 0">
-        ${['Cash','Cheque','Transfer','POS'].map(m => `<span class="fchip ${d.method === m ? 'active' : ''}">${d.method === m ? '☑' : '☐'} ${m}${d.method === m ? ' — ₦' + d.amount.toLocaleString() : ''}</span>`).join('')}
+        ${['Cash','Cheque','Transfer','POS'].map(m => `<span class="fchip ${d.method === m ? 'active' : ''}">${m}${d.method === m ? ' — ₦' + d.amount.toLocaleString() : ''}</span>`).join('')}
       </div>
       <div class="ds-field"><b>For: M-TEK FIRE & SAFETY LTD</b>${u ? u.name : ''}</div>
       <div class="ds-field"><b>For: CUSTOMER'S/CLIENT</b></div>
@@ -1119,9 +1129,9 @@ function showDocPreview(t) {
     const d = docState.invoice;
     body = `
       <div class="frow" style="margin-bottom:6px">
-        <span class="fchip ${d.milsRef ? 'active' : ''}">☐ MILS No: ${d.milsNo || ''}</span>
-        <span class="fchip ${d.recRef ? 'active' : ''}">☐ RECEIPT NO: ${d.recNo || ''}</span>
-        ${['WAY BILL','PRO-FORMER','SERVICE INVOICE','SALES INVOICE'].map(v => `<span class="fchip ${d.variant === v ? 'active' : ''}">${d.variant === v ? '☑' : '☐'} ${v}</span>`).join('')}
+        <span class="fchip ${d.milsRef ? 'active' : ''}">MILS No: ${d.milsNo || ''}</span>
+        <span class="fchip ${d.recRef ? 'active' : ''}">RECEIPT NO: ${d.recNo || ''}</span>
+        ${['WAY BILL','PRO-FORMER','SERVICE INVOICE','SALES INVOICE'].map(v => `<span class="fchip ${d.variant === v ? 'active' : ''}">${v}</span>`).join('')}
       </div>
       <div class="ds-field"><b>No:</b>${serial} · <b>LPO:</b>${d.lpo || '—'} · <b>Date:</b>${new Date().toLocaleDateString('en-GB')}</div>
       <div class="ds-field"><b>Name:</b>${d.name} · <b>Phone:</b>${d.phone || '—'}</div>
@@ -1159,17 +1169,38 @@ function showDocPreview(t) {
       <div class="ds-signed">✓ Digitally signed by ${u ? u.name : ''} · ${new Date().toLocaleString('en-GB')} ${sigImg}<span style="margin-left:auto;font-size:9px;color:var(--gray-500)">QR verification hash on PDF</span></div>
     </div>
     <div style="display:flex;gap:8px;margin-top:14px">
-      <button class="btn ghost sm" style="flex:1" onclick="toast('Pre-formatted message + PDF → WhatsApp (native share sheet in the app)')">💬 WhatsApp</button>
-      <button class="btn ghost sm" style="flex:1" onclick="toast('Pre-formatted message + PDF → Email (native share sheet in the app)')">✉ Email</button>
+      <button class="btn ghost sm" style="flex:1" onclick="toast('Pre-formatted message + PDF → WhatsApp (native share sheet in the app)')">WhatsApp</button>
+      <button class="btn ghost sm" style="flex:1" onclick="toast('Pre-formatted message + PDF → Email (native share sheet in the app)')">Email</button>
       <button class="btn primary sm" style="flex:1" onclick="toast('Saved as mtek_${t}_${serial}_[timestamp].pdf · share sheet opens (real file in the app/PWA)')">⤓ PDF + Share</button>
     </div>`);
   toast(`Document No: ${serial} signed & issued — serial continues the paper book.`, 'success');
 }
 
+function enterApp() {
+  $('#auth').style.display = 'none';
+  updateUserChip();
+  route = location.hash.replace('#/', '') || 'insights';
+  if (!NAV.some(n => n[0] === route)) route = 'insights';
+  render();
+  buildNav();
+}
+
+async function boot() {
+  try { await refreshState(); } catch (e) { console.error('state load failed', e); }
+  const email = sessionEmail();
+  if (email && !sessionUser) {
+    try {
+      const r = await api('/api/auth/login', { email, password: '__session_resume__' });
+      sessionUser = r.user;
+    } catch (e) { /* needs explicit login */ }
+  }
+  if (sessionUser) enterApp(); else renderAuth('login');
+}
+
 // debug/console handle (also used by smoke.test.js)
-window.__mtek = () => ({ products, customers, sales, receipts, txns, invoices, mils, adjustments, currentUser });
+window.__mtek = () => ({ products, customers, sales, receipts, txns, invoices, mils, adjustments, currentUser, serials, docs });
 window.__docsState = docState;              // live form state (same object reference)
 window.__setDocsTab = t => { docsTab = t; render(); };
 
 // boot
-if (currentUser()) enterApp(); else renderAuth('login');
+boot();

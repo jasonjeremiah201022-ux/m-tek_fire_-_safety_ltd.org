@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/format.dart' as fmt;
 import '../../core/theme.dart';
 import '../../data/models.dart';
-import '../../data/sample_store.dart';
+import '../../data/store.dart';
 import '../widgets.dart';
 
 /// TRANSACTIONS — unified money ledger (sale payments, invoice payments,
@@ -20,7 +20,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final store = SampleStore.instance;
+    final store = AppStore.instance;
     final txns = store.transactions.reversed.where((t) {
       return switch (_filter) {
         'sales' => t.type == TxnType.salePayment,

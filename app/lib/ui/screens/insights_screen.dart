@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import '../../core/format.dart' as fmt;
 import '../../core/theme.dart';
 import '../../data/models.dart';
-import '../../data/sample_store.dart';
+import '../../data/store.dart';
+import '../../documents/doc_models.dart';
+import '../screens/generator_screen.dart';
 import '../widgets.dart';
 
 /// INSIGHTS — revenue, avg. transaction value, revenue breakdown.
@@ -13,18 +15,20 @@ class InsightsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final store = SampleStore.instance;
+    final store = AppStore.instance;
     final byCat = store.revenueByCategory();
     final byMethod = store.revenueByMethod();
     final atv = store.avgTransactionValue();
 
-    return ListView(
-      padding: const EdgeInsets.all(20),
+    return Stack(
       children: [
-        const PageHeader(
-          title: 'Insights',
-          subtitle: 'Money in — today, this week, this month',
-        ),
+        ListView(
+          padding: const EdgeInsets.all(20),
+          children: [
+            const PageHeader(
+              title: 'Insights',
+              subtitle: 'Money in — today, this week, this month',
+            ),
         const SizedBox(height: 16),
         LayoutBuilder(builder: (context, c) {
           final cols = c.maxWidth > 1100 ? 3 : (c.maxWidth > 640 ? 2 : 1);
@@ -199,6 +203,9 @@ class InsightsScreen extends StatelessWidget {
           );
         }),
       ],
+    ),
+        const TransactionSpeedDial(),
+      ],
     );
   }
 
@@ -228,4 +235,91 @@ class InsightsScreen extends StatelessWidget {
         ProductCategory.solar => 'Solar',
         ProductCategory.automation => 'Automation & Surveillance',
       };
+}
+
+
+/// FAB that opens VERTICALLY UPWARDS with the three document actions
+/// (Invoice, Receipt, MILS) — starts a transaction from anywhere (owner
+/// request, 2026-08-29). Routes into the Document Generator pre-tabbed.
+class TransactionSpeedDial extends StatefulWidget {
+  const TransactionSpeedDial({super.key});
+
+  @override
+  State<TransactionSpeedDial> createState() => _TransactionSpeedDialState();
+}
+
+class _TransactionSpeedDialState extends State<TransactionSpeedDial>
+    with SingleTickerProviderStateMixin {
+  bool _open = false;
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 220),
+  );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _toggle() {
+    setState(() => _open = !_open);
+    _open ? _controller.forward() : _controller.reverse();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const actions = [
+      (Icons.request_quote_outlined, 'New Invoice', 'Invoice', DocType.invoice),
+      (Icons.receipt_long_outlined, 'New Receipt', 'Receipt', DocType.receipt),
+      (Icons.build_circle_outlined, 'New MILS Sheet', 'MILS', DocType.mils),
+    ];
+    return Positioned(
+      right: 20,
+      bottom: 20,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          for (var i = actions.length - 1; i >= 0; i--)
+            ScaleTransition(
+              scale: CurvedAnimation(
+                parent: _controller,
+                curve: Interval((actions.length - 1 - i) * 0.15, 1.0, curve: Curves.easeOutBack),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: FilledButton.tonalIcon(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Mtek.navy800,
+                    elevation: 3,
+                  ),
+                  onPressed: () => _openGenerator(actions[i].$4),
+                  icon: Icon(actions[i].$1, size: 18),
+                  label: Text(actions[i].$2),
+                ),
+              ),
+            ),
+          const SizedBox(height: 12),
+          FloatingActionButton(
+            backgroundColor: Mtek.brand600,
+            child: AnimatedRotation(
+              turns: _open ? 0.125 : 0,
+              duration: const Duration(milliseconds: 220),
+              child: const Icon(Icons.add, color: Colors.white, size: 28),
+            ),
+            onPressed: _toggle,
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openGenerator(DocType type) {
+    _toggle();
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => GeneratorScreen(initialType: type),
+    ));
+  }
 }

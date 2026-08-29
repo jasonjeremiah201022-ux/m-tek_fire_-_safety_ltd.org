@@ -6,9 +6,11 @@ import 'package:flutter/services.dart' show rootBundle;
 import '../../core/format.dart' as fmt;
 import '../../core/theme.dart';
 import '../../data/auth_store.dart';
+import '../../data/store.dart';
 import '../../documents/doc_models.dart';
 import '../../documents/forms_spec.dart';
 import '../../documents/pdf_painters.dart';
+import '../../documents/pdf_shared.dart';
 import '../../documents/serial_service.dart';
 import '../../documents/share_service.dart';
 import '../signature_dialog.dart';
@@ -17,7 +19,8 @@ import '../signature_dialog.dart';
 /// per-type form state (context preserved) → validation → Signature
 /// Passcode gate → PDF build → share via WhatsApp/email (fallback save).
 class GeneratorScreen extends StatefulWidget {
-  const GeneratorScreen({super.key});
+  final DocType initialType;
+  const GeneratorScreen({super.key, this.initialType = DocType.receipt});
 
   @override
   State<GeneratorScreen> createState() => _GeneratorScreenState();
@@ -25,6 +28,12 @@ class GeneratorScreen extends StatefulWidget {
 
 class _GeneratorScreenState extends State<GeneratorScreen> {
   DocType _type = DocType.receipt;
+
+  @override
+  void initState() {
+    super.initState();
+    _type = widget.initialType;
+  }
 
   // One live form state per type — switching tabs keeps context.
   final ReceiptDocState _receipt = ReceiptDocState();
@@ -520,6 +529,21 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
     };
     final filename = 'mtek_${typeKey}_$serial'
         '_${DateTime.now().millisecondsSinceEpoch}.pdf';
+
+    // persist into the document history ledger (offline-first; syncs later)
+    final hash = DateTime.now().microsecondsSinceEpoch.toRadixString(16);
+    await AppStore.instance.issueDocument(
+      type: typeKey,
+      serial: serial,
+      customer: customer,
+      total: switch (_type) {
+        DocType.receipt => _receipt.amount,
+        DocType.invoice => _invoice.grandTotal,
+        DocType.mils => _mils.grandTotal,
+      },
+      signedBy: signer.name,
+      verifyHash: hash,
+    );
 
     final outcome = await dispatchPdf(
       bytes: bytes,

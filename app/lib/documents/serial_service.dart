@@ -19,8 +19,17 @@ class SerialService {
 
   int current(String type) => _counters[type] ?? 0;
 
-  /// Admin operation (Settings → Serials, M2): set the counter to the
+  /// Admin operation (Settings → Serials): set the counter to the
   /// number of the last used physical page.
   void reseed(String type, int lastUsedNumber) =>
       _counters[type] = lastUsedNumber;
+
+  Map<String, dynamic> toJson() => Map<String, dynamic>.of(_counters);
+
+  void loadFrom(Map<String, dynamic> json) {
+    json.forEach((k, v) {
+      final n = v is int ? v : int.tryParse('$v');
+      if (n != null) _counters[k] = n;
+    });
+  }
 }
