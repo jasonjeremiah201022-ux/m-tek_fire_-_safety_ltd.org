@@ -143,3 +143,62 @@ with Settings → Pages → Source = **GitHub Actions**):
 Live URLs after activation: **app `https://mtekfiresafetyltd.github.io/m-tek_fire_safety_ltd.org/`**
 (the bare company URL opens the app), website `…/m-tek_fire_safety_ltd.org/site/`.
 
+## 12. Document Generation Module (owner blueprint, adopted)
+
+Owner's 5-part technical blueprint (Aug 2026), reconciled with this spec. Scope: dynamically map
+transactional entries to M-Tek's **physical corporate forms** — MILS, Payment Receipt, Sales
+Invoice — and export unalterable PDFs for WhatsApp/email dispatch.
+
+### 12.1 Adopted from blueprint
+
+- **Three form-accurate documents**, mirroring the physical carbon-copy books:
+  - **MILS**: MILS No, LPO No, entry/collection/next-service dates; **weight grid 1kg→75kg**;
+    **component checklist** (Nipple, Horn, Hose, Manometre, Valve, Strap, Label, Lever, Powder,
+    Pull Pin, Cartridge); footer with Prepared by / Approved by / Customer assent + statutory
+    maintenance conditions.
+  - **Payment Receipt**: title, **IRN** field, serial no, date; customer name/address/phone;
+    **"The Sum of" (amount in words)**; "Being Payment for"; method checkboxes **Cash, Cheque,
+    Transfer, POS**; footer "For: M-Tek Fire & Safety Ltd" / "For: Customer's Client" + non-returnable disclaimer.
+  - **Sales Invoice**: doc-type checkboxes (**Way Bill, Proforma, Service Invoice, Sales Invoice**),
+    serial no, phone/address/customer, **MILS No / Receipt No / LPO No** cross-references, date;
+    ledger table S/NO · Description · Qty · Rate · Amount (₦/K); summary with **7.5% VAT, Grand
+    Total, Advance Payment, Balance Payment**, amount in words, three sign-off blocks.
+- **Generator UI**: document-type switcher (segmented control) → per-type form state (context kept
+  per type); dynamic item rows with live Qty×Rate, VAT, Grand/Advance/Balance calculations;
+  MILS interactive weight grid + component toggles.
+- **Pipeline**: validate mandatory fields → `pdf` byte stream → cache as `mtek_<type>_[timestamp].pdf`
+  (`path_provider`) → `share_plus` system sheet (WhatsApp/email) with pre-formatted message body →
+  fallback: save to Downloads + toast. `url_launcher` deep-links (`wa.me`, `mailto:`) for known customers.
+- **History & serials**: local cache of every generated doc (view/reprint/re-share offline) +
+  auto-increment serial service per document type (no duplicates).
+- **PDF engine**: `pw.MultiPage` for long lists; cell widths/borders tuned to the physical books;
+  embedded logo (assets/img/logo-256.png) + statutory header (RC 1082534; HO: YY 12 Kazaure Road,
+  By Lagos Street Roundabout, Kaduna — 0803 349 8452; Branch: Plot 45, Sir P.I. Yakowa Way,
+  By Milton School, Kamazou — 0817 057 7595; mtekfiresafetyltd@gmail.com).
+- **Later phases**: Supabase backup of doc ledger + customer directory auto-complete; audit log;
+  analytics (docs/day, payments collected, **extinguishers serviced by weight class** → feeds
+  Insights); QA (calc unit tests: Qty×Rate, 7.5% VAT, amount-in-words; PDF snapshot tests);
+  template versioning (disclaimers/addresses/VAT rate as remote-config-style settings).
+
+### 12.2 Integrations with existing spec (decisions)
+
+| Blueprint item | Reconciliation |
+|---|---|
+| Digital signing | **Signature Passcode gate (§6.1) runs before PDF generation**; stamp `✓ Digitally signed by <name> + signature image` on every page footer |
+| Local DB "isar or sqflite" | **Drift (SQLite)** — already chosen (§5); type-safe, reactive, **web/PWA-compatible** (Isar's web support is weak) — one DB serves history + inventory + sync queue |
+| Serial formats | Continue `MTK-REC-####` / `MTK-INV-####` / `MTK-MILS-####`; IRN + LPO are additional stored fields |
+| Doc ↔ business data | Documents generated **from** app records (sale, invoice payment, MILS log) pre-fill automatically; **ad-hoc documents** also allowed (see open questions) |
+| Payment methods | Add `cheque` to `PaymentMethod` (was cash/transfer/pos/credit) |
+| Invoice model | Add: `docVariant` (waybill/proforma/service/sales), `lpoNo`, `irn`, `advancePayment`, `balance` computed, `amountInWords`, VAT lines per §7 |
+| MILS model | Add: weight-class counts map (kg→qty), component states map (11 parts), `lpoNo`, collection date |
+| Analytics | MILS weight-class volumes feed Insights as "extinguishers serviced" metric |
+| Unalterability | PDFs get document-hash + QR verification code (M4+); audit trail gives tamper evidence |
+
+### 12.3 Execution order
+
+1. **Phase A (next)** — Generator UI + PDF painters + signature gate + share/dispatch (Parts 1–2 + §6.1).
+2. **Phase B** — Drift history ledger, serial service, validation & fallbacks (Part 3) — same Drift layer as TXT import.
+3. **Phase C** — Supabase doc-ledger sync, customer auto-complete, audit log (Part 4 = §5 M3).
+4. **Phase D** — Analytics, QA suite, template versioning, archival (Part 5).
+
+
