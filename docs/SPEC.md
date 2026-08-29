@@ -149,6 +149,17 @@ Owner's 5-part technical blueprint (Aug 2026), reconciled with this spec. Scope:
 transactional entries to M-Tek's **physical corporate forms** — MILS, Payment Receipt, Sales
 Invoice — and export unalterable PDFs for WhatsApp/email dispatch.
 
+**✅ Photos of all three physical forms received & transcribed — see
+[`docs/forms/FORM_LAYOUTS.md`](forms/FORM_LAYOUTS.md) (authoritative layout source).**
+Corrections learned from the physical forms: MILS has **12 component rows (incl. `Seal`)**;
+weight classes fixed at **1, 2, 3, 5, 6, 9, 12, 25, 50, 75 kg**; invoice amount column is
+**dual ₦/# + K (kobo)**; invoice doc-type cluster includes MILS No / Receipt No cross-refs and
+the form's own spelling **"PRO-FORMER"** (kept as printed); receipt methods are a 2×2 grid
+**Cash / Cheque / Transfer / POS**; serials are **pre-printed** (Receipt 2131, MILS 925,
+Invoice 4335) → the app's serial service is **Admin-seedable** to continue book numbering
+without collisions; MILS footer has four assent blocks (Prepared / Approved / Customer's /
+Collector's) + Caution fine print (transcribed, owner to confirm exact wording).
+
 ### 12.1 Adopted from blueprint
 
 - **Three form-accurate documents**, mirroring the physical carbon-copy books:

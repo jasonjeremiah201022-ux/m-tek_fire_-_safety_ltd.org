@@ -71,8 +71,7 @@ input, select { font-family: inherit; font-size: 13px; }
 .cols-3 { grid-template-columns: repeat(3, 1fr); }
 .cols-2 { grid-template-columns: repeat(2, 1fr); }
 .cols-4 { grid-template-columns: repeat(4, 1fr); }
-@media (max-width: 1100px) { .cols-3, .cols-4 { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 640px)  { .cols-2, .cols-3, .cols-4 { grid-template-columns: 1fr; } .two-col { grid-template-columns: 1fr !important; } }
+
 
 .stat { padding: 18px; }
 .stat .row { display: flex; align-items: center; gap: 10px; }
@@ -179,11 +178,7 @@ methods {}
 .empty { color: var(--gray-500); text-align: center; padding: 26px 10px; font-size: 13px; }
 
 .hamb-only { display: none; }
-@media (max-width: 1023px) {
-  .sidebar { display: none; }
-  .hamb { display: block; }
-  .content { padding: 14px; }
-}
+
 .badge-count { background: var(--brand-600); color: #fff; border-radius: 999px; font-size: 10px; padding: 2px 7px; font-weight: 700; }
 .donut-center { font-weight: 800; font-size: 15px; fill: var(--gray-900); }
 .donut-sub { font-size: 9.5px; fill: var(--gray-500); }
@@ -225,3 +220,81 @@ methods {}
 .logoutbtn { font-size: 15px; opacity: .75; padding: 6px; }
 .logoutbtn:hover { opacity: 1; }
 .notsigned { color: var(--warn); }
+
+/* ================= RESPONSIVE v2 — fluid at every size ================= */
+.shell { height: 100dvh; }
+.content { padding: clamp(12px, 2.2vw, 24px); }
+.pagehead h1 { font-size: clamp(17px, 2.2vw, 22px); }
+.pagehead { margin-bottom: clamp(12px, 1.8vw, 18px); }
+
+/* stat grids */
+@media (max-width: 1100px) { .cols-3 { grid-template-columns: repeat(2, 1fr); } .cols-4 { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 620px)  { .cols-2, .cols-3, .cols-4 { grid-template-columns: 1fr; } .two-col { grid-template-columns: 1fr !important; } }
+
+/* sidebar / drawer */
+@media (max-width: 1023px) {
+  .sidebar { display: none; }
+  .hamb { display: block; }
+}
+.m-drawer { width: min(80vw, 280px); }
+
+/* topbar condenses */
+@media (max-width: 620px) {
+  .topbar { height: 52px; padding: 0 12px; gap: 8px; }
+  .userchip .uname { display: none; }
+  .brand .t1 { font-size: 12px; }
+}
+
+/* lists tighten on phones */
+@media (max-width: 620px) {
+  .list .item { padding: 11px 12px; gap: 10px; }
+  .avatar { width: 32px; height: 32px; font-size: 11px; }
+  .list .item .t { font-size: 12.5px; }
+  .list .item .s { font-size: 11px; }
+  .money { font-size: 12.5px; }
+  .stat { padding: 14px; }
+  .stat .val { font-size: 19px; }
+  .btn { padding: 11px 14px; font-size: 12.5px; }
+}
+
+/* filter chip rows: horizontally swipeable on phones */
+.chiprow { display: flex; flex-wrap: wrap; align-items: center; }
+@media (max-width: 620px) {
+  .chiprow { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none;
+             margin: 0 -12px 10px; padding: 2px 12px 6px; }
+  .chiprow::-webkit-scrollbar { display: none; }
+  .chiprow .fchip { white-space: nowrap; flex: 0 0 auto; margin: 0 6px 0 0; }
+}
+
+/* modal → bottom sheet on phones */
+@media (max-width: 620px) {
+  .modal-back { align-items: flex-end; padding: 0; }
+  .modal { border-radius: 18px 18px 0 0; max-width: 100vw; max-height: 90dvh;
+           padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+}
+
+/* POS: cart becomes a slide-up sheet under 900px */
+@media (max-width: 899px) {
+  .pos-wrap { grid-template-columns: 1fr; }
+  .content.has-pos { padding-bottom: 84px; }
+  .cart-box {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 35;
+    border-radius: 18px 18px 0 0; box-shadow: 0 -8px 30px rgba(6,11,22,.28);
+    max-height: 78dvh; overflow-y: auto;
+    transform: translateY(calc(100% - 56px));
+    transition: transform .25s ease;
+    padding-bottom: max(14px, env(safe-area-inset-bottom));
+  }
+  .cart-box.open { transform: translateY(0); }
+  .cart-box .ttl { cursor: pointer; font-size: 13px; }
+  .cart-box .ttl .grand { color: var(--brand-700); font-weight: 800; }
+  .cart-chevron { font-size: 15px; color: var(--gray-500); padding: 4px 8px; }
+}
+@media (min-width: 900px) { .cart-chevron { display: none; } }
+
+/* very small phones */
+@media (max-width: 400px) {
+  .brand .t2 { display: none; }
+  .pagehead .actions { width: 100%; }
+  .pagehead .actions .btn { flex: 1; justify-content: center; }
+}

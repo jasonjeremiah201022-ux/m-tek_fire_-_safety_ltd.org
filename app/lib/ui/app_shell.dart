@@ -35,8 +35,15 @@ const destinations = <Destination>[
   _mils, _sales, _stock, _summary,
 ];
 
-/// Responsive shell: NavigationRail on wide screens (desktop/tablet),
-/// drawer + AppBar menu on narrow screens (phones).
+/// Primary destinations for the phone bottom bar; everything else lives
+/// behind "More" (opens the drawer).
+const _bottomBarIndexes = [0, 6, 7, 5]; // Insights, Sales, Stock, MILS
+
+/// Responsive shell — four tiers:
+///   ≥1280px : NavigationRail with extended labels (desktop)
+///   ≥1000px : compact NavigationRail (small desktop / tablet landscape)
+///    ≥640px : drawer + AppBar menu (tablet portrait / large phones)
+///    <640px : bottom NavigationBar (5 slots incl. "More") + drawer
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
 
@@ -50,7 +57,10 @@ class _AppShellState extends State<AppShell> {
 
   @override
   Widget build(BuildContext context) {
-    final wide = MediaQuery.of(context).size.width >= 1000;
+    final w = MediaQuery.of(context).size.width;
+    final extended = w >= 1280;
+    final useRail = w >= 1000;
+    final useBottomBar = w < 640;
     final dest = destinations[_index];
 
     final appBar = AppBar(
@@ -58,10 +68,11 @@ class _AppShellState extends State<AppShell> {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: Image.asset('assets/logo.png', height: 34, errorBuilder: (_, __, ___) => const SizedBox.shrink()),
+            child: Image.asset('assets/logo.png', height: 34,
+                errorBuilder: (_, __, ___) => const SizedBox.shrink()),
           ),
           const SizedBox(width: 10),
-          Text(dest.label, style: const TextStyle(fontWeight: FontWeight.w700)),
+          Flexible(child: Text(dest.label, style: const TextStyle(fontWeight: FontWeight.w700), overflow: TextOverflow.ellipsis)),
         ],
       ),
       actions: [
@@ -76,7 +87,7 @@ class _AppShellState extends State<AppShell> {
           onPressed: () => AuthStore.instance.signOut(),
         ),
       ],
-      leading: wide
+      leading: useRail
           ? null
           : IconButton(
               icon: const Icon(Icons.menu),
@@ -84,37 +95,37 @@ class _AppShellState extends State<AppShell> {
             ),
     );
 
-    final body = wide
-        ? Row(
-            children: [
-              _rail(),
-              Expanded(child: dest.screen),
-            ],
-          )
-        : dest.screen;
+    Widget body;
+    if (useRail) {
+      body = Row(children: [
+        _rail(extended: extended),
+        Expanded(child: dest.screen),
+      ]);
+    } else {
+      body = dest.screen;
+    }
 
     return Scaffold(
       key: _scaffoldKey,
       appBar: appBar,
-      drawer: wide ? null : _drawer(context),
+      drawer: useRail ? null : _drawer(context),
       body: body,
+      bottomNavigationBar: useBottomBar ? _bottomBar() : null,
     );
   }
 
-  Widget _rail() {
+  Widget _rail({required bool extended}) {
     return NavigationRail(
       selectedIndex: _index,
       onDestinationSelected: (i) => setState(() => _index = i),
-      labelType: NavigationRailLabelType.all,
+      extended: extended,
+      labelType: extended ? null : NavigationRailLabelType.all,
       leading: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12),
-        child: Column(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: Image.asset('assets/logo.png', width: 40, height: 40, errorBuilder: (_, __, ___) => const SizedBox.shrink()),
-            ),
-          ],
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: Image.asset('assets/logo.png', width: 40, height: 40,
+              errorBuilder: (_, __, ___) => const SizedBox.shrink()),
         ),
       ),
       destinations: [
@@ -124,6 +135,36 @@ class _AppShellState extends State<AppShell> {
             selectedIcon: Icon(d.selectedIcon),
             label: Text(d.label),
           ),
+      ],
+    );
+  }
+
+  Widget _bottomBar() {
+    final moreSelected = !_bottomBarIndexes.contains(_index);
+    return NavigationBar(
+      height: 64,
+      selectedIndex: _bottomBarIndexes.indexOf(_index) == -1
+          ? _bottomBarIndexes.length
+          : _bottomBarIndexes.indexOf(_index),
+      onDestinationSelected: (i) {
+        if (i < _bottomBarIndexes.length) {
+          setState(() => _index = _bottomBarIndexes[i]);
+        } else {
+          _scaffoldKey.currentState?.openDrawer();
+        }
+      },
+      destinations: [
+        for (final idx in _bottomBarIndexes)
+          NavigationDestination(
+            icon: Icon(destinations[idx].icon),
+            selectedIcon: Icon(destinations[idx].selectedIcon),
+            label: destinations[idx].label,
+          ),
+        const NavigationDestination(
+          icon: Icon(Icons.menu),
+          selectedIcon: Icon(Icons.menu),
+          label: 'More',
+        ),
       ],
     );
   }
@@ -138,7 +179,8 @@ class _AppShellState extends State<AppShell> {
       children: [
         const Padding(
           padding: EdgeInsets.fromLTRB(28, 24, 16, 12),
-          child: Text('M-Tek Fire & Safety', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: Colors.white)),
+          child: Text('M-Tek Fire & Safety',
+              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: Colors.white)),
         ),
         for (final d in destinations)
           NavigationDrawerDestination(icon: Icon(d.icon), label: Text(d.label)),

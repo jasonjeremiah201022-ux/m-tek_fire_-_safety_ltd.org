@@ -189,6 +189,7 @@ function render() {
       <div class="actions">${routeButtons()}</div>
     </div>
     ${body}`;
+  app.classList.toggle('has-pos', route === 'sales');
   if (route === 'sales') bindPos();
   if (route === 'stock') bindStockSearch();
   if (route === 'customers') bindCustSearch();
@@ -281,7 +282,7 @@ function transactions() {
     (txnFilter === 'invoices' && t.type === 'invoice') ||
     (txnFilter === 'refunds' && t.type === 'refund'));
   return `
-    <div style="margin-bottom:10px">
+    <div class="chiprow" style="margin-bottom:10px">
       ${[['all', 'All'], ['sales', 'Sale payments'], ['invoices', 'Invoice payments'], ['refunds', 'Refunds']]
         .map(([k, l]) => `<button class="fchip ${txnFilter === k ? 'active' : ''}" onclick="txnFilter='${k}';render()">${l}</button>`).join('')}
     </div>
@@ -445,7 +446,7 @@ function milsScreen() {
     (milsFilter === 'overdue' && l.overdue) || (milsFilter === 'upcoming' && !l.overdue));
   const overdueCount = mils.filter(l => l.overdue).length;
   return `
-    <div style="margin-bottom:10px">
+    <div class="chiprow" style="margin-bottom:10px">
       ${[['all', `All (${mils.length})`], ['overdue', `Overdue (${overdueCount})`], ['upcoming', 'Upcoming']]
         .map(([k, l]) => `<button class="fchip ${milsFilter === k ? 'active' : ''}" onclick="milsFilter='${k}';render()">${l}</button>`).join('')}
     </div>
@@ -482,7 +483,13 @@ window.milsDetail = id => {
 };
 
 // ---------- POS ----------
-let cart = {}, posCust = null, posMethod = 'cash';
+let cart = {}, posCust = null, posMethod = 'cash', cartOpen = false;
+window.toggleCart = e => {
+  if (e) e.stopPropagation();
+  if (window.innerWidth >= 900) return;
+  cartOpen = !cartOpen;
+  $('#cart-box')?.classList.toggle('open', cartOpen);
+};
 function salesScreen() {
   return `<div class="pos-wrap">
     <div class="card list" id="cat-list">
@@ -499,10 +506,12 @@ function salesScreen() {
           </div>
         </div>`).join('')}
     </div>
-    <div class="card cart-box">
-      <div class="ttl">🛒 CURRENT SALE <span class="badge-count">${Object.keys(cart).length}</span>
+    <div class="card cart-box ${cartOpen ? 'open' : ''}" id="cart-box">
+      <div class="ttl" onclick="toggleCart(event)">🛒 CURRENT SALE <span class="badge-count">${Object.keys(cart).length}</span>
+        ${Object.keys(cart).length ? `<span class="grand">· ${naira(cartTotal())}</span>` : ''}
         <span style="flex:1"></span>
-        ${Object.keys(cart).length ? '<button style="color:var(--brand-600);font-size:12px;font-weight:600" onclick="cart={};render()">Clear</button>' : ''}
+        ${Object.keys(cart).length ? `<button style="color:var(--brand-600);font-size:12px;font-weight:600" onclick="event.stopPropagation();cart={};cartOpen=false;render()">Clear</button>` : ''}
+        <button class="cart-chevron" onclick="toggleCart(event)">${cartOpen ? '▼' : '▲'}</button>
       </div>
       <select id="pos-cust">
         <option value="" disabled ${posCust ? '' : 'selected'}>Select customer…</option>
@@ -529,6 +538,7 @@ window.cartQty = (pid, d) => {
   const p = P[pid];
   if (!cart[pid]) cart[pid] = { p, qty: 0 };
   cart[pid].qty += d;
+  if (window.innerWidth < 900 && Object.keys(cart).length === 1 && d > 0) cartOpen = true;
   if (cart[pid].qty <= 0) delete cart[pid];
   else if (!p.service && cart[pid].qty > p.qty) { cart[pid].qty = p.qty; toast(`Only ${p.qty} ${p.unit} of ${p.name} in stock`); }
   render();
@@ -555,7 +565,7 @@ window.doCompleteSale = () => {
     receipts.push({ no: 'MTK-REC-' + String(receipts.length + 1).padStart(4, '0'), d: '29 Aug, now', amt: cartTotal(), m: posMethod, cust: C[posCust].name, for: 'S' + sales.length, by: signer, signed: signer });
     toast(`Sale complete — ${naira(cartTotal())}. Receipt signed by ${signer}, stock updated.`, 'success');
   }
-  cart = {}; posCust = null;
+  cart = {}; posCust = null; cartOpen = false;
   render();
 };
 
@@ -569,7 +579,7 @@ function stockScreen() {
   return `
     <div class="section-lbl" style="margin-top:0">${products.length} items · ${low} low/out · ${naira(stockValue())} at cost</div>
     <input class="search" id="stockq" placeholder="Search by name or ID…" value="${stockQ}">
-    <div style="margin-bottom:10px">
+    <div class="chiprow" style="margin-bottom:10px">
       <button class="fchip ${!stockCat ? 'active' : ''}" onclick="stockCat='';render()">ALL</button>
       ${Object.keys(CATS).map(c => `<button class="fchip ${stockCat === c ? 'active' : ''}" onclick="stockCat='${c}';render()">${c.toUpperCase()}</button>`).join('')}
     </div>
@@ -634,7 +644,7 @@ function summaryScreen() {
   const rev = sumPeriod === 'today' ? revToday() : sumPeriod === 'week' ? revWeek() : revAll();
   const profit = profitSince(day);
   return `
-    <div style="margin-bottom:14px">
+    <div class="chiprow" style="margin-bottom:14px">
       ${[['today', 'Daily'], ['week', 'Weekly'], ['month', 'Monthly']]
         .map(([k, l]) => `<button class="fchip ${sumPeriod === k ? 'active' : ''}" onclick="sumPeriod='${k}';render()">${l}</button>`).join('')}
     </div>
@@ -848,7 +858,8 @@ window.signOut = () => {
 
 function updateUserChip() {
   const u = currentUser();
-  $('#userchip').innerHTML = u ? `${u.name} <span class="urole">${u.role.toUpperCase()}</span>` : '';
+  $('#uname').textContent = u ? u.name : '';
+  $('#urole').textContent = u ? u.role.toUpperCase() : '';
   $('#logoutbtn').style.display = u ? '' : 'none';
 }
 
