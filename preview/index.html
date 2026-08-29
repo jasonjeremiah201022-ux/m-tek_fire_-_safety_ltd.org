@@ -37,7 +37,8 @@
         <span class="pagetitle" id="pagetitle">Insights</span>
         <span class="spacer"></span>
         <span class="bell">🔔</span>
-        <span style="font-size:12px;opacity:.75">Admin</span>
+        <span class="userchip" id="userchip"></span>
+        <button class="logoutbtn" id="logoutbtn" onclick="signOut()" title="Sign out">⏻</button>
       </div>
       <div class="content" id="app"></div>
     </div>
@@ -52,6 +53,9 @@
     </div>
     <div class="nav" id="m-nav"></div>
   </nav>
+
+  <!-- auth layer (login / create account with Signature Passcode) -->
+  <div id="auth"></div>
 
   <script src="app.js"></script>
 </body>

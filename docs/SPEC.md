@@ -10,11 +10,13 @@
 
 | Target | Artifact | Notes |
 |---|---|---|
-| Android (phone/tablet) | APK | Sales floor + field use |
-| Windows (desktop) | exe/installer | Office/counter use |
-| Web (PWA) | Static build served under **m-tekfireandsafety.org/app** | Installable to home screen, own manifest (name, icons, brand colors) + service worker; `base href` configured for the subpath |
+| Android (phone/tablet) | APK + AAB | Sales floor + field use |
+| Windows (desktop) | exe (zipped) | Office/counter use |
+| Web (PWA) | Static build served at **`https://mtekfiresafetyltd.github.io/m-tek_fire_safety_ltd.org/app/`** | Company GitHub Pages URL. Installable to home screen, own manifest (name, icons, brand colors) + service worker; `base href=/m-tek_fire_safety_ltd.org/app/` |
 
-One Flutter (Dart) codebase in `/app` produces all three.
+One Flutter (Dart) codebase in `/app` produces all three. CI (see §11) rebuilds the
+APK/AAB/PWA/EXE on every push to `main` and redeploys the PWA — progress on the
+codebase automatically updates everything.
 
 ## 2. Repository Layout
 
@@ -68,7 +70,7 @@ One Flutter (Dart) codebase in `/app` produces all three.
 
 Extensible: "Supabase + Mongo and maybe more as needed."
 
-## 6. Roles
+## 6. Roles & Authentication
 
 | Capability | Admin | Sales |
 |---|---|---|
@@ -80,6 +82,27 @@ Extensible: "Supabase + Mongo and maybe more as needed."
 | Settings, VAT toggle, staff management | ✅ | — |
 
 (One shared Sales login is acceptable at launch; technician self-service view is a future role.)
+
+### 6.1 Digital Signature Passcode (no more paper signing)
+
+Every user, **at account creation**, sets two separate secrets:
+
+| Secret | Purpose |
+|---|---|
+| **Account password** | Signs in to the app |
+| **Signature passcode** | Acts as the user's signature — required to *issue/authorise* any document |
+
+Rules:
+
+- The signature passcode is **never** the same field as the password and is hashed separately.
+- Users also draw their signature once (optional but encouraged); it is stored and stamped
+  onto documents next to the verified-passcode mark.
+- Documents requiring a signature passcode before issue: **Receipts, Invoices,
+  invoice payments, completed Sales, MILS service logs, refunds**.
+- Signed documents carry: `✓ Digitally signed by <full name> · <date/time> · <signature image>` .
+- Wrong signature passcode → document is **not** issued.
+- M3: passcodes stored as salted hashes in Supabase (`staff.signature_passcode_hash`);
+  signature images in Supabase Storage; every signature event written to an audit table.
 
 ## 7. Documents, Printing & Sharing
 
@@ -104,3 +127,19 @@ Extensible: "Supabase + Mongo and maybe more as needed."
 ## 10. Design
 
 Matches the website's brand system (Sora/Poppins, brand color tokens from `styles.css`, M-Tek logo from assets). Material 3, mobile-first layouts that expand gracefully to desktop width.
+
+## 11. CI/CD — "progress updates everything"
+
+Workflow (sourced at `docs/ci/build-app.yml`; activate by copying to
+`.github/workflows/build-app.yml` on the **company repo** `mtekfiresafetyltd/m-tek_fire_safety_ltd.org`,
+with Settings → Pages → Source = **GitHub Actions**):
+
+| Push to `main` (touches `app/**`) | Manual dispatch |
+|---|---|
+| Build **PWA** (`--base-href=/m-tek_fire_safety_ltd.org/app/`) → artifact | All of the left column, **plus** deploy website + PWA to Pages |
+| Build **APK** + **AAB** → artifacts | Optionally cut a GitHub Release with APK/AAB/EXE attached |
+| Build **Windows EXE** (zipped) → artifact | |
+
+Live URLs after activation: website `https://mtekfiresafetyltd.github.io/m-tek_fire_safety_ltd.org/`,
+app `https://mtekfiresafetyltd.github.io/m-tek_fire_safety_ltd.org/app/`.
+

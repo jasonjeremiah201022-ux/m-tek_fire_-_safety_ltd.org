@@ -145,6 +145,7 @@ class SampleStore extends ChangeNotifier {
     required List<SaleItem> items,
     required PaymentMethod method,
     int discount = 0,
+    required String signedBy,
   }) {
     final now = DateTime.now();
     final sale = Sale(
@@ -169,7 +170,7 @@ class SampleStore extends ChangeNotifier {
 
     if (method == PaymentMethod.credit) {
       // bill now, pay later → invoice (payment posts a txn + receipt later)
-      final number = 'MTK-INV-${invoices.length + 1}'.padLeft(11, '0');
+      final number = 'MTK-INV-${(invoices.length + 1).toString().padLeft(4, '0')}';
       invoices.add(Invoice(
         number: number,
         issued: now,
@@ -184,12 +185,13 @@ class SampleStore extends ChangeNotifier {
         method: method,
         forDoc: sale.id,
         customer: customer,
+        signedBy: signedBy,
       );
     }
     notifyListeners();
   }
 
-  void payInvoice(Invoice invoice, int amount) {
+  void payInvoice(Invoice invoice, int amount, {required String signedBy}) {
     final idx = invoices.indexOf(invoice);
     final now = DateTime.now();
     invoices[idx] = Invoice(
@@ -206,6 +208,7 @@ class SampleStore extends ChangeNotifier {
       method: PaymentMethod.transfer,
       forDoc: invoice.number,
       customer: invoice.customer,
+      signedBy: signedBy,
     );
     notifyListeners();
   }
@@ -230,6 +233,7 @@ class SampleStore extends ChangeNotifier {
     required PaymentMethod method,
     required String forDoc,
     required Customer customer,
+    required String signedBy,
   }) {
     _txnSeq += 1;
     transactions.add(Transaction(
@@ -250,6 +254,7 @@ class SampleStore extends ChangeNotifier {
       amount: amount,
       method: method,
       forDoc: forDoc,
+      signedBy: signedBy,
       issuedBy: 'Admin',
     ));
   }
@@ -365,6 +370,7 @@ class SampleStore extends ChangeNotifier {
         amount: amount,
         method: m,
         forDoc: forDoc,
+        signedBy: 'Admin',
         issuedBy: 'Admin',
       ));
     }

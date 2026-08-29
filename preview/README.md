@@ -8,6 +8,11 @@ and derived math (same ₦ figures, verified by `smoke.test.js`).
 
 ## What's interactive
 
+- **Lock screen** — sign in (`admin@mtek.demo` / `admin123`) or create an account
+  with a **Signature Passcode** (separate from the password) + optional drawn signature
+- **Signature gate** — completing a sale or recording an invoice payment asks for the
+  Signature Passcode; wrong passcode = document NOT issued; receipts stamp
+  "✓ Digitally signed by …" with the drawn signature
 - All **9 screens** via the sidebar (drawer on narrow widths)
 - **Sales (POS)**: add items → pick customer → payment method → *Complete sale*
   → stock decrements, Transaction + Receipt issued (credit → Invoice)

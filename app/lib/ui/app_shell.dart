@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/theme.dart';
+import '../data/auth_store.dart';
 import 'screens/customers_screen.dart';
 import 'screens/insights_screen.dart';
 import 'screens/invoices_screen.dart';
@@ -66,8 +67,13 @@ class _AppShellState extends State<AppShell> {
       actions: [
         IconButton(icon: const Icon(Icons.notifications_outlined), onPressed: () {}),
         const Padding(
-          padding: EdgeInsets.only(right: 16),
+          padding: EdgeInsets.only(right: 8),
           child: Center(child: Text('Admin', style: TextStyle(fontSize: 13))),
+        ),
+        IconButton(
+          tooltip: 'Sign out',
+          icon: const Icon(Icons.logout),
+          onPressed: () => AuthStore.instance.signOut(),
         ),
       ],
       leading: wide

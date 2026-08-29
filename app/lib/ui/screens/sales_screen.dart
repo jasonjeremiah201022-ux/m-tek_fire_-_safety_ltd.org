@@ -4,6 +4,7 @@ import '../../core/format.dart' as fmt;
 import '../../core/theme.dart';
 import '../../data/models.dart';
 import '../../data/sample_store.dart';
+import '../signature_dialog.dart';
 import '../widgets.dart';
 
 /// SALES — the POS screen. Complete a sale → stock decremented, and a
@@ -207,19 +208,29 @@ class _SalesScreenState extends State<SalesScreen> {
     });
   }
 
-  void _complete() {
+  Future<void> _complete() async {
+    final signer = await confirmSignature(context);
+    if (signer == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Not signed — sale not issued.')));
+      }
+      return;
+    }
     final store = SampleStore.instance;
     store.completeSale(
       customer: _customer!,
       items: _cart.values.toList(),
       method: _method,
+      signedBy: signer.name,
     );
     setState(() => _cart.clear());
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       backgroundColor: Mtek.success,
       content: Text(_method == PaymentMethod.credit
-          ? 'Invoice created — payable later, stock already deducted.'
-          : 'Sale complete — receipt issued, stock updated.'),
+          ? 'Invoice created & signed by ${signer.name} — payable later, stock deducted.'
+          : 'Sale complete — receipt signed by ${signer.name}, stock updated.'),
     ));
   }
 }

@@ -75,7 +75,7 @@ txns.forEach((t, i) => (t.id = 'TXN-' + String(i + 1).padStart(4, '0')));
 // receipts mirror txns 1:1 (same order)
 const receipts = txns.map((t, i) => ({
   no: 'MTK-REC-' + String(i + 1).padStart(4, '0'),
-  d: t.d, amt: Math.abs(t.amt), m: t.m,
+  d: t.d, amt: Math.abs(t.amt), m: t.m, signed: 'Admin',
   cust: t.ref.startsWith('MTK-INV')
     ? C[invoices.find(v => v.no === t.ref).cust].name
     : (t.type === 'refund' ? C.C003.name : C[sales.find(s => s.id === t.ref).cust].name),
@@ -372,6 +372,9 @@ window.receiptPreview = no => {
     <div class="kv"><b>Being payment for</b><span>${r.for}</span></div>
     <div class="kv"><b>Method</b><span>${METHOD_META[r.m][1]}</span></div>
     <div class="receipt-amt">TOTAL: ${naira(r.amt)}</div>
+    <div class="stamp">✓ Digitally signed by ${r.signed || r.by} — ${r.d} · 2026
+    </div>
+    ${(users.find(u => u.name === (r.signed || r.by)) || {}).signaturePng ? `<img class="stamp" src="${users.find(u => u.name === (r.signed || r.by)).signaturePng}" style="margin:4px 0 8px">` : ''}
     <div style="font-size:11px;color:var(--gray-500)">Issued by: ${r.by} — thank you for your business. VAT configurable per document (M2 setting).</div>
     <div style="display:flex;gap:8px;margin-top:16px">
       <button class="btn ghost sm" style="flex:1" onclick="toast('Sharing via wa.me — wired in M4')">💬 WhatsApp</button>
@@ -414,18 +417,24 @@ window.invPay = no => {
     <div class="kv"><b>Invoice total</b><span>${naira(invTotal(v))}</span></div>
     <div class="kv"><b>Balance</b><span>${naira(bal)}</span></div>
     <p style="font-size:12.5px;color:var(--gray-500);margin:10px 0 16px">Recording a payment posts a <b>Transaction</b>, issues a <b>Receipt</b> (MTK-REC-…) and clears credit on the customer — automatically.</p>
-    <button class="btn primary" style="width:100%" onclick="doInvPay('${no}')">Record full payment (transfer)</button>`);
+    <button class="btn primary" style="width:100%" onclick="signThenPay('${no}')">✍️ Continue — sign &amp; record payment</button>`);
+};
+window.signThenPay = no => {
+  const v = invoices.find(x => x.no === no);
+  const bal = invTotal(v) - v.paid;
+  signGate(`Payment of ${naira(bal)} on ${no} (${C[v.cust].name})`, () => doInvPay(no));
 };
 window.doInvPay = no => {
+  const signer = currentUser().name;
   const v = invoices.find(x => x.no === no);
   const bal = invTotal(v) - v.paid;
   v.paid += bal;
   const cust = customers.find(c => c.id === v.cust);
   cust.balance -= bal;
   txns.push({ id: 'TXN-' + String(txns.length + 1).padStart(4, '0'), d: '29 Aug, 14:0' + txns.length, type: 'invoice', amt: bal, m: 'transfer', ref: no });
-  receipts.push({ no: 'MTK-REC-' + String(receipts.length + 1).padStart(4, '0'), d: '29 Aug, 14:0' + (txns.length - 1), amt: bal, m: 'transfer', cust: cust.name, for: no, by: 'Admin' });
+  receipts.push({ no: 'MTK-REC-' + String(receipts.length + 1).padStart(4, '0'), d: '29 Aug, 14:0' + (txns.length - 1), amt: bal, m: 'transfer', cust: cust.name, for: no, by: signer, signed: signer });
   closeModal();
-  toast(`Payment recorded — receipt issued to ${cust.name}.`, 'success');
+  toast(`Payment recorded — receipt issued to ${cust.name}, signed by ${signer}.`, 'success');
   render();
 };
 
@@ -528,18 +537,23 @@ function bindPos() {
   $('#pos-cust')?.addEventListener('change', e => { posCust = e.target.value || null; render(); });
 }
 window.completeSale = () => {
+  if (!Object.keys(cart).length || !posCust) return;
+  signGate(`Sale of ${naira(cartTotal())} to ${C[posCust].name}`, () => doCompleteSale());
+};
+window.doCompleteSale = () => {
+  const signer = currentUser().name;
   const items = Object.values(cart).map(l => [l.p.id, l.qty]);
   // decrement stock
   items.forEach(([pid, q]) => { if (!P[pid].service) P[pid].qty -= q; });
   if (posMethod === 'credit') {
     invoices.unshift({ no: 'MTK-INV-' + String(invoices.length + 1).padStart(4, '0'), issued: 29, due: '12 Sep 2026', cust: posCust, items, paid: 0 });
     C[posCust].balance += items.reduce((s, [pid, q]) => s + P[pid].price * q, 0);
-    toast('Invoice created — payable later. Stock already deducted.', 'success');
+    toast(`Invoice created & signed by ${signer} — payable later. Stock deducted.`, 'success');
   } else {
     txns.push({ id: 'TXN-' + String(txns.length + 1).padStart(4, '0'), d: '29 Aug, now', type: 'sale', amt: cartTotal(), m: posMethod, ref: 'S' + (sales.length + 1) });
     sales.push({ id: 'S' + (sales.length + 1), day: 29, hour: 14, cust: posCust, method: posMethod, items });
-    receipts.push({ no: 'MTK-REC-' + String(receipts.length + 1).padStart(4, '0'), d: '29 Aug, now', amt: cartTotal(), m: posMethod, cust: C[posCust].name, for: 'S' + sales.length, by: 'Admin' });
-    toast(`Sale complete — ${naira(cartTotal())}. Receipt issued, stock updated.`, 'success');
+    receipts.push({ no: 'MTK-REC-' + String(receipts.length + 1).padStart(4, '0'), d: '29 Aug, now', amt: cartTotal(), m: posMethod, cust: C[posCust].name, for: 'S' + sales.length, by: signer, signed: signer });
+    toast(`Sale complete — ${naira(cartTotal())}. Receipt signed by ${signer}, stock updated.`, 'success');
   }
   cart = {}; posCust = null;
   render();
@@ -698,7 +712,186 @@ window.addEventListener('hashchange', () => {
   if (NAV.some(n => n[0] === r) && r !== route) { route = r; render(); buildNav(); }
 });
 
+// =====================================================================
+// AUTH — account password + separate SIGNATURE PASSCODE (SPEC §6.1)
+// Preview mirrors app/lib/data/auth_store.dart. Demo hashing only;
+// M3 moves verification to Supabase Auth with salted hashes.
+// =====================================================================
+const djb2 = s => { let h = 5381; for (const c of 'mtek::' + s) { h = ((h << 5) + h + c.charCodeAt(0)) >>> 0; } return h.toString(16); };
+const LS_USERS = 'mtek_users_v1', LS_SESSION = 'mtek_session_v1';
+
+function loadUsers() {
+  try { const raw = localStorage.getItem(LS_USERS); if (raw) return JSON.parse(raw); } catch (e) { /* fresh */ }
+  const seed = [{ name: 'Admin', email: 'admin@mtek.demo', role: 'admin',
+    passwordHash: djb2('admin123'), sigHash: djb2('1234'), signaturePng: null }];
+  try { localStorage.setItem(LS_USERS, JSON.stringify(seed)); } catch (e) {}
+  return seed;
+}
+let users = loadUsers();
+const saveUsers = () => { try { localStorage.setItem(LS_USERS, JSON.stringify(users)); } catch (e) {} };
+const currentUser = () => {
+  const email = (() => { try { return localStorage.getItem(LS_SESSION); } catch (e) { return null; } })();
+  return users.find(u => u.email === email) || null;
+};
+
+// ---------- login / signup UI ----------
+function renderAuth(mode = 'login') {
+  const auth = $('#auth');
+  auth.innerHTML = `
+    <div class="auth-overlay">
+      <div class="auth-card">
+        <div class="lg">M</div>
+        <div class="co">M-TEK FIRE &amp; SAFETY LTD</div>
+        <div class="sub">${mode === 'login' ? 'Sign in to your workspace' : 'Create your account'}</div>
+        ${mode === 'login' ? `
+          <label>Email</label><input id="a-email" type="email" placeholder="you@mtek…" value="admin@mtek.demo">
+          <label>Password</label><input id="a-pass" type="password" placeholder="••••••••">
+          <button class="btn primary" style="width:100%;justify-content:center;margin-top:18px" onclick="doLogin()">Sign in</button>
+          <button class="linkbtn" onclick="renderAuth('signup')">Create an account →</button>
+          <div class="auth-demo">Demo: admin@mtek.demo · admin123</div>
+        ` : `
+          <label>Full name</label><input id="a-name" placeholder="e.g. Ibrahim Kabeer">
+          <label>Email</label><input id="a-email" type="email" placeholder="you@mtek…">
+          <label>Account password (min 6)</label><input id="a-pass" type="password">
+          <div class="goldbox">
+            <div class="gt">✍️ SIGNATURE PASSCODE</div>
+            <div class="gd">Used to digitally sign receipts, invoices &amp; MILS logs — no more signing on paper. Must differ from your password.</div>
+            <label>Signature passcode (min 4)</label><input id="a-sig" type="password">
+            <label>Repeat signature passcode</label><input id="a-sig2" type="password">
+            <div class="sig-block">
+              <div class="sig-hint">Draw your signature (optional — the passcode is what authorises documents):</div>
+              <canvas id="sig-canvas"></canvas>
+              <div class="sig-row">
+                <button class="btn ghost sm" onclick="clearSig()">Clear</button>
+                <span style="flex:1"></span>
+                <span id="sig-saved" style="font-size:11px;color:var(--success);font-weight:700"></span>
+              </div>
+            </div>
+          </div>
+          <div class="rolechips">Role
+            <button class="fchip active" id="role-admin" onclick="pickRole('admin')">Admin</button>
+            <button class="fchip" id="role-sales" onclick="pickRole('sales')">Sales</button>
+          </div>
+          <button class="btn primary" style="width:100%;justify-content:center;margin-top:18px" onclick="doSignup()">Create account</button>
+          <button class="linkbtn" onclick="renderAuth('login')">← Back to sign in</button>
+        `}
+        <div class="auth-err" id="a-err"></div>
+      </div>
+    </div>`;
+  auth.style.display = 'block';
+  if (mode === 'signup') setTimeout(initSigCanvas, 0);
+  updateUserChip();
+}
+
+let pickedRole = 'admin', drawnSig = null;
+window.pickRole = r => {
+  pickedRole = r;
+  $('#role-admin').classList.toggle('active', r === 'admin');
+  $('#role-sales').classList.toggle('active', r === 'sales');
+};
+
+function initSigCanvas() {
+  const cv = $('#sig-canvas'); if (!cv) return;
+  const ctx = cv.getContext && cv.getContext('2d');
+  if (!ctx) return; // headless test env — drawing is optional
+  ctx.lineWidth = 2.4; ctx.lineCap = 'round'; ctx.strokeStyle = '#0b1220';
+  let drawing = false;
+  const pos = e => {
+    const r = cv.getBoundingClientRect();
+    return [(e.clientX - r.left) * (cv.width / r.width), (e.clientY - r.top) * (cv.height / r.height)];
+  };
+  cv.onpointerdown = e => { drawing = true; ctx.beginPath(); ctx.moveTo(...pos(e)); };
+  cv.onpointermove = e => { if (drawing) { ctx.lineTo(...pos(e)); ctx.stroke(); } };
+  cv.onpointerup = cv.onpointerleave = () => { drawing = false; };
+  cv._onUp = () => { try { drawnSig = cv.toDataURL('image/png'); $('#sig-saved').textContent = drawnSig ? 'Signature saved ✓' : ''; } catch (e) {} };
+  cv.addEventListener('pointerup', cv._onUp);
+}
+window.clearSig = () => {
+  const cv = $('#sig-canvas'); if (!cv) return;
+  const ctx = cv.getContext && cv.getContext('2d');
+  if (ctx) ctx.clearRect(0, 0, cv.width, cv.height);
+  drawnSig = null; const s = $('#sig-saved'); if (s) s.textContent = '';
+};
+
+window.doLogin = () => {
+  const email = $('#a-email').value.trim().toLowerCase();
+  const user = users.find(u => u.email === email);
+  const err = m => { $('#a-err').textContent = m; };
+  if (!user) return err('No account with that email');
+  if (user.passwordHash !== djb2($('#a-pass').value)) return err('Wrong password');
+  try { localStorage.setItem(LS_SESSION, user.email); } catch (e) {}
+  enterApp();
+};
+
+window.doSignup = () => {
+  const err = m => { $('#a-err').textContent = m; };
+  const name = $('#a-name').value.trim(), email = $('#a-email').value.trim().toLowerCase();
+  const pass = $('#a-pass').value, sig = $('#a-sig').value, sig2 = $('#a-sig2').value;
+  if (!name) return err('Enter your full name');
+  if (!email.includes('@')) return err('Enter a valid email');
+  if (pass.length < 6) return err('Password must be at least 6 characters');
+  if (sig.length < 4) return err('Signature passcode must be at least 4 characters');
+  if (sig === pass) return err('Signature passcode must be different from your password');
+  if (sig !== sig2) return err('Signature passcodes do not match');
+  if (users.some(u => u.email === email)) return err('An account with that email already exists');
+  users.push({ name, email, role: pickedRole, passwordHash: djb2(pass), sigHash: djb2(sig), signaturePng: drawnSig });
+  saveUsers();
+  try { localStorage.setItem(LS_SESSION, email); } catch (e) {}
+  enterApp();
+};
+
+window.signOut = () => {
+  try { localStorage.removeItem(LS_SESSION); } catch (e) {}
+  updateUserChip();
+  renderAuth('login');
+};
+
+function updateUserChip() {
+  const u = currentUser();
+  $('#userchip').innerHTML = u ? `${u.name} <span class="urole">${u.role.toUpperCase()}</span>` : '';
+  $('#logoutbtn').style.display = u ? '' : 'none';
+}
+
+// ---------- SIGNATURE GATE (issues documents) ----------
+window.signGate = (what, onSigned) => {
+  const u = currentUser();
+  if (!u) return;
+  modal('Sign to issue', `
+    <p style="font-size:12.5px;color:var(--gray-500);margin-bottom:12px">This document will be digitally signed by <b style="color:var(--gray-800)">${u.name}</b>.</p>
+    ${u.signaturePng ? `<img src="${u.signaturePng}" class="stamp" style="height:44px;border:1px solid var(--gray-200);border-radius:8px">` : ''}
+    <label style="display:block;font-size:11.5px;font-weight:600;color:var(--gray-600);margin:8px 0 4px">Signature passcode</label>
+    <input type="password" id="gate-sig" style="width:100%;padding:11px 13px;border:1px solid var(--gray-200);border-radius:12px" autofocus>
+    <div class="auth-err" id="gate-err"></div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn ghost" style="flex:1;justify-content:center" onclick="closeModal()">Cancel</button>
+      <button class="btn primary" style="flex:1;justify-content:center" onclick="gateSubmit('${what.replace(/'/g, '')}')">✍️ Sign &amp; issue</button>
+    </div>
+    <div style="font-size:11px;color:var(--gray-400);margin-top:10px">Signing: ${what}</div>`);
+  window._gateCb = onSigned;
+};
+window.gateSubmit = () => {
+  const u = currentUser();
+  if (u && djb2($('#gate-sig').value) === u.sigHash) {
+    const cb = window._gateCb; window._gateCb = null;
+    closeModal();
+    cb(u);
+  } else {
+    $('#gate-err').textContent = 'Signature passcode does not match — document NOT issued';
+  }
+};
+
+function enterApp() {
+  $('#auth').style.display = 'none';
+  updateUserChip();
+  route = location.hash.replace('#/', '') || 'insights';
+  if (!NAV.some(n => n[0] === route)) route = 'insights';
+  render();
+  buildNav();
+  toast(`Signed in as ${currentUser().name} — documents require your Signature Passcode.`);
+}
+
+// debug/console handle (also used by smoke.test.js)
+window.__mtek = () => ({ products, customers, sales, receipts, txns, invoices, mils, adjustments, currentUser });
+
 // boot
-route = (location.hash.replace('#/', '') || 'insights');
-render();
-buildNav();
+if (currentUser()) enterApp(); else renderAuth('login');

@@ -2,17 +2,31 @@
 
 One Dart codebase → **Android app**, **Windows app**, and **PWA** (web), as agreed in [`docs/SPEC.md`](../docs/SPEC.md).
 
-## Status: M1 skeleton
+## Status: M1 skeleton + auth & digital signatures
 
+- ✅ **Accounts with TWO secrets**: account password (signs in) + **Signature
+  Passcode** (signs documents — SPEC §6.1). Signup enforces passcode ≠ password,
+  minimum lengths, and optionally captures a drawn signature
+- ✅ **Signature gate** before issuing: completing a sale, recording an invoice
+  payment — wrong passcode = document NOT issued; receipts stamp
+  `✓ Digitally signed by <name>` (+ drawn signature image)
 - ✅ Navigation shell (rail on desktop, drawer on phones) — all 9 screens
 - ✅ M-Tek brand theme (navy `#0a1220`, brand red `#c8102e`, gold `#f0a92e`)
 - ✅ Working sample dataset (Aug 2026) that stays internally consistent:
   completing a **Sale** decrements stock and auto-issues a **Transaction +
-  Receipt** (or an **Invoice** on credit); invoice payments do the same
+  Receipt** (or an **Invoice** on credit)
 - ✅ PWA manifest + themed boot screen
 - M2 replaces `SampleStore` with a Drift (SQLite) repository + TXT importer
-- M3 wires Supabase (money/inventory) + MongoDB (MILS documents) behind the
-  same repository API, with a sync queue for offline use
+- M3 wires Supabase (money/inventory, salted passcode hashes, signature
+  images in Storage, audit table) + MongoDB (MILS documents) behind the same
+  repository API, with a sync queue for offline use
+
+Demo account: `admin@mtek.demo` / password `admin123` / signature passcode `1234`.
+
+## Where it lives
+
+PWA: `https://mtekfiresafetyltd.github.io/m-tek_fire_safety_ltd.org/app/`
+(activate via `docs/ci/build-app.yml` — see SPEC §11).
 
 ## Screens
 

@@ -4,6 +4,7 @@ import '../../core/format.dart' as fmt;
 import '../../core/theme.dart';
 import '../../data/models.dart';
 import '../../data/sample_store.dart';
+import '../signature_dialog.dart';
 import '../widgets.dart';
 
 /// INVOICES — bill now, pay later (corporate clients).
@@ -95,14 +96,14 @@ class InvoicesScreen extends StatelessWidget {
         InvoiceStatus.unpaid => const StatusChip.neutral('UNPAID'),
       };
 
-  void _actions(BuildContext context, Invoice inv) {
+  Future<void> _actions(BuildContext context, Invoice inv) async {
     if (inv.balance <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('${inv.number} is fully paid — receipt already issued.')),
       );
       return;
     }
-    showDialog<void>(
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Record payment — ${inv.number}'),
@@ -110,19 +111,26 @@ class InvoicesScreen extends StatelessWidget {
             '${inv.customer.name} owes ${fmt.naira(inv.balance)} of ${fmt.naira(inv.total)}.\n'
             'Record a payment now? It will post to Transactions and issue a receipt.'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
           FilledButton(
-            onPressed: () {
-              SampleStore.instance.payInvoice(inv, inv.balance);
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Payment recorded — receipt issued, stock untouched.')),
-              );
-            },
-            child: const Text('Record full payment'),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Continue'),
           ),
         ],
       ),
     );
+    if (confirmed != true || !context.mounted) return;
+    final signer = await confirmSignature(context);
+    if (signer == null || !context.mounted) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Not signed — payment not recorded.')));
+      }
+      return;
+    }
+    SampleStore.instance.payInvoice(inv, inv.balance, signedBy: signer.name);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+            'Payment recorded — receipt issued & signed by ${signer.name}, stock untouched.')));
   }
 }

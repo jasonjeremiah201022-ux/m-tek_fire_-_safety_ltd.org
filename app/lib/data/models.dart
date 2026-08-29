@@ -128,6 +128,7 @@ class Receipt {
   final int amount;
   final PaymentMethod method;
   final String forDoc; // sale id or invoice number
+  final String signedBy; // digitally signed via Signature Passcode
   final String issuedBy;
 
   const Receipt({
@@ -137,7 +138,8 @@ class Receipt {
     required this.amount,
     required this.method,
     required this.forDoc,
-    required this.issuedBy,
+    required this.signedBy,
+    this.issuedBy = 'Admin',
   });
 }
 

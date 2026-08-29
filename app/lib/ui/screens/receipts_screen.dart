@@ -1,10 +1,30 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+
+import 'package:flutter/foundation.dart' show base64Decode;
 
 import '../../core/format.dart' as fmt;
 import '../../core/theme.dart';
+import '../../data/auth_store.dart';
 import '../../data/models.dart';
 import '../../data/sample_store.dart';
 import '../widgets.dart';
+
+Uint8List? _signatureImage(String signerName) {
+  for (final u in AuthStore.instance.users) {
+    if (u.name == signerName && u.signaturePng != null) {
+      final dataUrl = u.signaturePng!;
+      final b64 = dataUrl.split(',').last;
+      try {
+        return base64Decode(b64);
+      } catch (_) {
+        return null;
+      }
+    }
+  }
+  return null;
+}
 
 /// RECEIPTS — proof of payment, auto-numbered MTK-REC-####.
 /// M4 renders these as branded PDFs (print + WhatsApp/email share).
@@ -113,7 +133,27 @@ class ReceiptsScreen extends StatelessWidget {
                 child: Text('TOTAL: ${fmt.naira(r.amount)}',
                     style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: Mtek.brand700)),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  const Icon(Icons.verified_outlined, size: 17, color: Mtek.success),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Digitally signed by ${r.signedBy} — ${fmt.fmtDateTime(r.date)}',
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Mtek.success),
+                    ),
+                  ),
+                ],
+              ),
+              if (_signatureImage(r.signedBy) != null) ...[
+                const SizedBox(height: 6),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Image.memory(_signatureImage(r.signedBy)!, height: 42, alignment: Alignment.centerLeft),
+                ),
+              ],
+              const SizedBox(height: 12),
               const Text('Issued by: Admin — thank you for your business.',
                   style: TextStyle(fontSize: 11, color: Mtek.gray500)),
               const SizedBox(height: 18),

@@ -1,4 +1,5 @@
 image-search/
+node_modules/
 
 # Secrets — never commit
 .env
