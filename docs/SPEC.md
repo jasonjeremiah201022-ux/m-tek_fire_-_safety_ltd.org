@@ -12,7 +12,7 @@
 |---|---|---|
 | Android (phone/tablet) | APK + AAB | Sales floor + field use |
 | Windows (desktop) | exe (zipped) | Office/counter use |
-| Web (PWA) | Static build served at **`https://mtekfiresafetyltd.github.io/m-tek_fire_safety_ltd.org/app/`** | Company GitHub Pages URL. Installable to home screen, own manifest (name, icons, brand colors) + service worker; `base href=/m-tek_fire_safety_ltd.org/app/` |
+| Web (PWA) | Static build served at **`https://mtekfiresafetyltd.github.io/m-tek_fire_safety_ltd.org/`** | The app IS the site root of the company Pages URL (marketing website remains under `/site/`). Installable to home screen, own manifest (name, icons, brand colors) + service worker; `base href=/m-tek_fire_safety_ltd.org/` |
 
 One Flutter (Dart) codebase in `/app` produces all three. CI (see §11) rebuilds the
 APK/AAB/PWA/EXE on every push to `main` and redeploys the PWA — progress on the
@@ -122,7 +122,7 @@ Rules:
 2. **M2 — Local data:** Drift schema + repositories; TXT importer; every screen fully functional offline with sample/seed data.
 3. **M3 — Backend live:** Supabase schema/auth/RLS/storage; Mongo API + contracts; app talks to real backend with sync queue; admin/sales roles.
 4. **M4 — Documents:** PDF generation, printing, WhatsApp/email sharing.
-5. **M5 — Polish & ship:** charts/alerts/exports finalized; Android APK, Windows build, PWA deployed under `/app`.
+5. **M5 — Polish & ship:** charts/alerts/exports finalized; Android APK, Windows build, PWA live at the company Pages root.
 
 ## 10. Design
 
@@ -136,10 +136,10 @@ with Settings → Pages → Source = **GitHub Actions**):
 
 | Push to `main` (touches `app/**`) | Manual dispatch |
 |---|---|
-| Build **PWA** (`--base-href=/m-tek_fire_safety_ltd.org/app/`) → artifact | All of the left column, **plus** deploy website + PWA to Pages |
+| Build **PWA** (`--base-href=/m-tek_fire_safety_ltd.org/`) → artifact | All of the left column, **plus** deploy to Pages (**app at the site root**, website under `/site/`) |
 | Build **APK** + **AAB** → artifacts | Optionally cut a GitHub Release with APK/AAB/EXE attached |
 | Build **Windows EXE** (zipped) → artifact | |
 
-Live URLs after activation: website `https://mtekfiresafetyltd.github.io/m-tek_fire_safety_ltd.org/`,
-app `https://mtekfiresafetyltd.github.io/m-tek_fire_safety_ltd.org/app/`.
+Live URLs after activation: **app `https://mtekfiresafetyltd.github.io/m-tek_fire_safety_ltd.org/`**
+(the bare company URL opens the app), website `…/m-tek_fire_safety_ltd.org/site/`.
 

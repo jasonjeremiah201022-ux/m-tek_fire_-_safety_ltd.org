@@ -57,5 +57,6 @@ one Flutter codebase in [`app/`](app/) targeting Android, Windows and a PWA serv
 `seed/` holds the owner-editable product import file. `preview/` is a runnable
 design preview of the app's 9 screens (M1), including login and the digital
 **Signature Passcode** flow. Target PWA URL:
-`https://mtekfiresafetyltd.github.io/m-tek_fire_safety_ltd.org/app/` (company
-GitHub Pages — activation steps in `docs/SPEC.md` §11).
+`https://mtekfiresafetyltd.github.io/m-tek_fire_safety_ltd.org/` (company
+GitHub Pages — the app opens at the bare URL, website under `/site/`;
+activation steps in `docs/SPEC.md` §11).

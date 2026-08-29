@@ -7,7 +7,8 @@
 ##
 ## Every push that touches app/** rebuilds: PWA, Android APK, Android AAB,
 ## Windows EXE (zip) — artifacts appear on the run page. Manual dispatch can
-## also deploy the website + PWA to GitHub Pages and/or cut a GitHub Release.
+## also deploy to GitHub Pages (APP at the site root, website under /site/)
+## and/or cut a GitHub Release.
 
 name: Build & Deploy App (PWA · APK · AAB · EXE)
 
@@ -36,8 +37,10 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  # Company GitHub Pages URL: https://mtekfiresafetyltd.github.io/m-tek_fire_safety_ltd.org/app/
-  BASE_HREF: /m-tek_fire_safety_ltd.org/app/
+  # Company GitHub Pages — the APP is the site root:
+  #   https://mtekfiresafetyltd.github.io/m-tek_fire_safety_ltd.org/
+  # (marketing website remains available under /site/)
+  BASE_HREF: /m-tek_fire_safety_ltd.org/
 
 jobs:
   web:
@@ -50,8 +53,7 @@ jobs:
         working-directory: app
         run: |
           flutter pub get
-          flutter build web --release --base-href="${{ env.BASE_HREF }}"
-      - uses: actions/upload-artifact@v4
+          flutter build web --release --base-href="${{ env.BASE_HREF }}"      - uses: actions/upload-artifact@v4
         with: { name: mtek-pwa, path: app/build/web }
 
   android:
@@ -99,15 +101,17 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: Stage site + app
+      - name: Stage app at site root, website under /site/
         run: |
-          mkdir -p staging/app
+          mkdir -p staging/site
+          # marketing website under /site/
           rsync -a --exclude '.git' --exclude 'app' --exclude 'backend' \
-                --exclude 'docs' --exclude 'seed' --exclude 'preview' ./ staging/
-          mkdir -p pwa &&  cd pwa
-          # pull the PWA artifact built above
+                --exclude 'docs' --exclude 'seed' --exclude 'preview' \
+                --exclude 'staging' ./ staging/site/
+          touch staging/site/.nojekyll
       - uses: actions/download-artifact@v4
-        with: { name: mtek-pwa, path: staging/app }
+        with: { name: mtek-pwa, path: staging }
+      - run: touch staging/.nojekyll
       - name: Publish to Pages
         uses: actions/upload-pages-artifact@v3
         with: { path: staging }

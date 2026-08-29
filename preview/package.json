@@ -1,5 +1,13 @@
 {
-  "dependencies": {
+  "name": "mtek-app-preview",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Design preview of the M-Tek Inventory Flutter app (mirrors /app lib) + headless smoke tests",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node smoke.test.js"
+  },
+  "devDependencies": {
     "jsdom": "^30.0.1"
   }
 }

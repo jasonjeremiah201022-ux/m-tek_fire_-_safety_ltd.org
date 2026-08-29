@@ -25,8 +25,9 @@ Demo account: `admin@mtek.demo` / password `admin123` / signature passcode `1234
 
 ## Where it lives
 
-PWA: `https://mtekfiresafetyltd.github.io/m-tek_fire_safety_ltd.org/app/`
-(activate via `docs/ci/build-app.yml` — see SPEC §11).
+PWA: `https://mtekfiresafetyltd.github.io/m-tek_fire_safety_ltd.org/` — the app
+opens at the bare company URL (marketing website stays under `/site/`).
+Activate via `docs/ci/build-app.yml` — see SPEC §11.
 
 ## Screens
 
@@ -55,8 +56,8 @@ flutter run -d chrome         # web
 ## Build
 
 ```bash
-# PWA (served at /app/ on the website)
-flutter build web --release --base-href=/app/
+# PWA (app at the company Pages site root; website under /site/)
+flutter build web --release --base-href=/m-tek_fire_safety_ltd.org/
 
 # Android APK
 flutter build apk --release
