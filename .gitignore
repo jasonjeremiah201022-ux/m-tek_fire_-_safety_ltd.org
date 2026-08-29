@@ -1,1 +1,8 @@
 image-search/
+
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+*.pem
+*.key
