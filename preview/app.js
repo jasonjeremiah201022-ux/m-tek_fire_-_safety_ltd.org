@@ -163,6 +163,7 @@ const NAV = [
   ['insights', '📊', 'Insights'], ['transactions', '🔁', 'Transactions'], ['customers', '👥', 'Customers'],
   ['receipts', '🧾', 'Receipts'], ['invoices', '📑', 'Invoices'], ['mils', '🛠️', 'MILS'],
   ['sales', '🛒', 'Sales'], ['stock', '📦', 'Stock'], ['summary', '📈', 'Summary'],
+  ['docs', '📝', 'Documents'],
 ];
 const SUBTITLES = {
   insights: 'Money in — today, this week, this month',
@@ -174,13 +175,14 @@ const SUBTITLES = {
   sales: 'Pick items — stock & receipts update automatically',
   stock: 'Quantities, prices, low-stock alerts, audit trail',
   summary: 'Business report — export or share as PDF (M4)',
+  docs: 'Write up a Receipt, Invoice or MILS sheet — PDF mirrors your paper books',
 };
 
 function render() {
   const screens = {
     insights, transactions, customers: customersScreen, receipts: receiptsScreen,
     invoices: invoicesScreen, mils: milsScreen, sales: salesScreen,
-    stock: stockScreen, summary: summaryScreen,
+    stock: stockScreen, summary: summaryScreen, docs: docsScreen,
   };
   const body = screens[route]();
   app.innerHTML = `
@@ -201,6 +203,7 @@ function routeButtons() {
   if (route === 'mils') return `<button class="btn primary" onclick="toast('MILS entry form — M2 (stored as Mongo documents in M3)')">＋ Log service</button>`;
   if (route === 'stock') return `<button class="btn ghost" onclick="toast('Opens the products_seed.txt importer in M2')">⬆ Import TXT</button>`;
   if (route === 'summary') return `<button class="btn ghost" onclick="toast('PDF export & share — Milestone M4')">⤓ Export PDF</button>`;
+  if (route === 'docs') return `<button class="btn ghost" onclick="toast('Serial counters are Admin-seedable in Settings (M2) — continuing paper books: 2131 / 925 / 4335')">#️⃣ Serials</button>`;
   return '';
 }
 
@@ -901,8 +904,272 @@ function enterApp() {
   toast(`Signed in as ${currentUser().name} — documents require your Signature Passcode.`);
 }
 
+// =====================================================================
+// DOCS GENERATOR (Phase A) — serials continue the paper books
+// =====================================================================
+const LS_SERIALS = 'mtek_serials_v1';
+const SERIAL_SEEDS = { receipt: 2131, invoice: 4335, mils: 925 };
+function serials() {
+  try { const raw = localStorage.getItem(LS_SERIALS); if (raw) return JSON.parse(raw); } catch (e) {}
+  try { localStorage.setItem(LS_SERIALS, JSON.stringify(SERIAL_SEEDS)); } catch (e) {}
+  return { ...SERIAL_SEEDS };
+}
+window.nextSerial = type => {
+  const s = serials();
+  s[type] = (s[type] || 0) + 1;
+  try { localStorage.setItem(LS_SERIALS, JSON.stringify(s)); } catch (e) {}
+  return s[type];
+};
+window.peekSerial = type => (serials()[type] || 0) + 1;
+const nairaWords = n => {
+  const nw = Math.floor(n), kb = Math.round((n - nw) * 100);
+  return (nw.toLocaleString('en-NG')) + ' naira' + (kb ? ` ${kb} kobo` : '') + ' (in words — full text on PDF)';
+};
+
+// form state (persists per type in-session, like the Flutter generators)
+const docState = {
+  receipt: { irn: '', name: '', addr: '', phone: '', forWhat: '', amount: 0, method: 'Cash' },
+  invoice: { variant: 'SALES INVOICE', name: '', addr: '', phone: '', lpo: '', milsRef: false, recRef: false, milsNo: '', recNo: '', advance: 0, vatOn: true, rows: [{ d: '', q: 1, r: 0 }] },
+  mils: { name: '', addr: '', phone: '', lpo: '', inv: '', rec: '', weights: {}, comps: {}, compsRate: {}, advance: 0 },
+};
+let docsTab = 'receipt';
+const W_KEYS = ['1kg','2kg','3kg','5kg','6kg','9kg','12kg','25kg','50kg','75kg'];
+const C_KEYS = ['Nipple','Horn','Hose','Manometre','Valve','Strap','Label','Lever','Seal','Powder','Pull Pin','Cartridge'];
+const invSub = () => docState.invoice.rows.reduce((s, r) => s + (r.q * (r.r || 0)), 0);
+const invVat = () => docState.invoice.vatOn ? invSub() * 0.075 : 0;
+const invGrand = () => invSub() + invVat();
+const milsSub = () => {
+  let s = 0;
+  Object.entries(docState.mils.weights).forEach(([k, q]) => (s += (q || 0) * (docState.mils.weights[k + '_r'] || 0)));
+  Object.entries(docState.mils.comps).forEach(([c, q]) => (s += (q || 0) * (docState.mils.compsRate[c] || 0)));
+  return s;
+};
+
+function docsScreen() {
+  return `
+    <div class="seg">
+      ${[['receipt', '🧾 Payment Receipt'], ['invoice', '📑 Sales Invoice'], ['mils', '🛠️ MILS Sheet']]
+        .map(([k, l]) => `<button class="${docsTab === k ? 'active' : ''}" onclick="docsTab='${k}';render()">${l}</button>`).join('')}
+    </div>
+    ${docsTab === 'receipt' ? docsReceipt() : docsTab === 'invoice' ? docsInvoice() : docsMils()}
+    <div class="card" style="padding:14px;margin-top:14px">
+      <button class="btn primary" style="width:100%;justify-content:center" onclick="generateDoc()">✍️ Sign &amp; generate PDF</button>
+      <div style="font-size:11px;color:var(--gray-500);text-align:center;margin-top:8px">
+        Requires your Signature Passcode · PDF gets the dual-office header, watermark, signature stamp &amp; verification QR · shared straight to WhatsApp/email
+      </div>
+    </div>`;
+}
+
+function docsReceipt() {
+  const d = docState.receipt;
+  return `
+    <div class="serial-banner">🏷️ Receipt No: <b>${peekSerial('receipt')}</b><span style="flex:1"></span><span style="font-weight:400;color:var(--gray-500)">continues book numbering (last printed: 2131)</span></div>
+    <div class="card form-card">
+      <div class="fc-t">CUSTOMER & PAYMENT</div>
+      <input class="f-in" placeholder="IRN (Invoice Reference Number)" value="${d.irn}" oninput="docState.receipt.irn=this.value">
+      <input class="f-in" placeholder="Customer name *" value="${d.name}" oninput="docState.receipt.name=this.value">
+      <input class="f-in" placeholder="Address" value="${d.addr}" oninput="docState.receipt.addr=this.value">
+      <input class="f-in" placeholder="Phone No." value="${d.phone}" oninput="docState.receipt.phone=this.value">
+      <input class="f-in" placeholder="Being Payment for" value="${d.forWhat}" oninput="docState.receipt.forWhat=this.value">
+      <input class="f-in" placeholder="The Sum of (₦) *" type="number" value="${d.amount || ''}" oninput="docState.receipt.amount=parseFloat(this.value)||0;this.closest('.card').querySelector('.sumwords').textContent=docState.receipt.amount?'₦'+docState.receipt.amount.toLocaleString()+' — '+nairaWords(docState.receipt.amount):'—'">
+      <div class="frow" style="margin-top:4px">
+        ${['Cash','Cheque','Transfer','POS'].map(m => `<button class="fchip ${d.method === m ? 'active' : ''}" onclick="docState.receipt.method='${m}';render()">${m}</button>`).join('')}
+      </div>
+      <div class="summary-tile grand" style="margin-top:10px"><span class="l">The Sum of (words)</span><span class="v sumwords">${d.amount ? '₦' + d.amount.toLocaleString() + ' — ' + nairaWords(d.amount) : '—'}</span></div>
+    </div>`;
+}
+
+function docsInvoice() {
+  const d = docState.invoice;
+  return `
+    <div class="serial-banner">🏷️ Invoice No: <b>${peekSerial('invoice')}</b><span style="flex:1"></span><span style="font-weight:400;color:var(--gray-500)">continues book numbering (last printed: 4335)</span></div>
+    <div class="card form-card">
+      <div class="fc-t">DOCUMENT TYPE</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        ${['WAY BILL','PRO-FORMER','SERVICE INVOICE','SALES INVOICE'].map(v => `<button class="fchip ${d.variant === v ? 'active' : ''}" onclick="docState.invoice.variant='${v}';render()">${v}</button>`).join('')}
+        <button class="fchip ${d.milsRef ? 'active' : ''}" onclick="docState.invoice.milsRef=!docState.invoice.milsRef;render()">MILS No ref.</button>
+        <button class="fchip ${d.recRef ? 'active' : ''}" onclick="docState.invoice.recRef=!docState.invoice.recRef;render()">Receipt No ref.</button>
+      </div>
+    </div>
+    <div class="card form-card">
+      <div class="fc-t">CROSS-REFERENCES & CUSTOMER</div>
+      ${d.milsRef ? `<input class="f-in" placeholder="MILS No" value="${d.milsNo}" oninput="docState.invoice.milsNo=this.value">` : ''}
+      ${d.recRef ? `<input class="f-in" placeholder="Receipt No" value="${d.recNo}" oninput="docState.invoice.recNo=this.value">` : ''}
+      <input class="f-in" placeholder="L.P.O. No" value="${d.lpo}" oninput="docState.invoice.lpo=this.value">
+      <input class="f-in" placeholder="Customer name *" value="${d.name}" oninput="docState.invoice.name=this.value">
+      <input class="f-in" placeholder="Address" value="${d.addr}" oninput="docState.invoice.addr=this.value">
+      <input class="f-in" placeholder="Phone No." value="${d.phone}" oninput="docState.invoice.phone=this.value">
+    </div>
+    <div class="card form-card">
+      <div class="fc-t">ITEMISED LEDGER</div>
+      <table class="ledg"><thead><tr><th style="width:28px">S/NO</th><th>DESCRIPTION</th><th style="width:64px">QTY</th><th style="width:96px">RATE (₦)</th><th style="width:96px">AMOUNT (₦)</th><th style="width:30px"></th></tr></thead>
+      <tbody>
+        ${d.rows.map((r, i) => `<tr>
+          <td>${i + 1}</td>
+          <td><input placeholder="Item / service" value="${r.d}" oninput="docState.invoice.rows[${i}].d=this.value;updateInvTotals()"></td>
+          <td><input type="number" value="${r.q}" oninput="docState.invoice.rows[${i}].q=parseFloat(this.value)||0;updateInvTotals()"></td>
+          <td><input type="number" value="${r.r || ''}" oninput="docState.invoice.rows[${i}].r=parseFloat(this.value)||0;updateInvTotals()"></td>
+          <td class="amt" style="font-weight:700">₦${(r.q * (r.r || 0)).toLocaleString()}</td>
+          <td>${d.rows.length > 1 ? `<button style="color:var(--danger)" onclick="docState.invoice.rows.splice(${i},1);render()">✕</button>` : ''}</td>
+        </tr>`).join('')}
+      </tbody></table>
+      <button class="btn ghost sm" onclick="docState.invoice.rows.push({d:'',q:1,r:0});render()">＋ Add row</button>
+      <div style="margin-top:10px">
+        <div class="summary-tile"><span class="l">Subtotal</span><span class="v" id="inv-sub">₦${invSub().toLocaleString()}</span></div>
+        <div class="summary-tile"><span class="l">7.5% VAT</span><span class="v" id="inv-vat">₦${invVat().toLocaleString()}</span></div>
+        <div class="summary-tile grand"><span class="l">GRAND TOTAL</span><span class="v" id="inv-grand">₦${invGrand().toLocaleString()}</span></div>
+      </div>
+    </div>
+    <div class="card form-card">
+      <div class="fc-t">PAYMENTS</div>
+      <input class="f-in" placeholder="Advance Payment (₦)" type="number" value="${d.advance || ''}" oninput="docState.invoice.advance=parseFloat(this.value)||0;updateInvTotals()">
+      <div class="summary-tile"><span class="l">Balance Payment</span><span class="v" id="inv-bal" style="color:var(--danger)">₦${(invGrand() - d.advance).toLocaleString()}</span></div>
+    </div>`;
+}
+window.updateInvTotals = () => {
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = '₦' + v.toLocaleString(); };
+  set('inv-sub', invSub()); set('inv-vat', invVat()); set('inv-grand', invGrand()); set('inv-bal', invGrand() - docState.invoice.advance);
+  if (route === 'docs') { const amts = document.querySelectorAll('.ledg .amt'); docState.invoice.rows.forEach((r, i) => { if (amts[i]) amts[i].textContent = '₦' + (r.q * (r.r || 0)).toLocaleString(); }); }
+};
+
+function docsMils() {
+  const d = docState.mils;
+  return `
+    <div class="serial-banner">🏷️ MILS No: <b>${peekSerial('mils')}</b><span style="flex:1"></span><span style="font-weight:400;color:var(--gray-500)">continues book numbering (last printed: 925)</span></div>
+    <div class="card form-card">
+      <div class="fc-t">DATES & REFERENCES</div>
+      <div class="frow">
+        <input class="f-in" placeholder="Entry Date" type="date" value="${new Date().toISOString().slice(0,10)}">
+        <input class="f-in" placeholder="Collection Date" type="date">
+        <input class="f-in" placeholder="Next Service Date" type="date">
+      </div>
+      <div class="frow">
+        <input class="f-in" placeholder="Invoice No." value="${d.inv}" oninput="docState.mils.inv=this.value">
+        <input class="f-in" placeholder="Receipt No." value="${d.rec}" oninput="docState.mils.rec=this.value">
+        <input class="f-in" placeholder="LPO No." value="${d.lpo}" oninput="docState.mils.lpo=this.value">
+      </div>
+    </div>
+    <div class="card form-card">
+      <div class="fc-t">A — DESCRIPTION (EXTINGUISHERS BY WEIGHT)</div>
+      <div class="wgrid">
+        ${W_KEYS.map(k => `<div class="wcell"><b>${k}</b><input type="number" min="0" placeholder="0" value="${d.weights[k] || ''}" oninput="docState.mils.weights[k]=parseFloat(this.value)||0"></div>`).join('')}
+      </div>
+    </div>
+    <div class="card form-card">
+      <div class="fc-t">B — REPLACEMENT (COMPONENTS)</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+        ${C_KEYS.map(c => `<button class="fchip ${(d.comps[c] || 0) > 0 ? 'active' : ''}" onclick="docState.mils.comps[c]=((docState.mils.comps[c]||0)>0)?0:1;render()">${c}</button>`).join('')}
+      </div>
+      ${C_KEYS.filter(c => (d.comps[c] || 0) > 0).map(c => `
+        <div class="frow" style="margin-bottom:6px">
+          <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:200px"><b style="font-size:12.5px">${c}</b></div>
+          <input class="f-in" style="max-width:110px;margin:0" type="number" placeholder="Qty" value="${d.comps[c] || ''}" oninput="docState.mils.comps[c]=parseFloat(this.value)||0">
+          <input class="f-in" style="max-width:130px;margin:0" type="number" placeholder="Rate (₦)" value="${d.compsRate[c] || ''}" oninput="docState.mils.compsRate[c]=parseFloat(this.value)||0">
+        </div>`).join('')}
+    </div>
+    <div class="card form-card">
+      <div class="fc-t">CUSTOMER & BILL</div>
+      <input class="f-in" placeholder="Customer's Name *" value="${d.name}" oninput="docState.mils.name=this.value">
+      <input class="f-in" placeholder="Address" value="${d.addr}" oninput="docState.mils.addr=this.value">
+      <input class="f-in" placeholder="Phone Number" value="${d.phone}" oninput="docState.mils.phone=this.value">
+      <input class="f-in" placeholder="Advance Payment (₦) — min 50% by policy" type="number" value="${d.advance || ''}" oninput="docState.mils.advance=parseFloat(this.value)||0;updateMilsTotals()">
+      <div class="summary-tile"><span class="l">Subtotal</span><span class="v" id="mils-sub">₦${milsSub().toLocaleString()}</span></div>
+      <div class="summary-tile"><span class="l">VAT</span><span class="v" id="mils-vat">₦${(milsSub() * 0.075).toLocaleString()}</span></div>
+      <div class="summary-tile grand"><span class="l">GRAND TOTAL</span><span class="v" id="mils-grand">₦${(milsSub() * 1.075).toLocaleString()}</span></div>
+    </div>`;
+}
+window.updateMilsTotals = () => {
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = '₦' + v.toLocaleString(); };
+  set('mils-sub', milsSub()); set('mils-vat', milsSub() * 0.075); set('mils-grand', milsSub() * 1.075);
+};
+
+window.generateDoc = () => {
+  const t = docsTab;
+  const d = docState[t];
+  if (t === 'receipt' && (!d.name || !d.amount)) return toast('Fill customer name and amount first');
+  if (t === 'invoice' && (!d.name || !d.rows.some(r => r.d && r.r))) return toast('Fill customer name and at least one line item');
+  if (t === 'mils' && (!d.name || (!Object.values(d.weights).some(q => q > 0) && !Object.values(d.comps).some(q => q > 0)))) return toast("Fill customer's name and at least one weight entry or component");
+  signGate(`${t.charAt(0).toUpperCase() + t.slice(1)} — ${d.name}`, () => showDocPreview(t));
+};
+
+function showDocPreview(t) {
+  const serial = nextSerial(t);
+  const u = currentUser();
+  const sigImg = (u && u.signaturePng) ? `<img src="${u.signaturePng}">` : '';
+  let body = '';
+  if (t === 'receipt') {
+    const d = docState.receipt;
+    body = `
+      <div class="mbox">IRN: ${d.irn || '—'}</div>
+      <div class="banner">PAYMENT RECEIPT</div>
+      <div class="ds-field"><b>No:</b>${serial}</div>
+      <div class="ds-field"><b>Date:</b>${new Date().toLocaleDateString('en-GB')}</div>
+      <div class="ds-field"><b>Name:</b>${d.name}</div>
+      <div class="ds-field"><b>Address:</b>${d.addr || '—'}</div>
+      <div class="ds-field"><b>Phone No.</b>${d.phone || '—'}</div>
+      <div class="ds-field"><b>The Sum of</b>${nairaWords(d.amount)}</div>
+      <div class="ds-field"><b>Being Payment for</b>${d.forWhat || '—'}</div>
+      <div class="frow" style="margin:8px 0">
+        ${['Cash','Cheque','Transfer','POS'].map(m => `<span class="fchip ${d.method === m ? 'active' : ''}">${d.method === m ? '☑' : '☐'} ${m}${d.method === m ? ' — ₦' + d.amount.toLocaleString() : ''}</span>`).join('')}
+      </div>
+      <div class="ds-field"><b>For: M-TEK FIRE & SAFETY LTD</b>${u ? u.name : ''}</div>
+      <div class="ds-field"><b>For: CUSTOMER'S/CLIENT</b></div>
+      <div class="ds-note">No guarantee cover on tested goods and services. Purchased tested goods and services cannot be returned. We bear no liability on part paid and abandoned goods. This document is invalid without stamp and seal of this company.</div>`;
+  } else if (t === 'invoice') {
+    const d = docState.invoice;
+    body = `
+      <div class="frow" style="margin-bottom:6px">
+        <span class="fchip ${d.milsRef ? 'active' : ''}">☐ MILS No: ${d.milsNo || ''}</span>
+        <span class="fchip ${d.recRef ? 'active' : ''}">☐ RECEIPT NO: ${d.recNo || ''}</span>
+        ${['WAY BILL','PRO-FORMER','SERVICE INVOICE','SALES INVOICE'].map(v => `<span class="fchip ${d.variant === v ? 'active' : ''}">${d.variant === v ? '☑' : '☐'} ${v}</span>`).join('')}
+      </div>
+      <div class="ds-field"><b>No:</b>${serial} · <b>LPO:</b>${d.lpo || '—'} · <b>Date:</b>${new Date().toLocaleDateString('en-GB')}</div>
+      <div class="ds-field"><b>Name:</b>${d.name} · <b>Phone:</b>${d.phone || '—'}</div>
+      <table class="ledg"><thead><tr><th>S/NO</th><th>DESCRIPTION</th><th>QTY</th><th>RATE ₦</th><th>AMOUNT ₦</th></tr></thead><tbody>
+      ${d.rows.filter(r => r.d).map((r, i) => `<tr><td>${i + 1}</td><td>${r.d}</td><td>${r.q}</td><td>${(r.r || 0).toLocaleString()}</td><td>${(r.q * r.r).toLocaleString()}</td></tr>`).join('')}
+      </tbody></table>
+      <div class="summary-tile"><span class="l">7.5% VAT</span><span class="v">₦${invVat().toLocaleString()}</span></div>
+      <div class="summary-tile grand"><span class="l">TOTAL</span><span class="v">₦${invGrand().toLocaleString()}</span></div>
+      <div class="summary-tile"><span class="l">Advance Payment</span><span class="v">₦${d.advance.toLocaleString()}</span></div>
+      <div class="summary-tile"><span class="l">Balance Payment</span><span class="v" style="color:var(--danger)">₦${(invGrand() - d.advance).toLocaleString()}</span></div>
+      <div class="ds-field" style="margin-top:6px"><b>Amount in words:</b>${nairaWords(invGrand())} ONLY</div>
+      <div class="ds-note">No guarantee cover on tested goods and services. We bear no liability on part paid and abandoned goods. This document is invalid without stamp and seal of this company.</div>`;
+  } else {
+    const d = docState.mils;
+    const wRows = W_KEYS.filter(k => (d.weights[k] || 0) > 0).map(k => `<tr><td>${k}</td><td>${d.weights[k]}</td><td>${(d.weights[k + '_r'] || 0).toLocaleString()}</td><td>${(d.weights[k] * (d.weights[k + '_r'] || 0)).toLocaleString()}</td></tr>`).join('');
+    const cRows = C_KEYS.filter(c => (d.comps[c] || 0) > 0).map(c => `<tr><td>${c}</td><td>${d.comps[c]}</td><td>${(d.compsRate[c] || 0).toLocaleString()}</td><td>${(d.comps[c] * (d.compsRate[c] || 0)).toLocaleString()}</td></tr>`).join('');
+    body = `
+      <div class="banner">MAINTENANCE INFORMATION LOG SHEET · MILS No: ${serial}</div>
+      <div class="ds-field"><b>Entry:</b>${new Date().toLocaleDateString('en-GB')} · <b>LPO:</b>${d.lpo || '—'} · <b>Inv:</b>${d.inv || '—'} · <b>Rec:</b>${d.rec || '—'}</div>
+      <div class="fc-t" style="margin-top:6px">DESCRIPTION:</div>
+      <table class="ledg"><thead><tr><th>Desc</th><th>Qty</th><th>Rate ₦</th><th>Amount ₦</th></tr></thead><tbody>${wRows || '<tr><td colspan=4>—</td></tr>'}</tbody></table>
+      <div class="fc-t" style="color:var(--brand-700)">REPLACEMENT:</div>
+      <table class="ledg"><thead><tr><th>Component</th><th>Qty</th><th>Rate ₦</th><th>Amount ₦</th></tr></thead><tbody>${cRows || '<tr><td colspan=4>—</td></tr>'}</tbody></table>
+      <div class="summary-tile grand"><span class="l">GRAND TOTAL (incl. VAT)</span><span class="v">₦${(milsSub() * 1.075).toLocaleString()}</span></div>
+      <div class="ds-field"><b>Customer:</b>${d.name} · ${d.phone || ''}</div>
+      <div class="ds-field"><b>Bill in words:</b>${nairaWords(milsSub() * 1.075)}</div>
+      <div class="ds-field"><b>Prepared by:</b>${u ? u.name : ''} · <b>APPROVED:</b>__ · <b>Customer's Assent:</b>__ · <b>Collector's Assent:</b>__</div>
+      <div class="ds-note">Caution: Payment can only commence upon the payment of at least 50% value of the maintenance charges. No equipment is collected for repair before payment. Expired/Unserviceable old equipment should be exchanged with new ones after the expiration of the collection date. Goods left 3 months after will be considered as abandoned goods and the company shall bear no liability on any abandoned equipment.</div>`;
+  }
+  modal('Document generated — ' + serial, `
+    <div class="doc-sheet">
+      <div class="corp">M-TEK FIRE &amp; SAFETY LTD.</div>
+      <div class="corp-serv">*Sales *Supplies *Installations *Refilling *Maintenance *Training *Consultancy · RC 1082534<br>HEAD OFFICE: YY12, Kazaure Road, By Lagos Street Round About, Kaduna. Tel: 08033489452 · BRANCH OFFICE: Plot 45, Sir Patrick Ibrahim Yakowa Way By Milton School, Kamazou Kaduna. 08170577595</div>
+      ${body}
+      <div class="ds-signed">✓ Digitally signed by ${u ? u.name : ''} · ${new Date().toLocaleString('en-GB')} ${sigImg}<span style="margin-left:auto;font-size:9px;color:var(--gray-500)">QR verification hash on PDF</span></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn ghost sm" style="flex:1" onclick="toast('Pre-formatted message + PDF → WhatsApp (native share sheet in the app)')">💬 WhatsApp</button>
+      <button class="btn ghost sm" style="flex:1" onclick="toast('Pre-formatted message + PDF → Email (native share sheet in the app)')">✉ Email</button>
+      <button class="btn primary sm" style="flex:1" onclick="toast('Saved as mtek_${t}_${serial}_[timestamp].pdf · share sheet opens (real file in the app/PWA)')">⤓ PDF + Share</button>
+    </div>`);
+  toast(`Document No: ${serial} signed & issued — serial continues the paper book.`, 'success');
+}
+
 // debug/console handle (also used by smoke.test.js)
 window.__mtek = () => ({ products, customers, sales, receipts, txns, invoices, mils, adjustments, currentUser });
+window.__docsState = docState;              // live form state (same object reference)
+window.__setDocsTab = t => { docsTab = t; render(); };
 
 // boot
 if (currentUser()) enterApp(); else renderAuth('login');

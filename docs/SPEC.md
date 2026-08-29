@@ -151,6 +151,16 @@ Invoice — and export unalterable PDFs for WhatsApp/email dispatch.
 
 **✅ Photos of all three physical forms received & transcribed — see
 [`docs/forms/FORM_LAYOUTS.md`](forms/FORM_LAYOUTS.md) (authoritative layout source).**
+Owner confirmations (2026-08-29): MILS caution wording ✅, "PRO-FORMER" spelling kept ✅.
+Owner decisions: **faint watermark pattern on all documents AND the app UI**; **full dual-office
+header on every document** (receipt's compact block retired).
+**Phase A is BUILT** (2026-08-29): `app/lib/documents/` (branding, forms spec, doc models +
+amount-in-words, serial service seeded to books 2131/925/4335, watermark + corporate header +
+QR verification, three PDF painters, share pipeline with conditional io/web impls and fallback),
+`GeneratorScreen` (type switcher, live Qty×Rate/VAT/advance/balance, validation, signature gate),
+`Documents` destination (10th screen), DejaVu fonts bundled for ₦/✓ glyphs, watermark in app shell
++ preview. Preview parity: full generator mock with paper-style watermarked previews; smoke tests
+cover gated generation + serial continuity.
 Corrections learned from the physical forms: MILS has **12 component rows (incl. `Seal`)**;
 weight classes fixed at **1, 2, 3, 5, 6, 9, 12, 25, 50, 75 kg**; invoice amount column is
 **dual ₦/# + K (kobo)**; invoice doc-type cluster includes MILS No / Receipt No cross-refs and

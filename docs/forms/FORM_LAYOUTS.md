@@ -66,7 +66,7 @@ owner confirmation before final print styling.
 
 **SECTION B — REPLACEMENT:** (red heading) — component rows, each with 3 columns (qty/rate/amount):
 Nipple · Horn · Hose · Manometre · Valve · Strap · Label · Lever · **Seal** · Powder · Pull Pin · Cartridge
-⚠️ Note: physical form has **12 rows including "Seal"** — owner's blueprint listed 11 (no Seal). Using the physical form: 12.
+✅ **Owner-confirmed.** 12 rows including "Seal" (blueprint's 11-item list updated to match the physical form).
 
 **Customer block (left, ruled lines):** Customer's Name ____ · Address ____ · Phone Number ____ · Bill in words ____
 
@@ -74,7 +74,7 @@ Nipple · Horn · Hose · Manometre · Valve · Strap · Label · Lever · **Sea
 
 **Footer assent blocks:** Prepared by: ____ · APPROVED by: ____ · Customer's Assent: ____ · Collector's Assent: ____
 
-**Caution (fine print, ⚠️ needs confirmation — photo upside down):**
+**Caution (fine print — ✅ owner-confirmed wording, 2026-08-29):**
 > Caution: Payment can only commence upon the payment of at least 50% value of the maintenance charges.
 > No equipment is collected for repair before payment. Expired/Unserviceable old equipment should be
 > exchanged with new ones after the expiration of the collection date. Goods left 3 months after will be
@@ -90,7 +90,7 @@ Nipple · Horn · Hose · Manometre · Valve · Strap · Label · Lever · **Sea
 | **MILS No:** [ ] | **RECEIPT NO:** [ ] | **WAY BILL** [ ] |
 | **PRO-FORMER** [ ] | **SERVICE INVOICE** [ ] | **SALES INVOICE** [ ] |
 
-⚠️ "PRO-FORMER" is the form's own spelling of *Proforma* — keep as printed.
+✅ "PRO-FORMER" kept exactly as printed (owner-confirmed).
 
 **No:** `4335` · Fields: Name ____ · Address ____ · Phone No ____ · Date ____ · L.P.O. No ____
 
@@ -118,3 +118,14 @@ Nipple · Horn · Hose · Manometre · Valve · Strap · Label · Lever · **Sea
 4. Invoice amount column is **dual (₦ / K)** — kobo precision supported.
 5. Receipt method grid: **Cash / Cheque / Transfer / POS** (matches PaymentMethod incl. cheque).
 6. IRN, LPO No, MILS/Receipt cross-references become first-class stored fields (already in §12.2).
+
+---
+
+## OWNER DECISIONS (2026-08-29)
+
+1. **Watermarks:** all three documents AND the app UI carry a faint brand watermark
+   pattern (rotated "M-TEK FIRE & SAFETY LTD." + RC micro-text), echoing the security
+   background of the physical books.
+2. **Consistent headers:** every document uses the FULL dual-office header
+   (Head Office YY12 Kazaure Road + Branch Office Plot 45 Sir P.I. Yakowa Way).
+   The receipt's old compact "Kaduna I Office" block is retired.

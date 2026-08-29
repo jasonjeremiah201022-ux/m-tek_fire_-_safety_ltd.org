@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/theme.dart';
 import '../data/auth_store.dart';
 import 'screens/customers_screen.dart';
+import 'screens/generator_screen.dart';
 import 'screens/insights_screen.dart';
 import 'screens/invoices_screen.dart';
 import 'screens/mils_screen.dart';
@@ -11,6 +12,7 @@ import 'screens/sales_screen.dart';
 import 'screens/stock_screen.dart';
 import 'screens/summary_screen.dart';
 import 'screens/transactions_screen.dart';
+import 'watermark_background.dart';
 
 class Destination {
   final String label;
@@ -29,10 +31,11 @@ const _mils = Destination('MILS', Icons.build_circle_outlined, Icons.build_circl
 const _sales = Destination('Sales', Icons.point_of_sale_outlined, Icons.point_of_sale, SalesScreen());
 const _stock = Destination('Stock', Icons.inventory_2_outlined, Icons.inventory_2, StockScreen());
 const _summary = Destination('Summary', Icons.summarize_outlined, Icons.summarize, SummaryScreen());
+const _docs = Destination('Documents', Icons.draw_outlined, Icons.draw, GeneratorScreen());
 
 const destinations = <Destination>[
   _insights, _transactions, _customers, _receipts, _invoices,
-  _mils, _sales, _stock, _summary,
+  _mils, _sales, _stock, _summary, _docs,
 ];
 
 /// Primary destinations for the phone bottom bar; everything else lives
@@ -99,10 +102,18 @@ class _AppShellState extends State<AppShell> {
     if (useRail) {
       body = Row(children: [
         _rail(extended: extended),
-        Expanded(child: dest.screen),
+        Expanded(
+          child: Stack(children: [
+            const Positioned.fill(child: WatermarkBackground()),
+            dest.screen,
+          ]),
+        ),
       ]);
     } else {
-      body = dest.screen;
+      body = Stack(children: [
+        const Positioned.fill(child: WatermarkBackground()),
+        dest.screen,
+      ]);
     }
 
     return Scaffold(
