@@ -38,7 +38,8 @@ const _settings = Destination('Settings', Icons.settings_outlined, Icons.setting
 
 /// Admin sees everything; Sales never sees revenue/profit/settings (SPEC §6).
 List<Destination> destinationsFor(String? role) {
-  if (role == 'admin') {
+  // CEO has the full management set (outranks admin)
+  if (role == 'admin' || role == 'ceo') {
     return const [
       _insights, _transactions, _customers, _receipts, _invoices,
       _mils, _sales, _stock, _summary, _docs, _settings,
@@ -180,7 +181,7 @@ class _AppShellState extends State<AppShell> {
 
   Widget _bottomBar() {
     final moreSelected = !_bottomBarIndexes.contains(_index);
-    final visibleBottom = AuthStore.instance.current?.role == 'admin'
+    final visibleBottom = AuthStore.instance.isManagement
         ? _bottomBarIndexes.where((i) => i < _visible.length).toList()
         : [for (var i = 0; i < _visible.length && i < 4; i++) i];
     return NavigationBar(

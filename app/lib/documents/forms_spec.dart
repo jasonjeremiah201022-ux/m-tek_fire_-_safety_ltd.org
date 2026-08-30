@@ -40,6 +40,8 @@ class MtekForms {
     'receipt': 2131,
     'mils': 925,
     'invoice': 4335,
+    'waybill': 174, // physical book currently on No: 0174
+    'deliverynote': 19790088, // pre-printed book (next: 19790089)
   };
 
   /// VAT shown on the Sales Invoice (7.5% — configurable in Settings, §7).

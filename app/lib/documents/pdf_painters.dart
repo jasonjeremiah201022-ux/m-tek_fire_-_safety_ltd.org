@@ -15,7 +15,7 @@ import 'pdf_shared.dart';
 /// Every document gets: corporate dual-office header, faint watermark,
 /// signature stamp of the signer, QR verification hash, exact disclaimers.
 
-enum GeneratedDoc { receipt, invoice, mils }
+enum GeneratedDoc { receipt, invoice, mils, waybill, deliveryNote }
 
 Future<Uint8List> buildDocument(
   GeneratedDoc type, {
@@ -23,6 +23,8 @@ Future<Uint8List> buildDocument(
   required ReceiptDocState? receipt,
   required InvoiceDocState? invoice,
   required MilsDocState? mils,
+  required WaybillDocState? waybill,
+  required DeliveryNoteDocState? deliveryNote,
   required String signedBy,
   Uint8List? signaturePngBytes,
 }) async {
@@ -38,6 +40,10 @@ Future<Uint8List> buildDocument(
       doc.addPage(_invoicePage(logo, signature, invoice!, signedBy));
     case GeneratedDoc.mils:
       doc.addPage(_milsPage(logo, signature, mils!, signedBy));
+    case GeneratedDoc.waybill:
+      doc.addPage(_waybillPage(logo, signature, waybill!, signedBy));
+    case GeneratedDoc.deliveryNote:
+      doc.addPage(_deliveryNotePage(logo, signature, deliveryNote!, signedBy));
   }
   return doc.save();
 }
@@ -528,6 +534,281 @@ pw.MultiPage _milsPage(
         pw.Text('Digitally signed by $signedBy — ${_dt(m.entryDate)}',
             style: pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold, color: PdfColors.green900)),
         verificationFooter('mils', m.serial ?? 0, hashPayload),
+      ]),
+    ],
+  );
+}
+
+// =====================================================================
+// 4. WAYBILL (landscape — mirrors the No: 0174 carbon-copy book)
+// =====================================================================
+pw.MultiPage _waybillPage(
+    pw.ImageProvider logo, pw.ImageProvider? signature, WaybillDocState w, String signedBy) {
+  final hashPayload =
+      '${w.serial}|${w.destination}|${w.date.toIso8601String()}|${w.name}';
+  final itemRows = <List<String>>[
+    for (var i = 0; i < w.rows.length; i++)
+      if (w.rows[i].product.trim().isNotEmpty)
+        [
+          '${i + 1}',
+          w.rows[i].product,
+          w.rows[i].techSpec,
+          w.rows[i].brand,
+          w.rows[i].qty == 0 ? '' : w.rows[i].qty.toString(),
+        ]
+  ];
+  return pw.MultiPage(
+    pageTheme: _theme(logo, PdfPageFormat.a4.portrait),
+    maxPages: 2,
+    build: (context) => [
+      corporateHeader(logo),
+      pw.SizedBox(height: 8),
+      pw.Center(
+          child: pw.Container(
+              padding: const pw.EdgeInsets.symmetric(horizontal: 26, vertical: 3),
+              decoration: pw.BoxDecoration(
+                border: pw.Border.all(color: PdfColors.blue700, width: 1.4),
+                color: PdfColors.blue50,
+              ),
+              child: pw.Text('WAYBILL',
+                  style: pw.TextStyle(
+                      fontSize: 15, fontWeight: pw.FontWeight.bold, letterSpacing: 2)))),
+      pw.SizedBox(height: 6),
+
+      // Reference chips row (mirrors the physical boxes)
+      pw.Row(children: [
+        _refBox('MILS NO:', w.milsNo),
+        _refBox('RECEIPT NO:', w.receiptNo),
+        _refBox('INVOICE NO:', w.invoiceNo),
+        _refBox('LPO NO:', w.lpoNo),
+      ]),
+      pw.SizedBox(height: 5),
+      pw.Row(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
+        pw.Expanded(
+          flex: 3,
+          child: pw.Container(
+            padding: const pw.EdgeInsets.all(8),
+            decoration: pw.BoxDecoration(border: pw.Border.all(color: PdfColors.black)),
+            child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
+              ruledField("Buyer's name:", value: w.name),
+              ruledField('Phone no:', value: w.phone),
+              ruledField('Address:', value: w.address),
+            ]),
+          ),
+        ),
+        pw.SizedBox(width: 10),
+        pw.Expanded(
+          child: pw.Container(
+            padding: const pw.EdgeInsets.all(8),
+            decoration: pw.BoxDecoration(border: pw.Border.all(color: PdfColors.black, width: 1.2)),
+            child: pw.Column(children: [
+              pw.Text('No:', style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold)),
+              pw.Text('${w.serial}',
+                  style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold)),
+              pw.Text('Date: ${_dt(w.date)}', style: const pw.TextStyle(fontSize: 8)),
+            ]),
+          ),
+        ),
+      ]),
+      pw.SizedBox(height: 6),
+      pw.TableHelper.fromTextArray(
+        context,
+        headers: ['SNO', 'PRODUCTS', 'TECH. SPEC', 'BRAND', 'QTY'],
+        data: itemRows.isEmpty ? [['', '', '', '', '']] : itemRows,
+        headerStyle: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold, color: PdfColors.white),
+        headerDecoration: const pw.BoxDecoration(color: PdfColors.blue700),
+        cellStyle: const pw.TextStyle(fontSize: 8),
+        columnWidths: const {
+          0: pw.FixedColumnWidth(34),
+          1: pw.FlexColumnWidth(4),
+          2: pw.FlexColumnWidth(3),
+          3: pw.FlexColumnWidth(2),
+          4: pw.FixedColumnWidth(44),
+        },
+        cellPadding: const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 2.5),
+        border: pw.TableBorder.all(color: PdfColors.grey600, width: .5),
+      ),
+      pw.SizedBox(height: 6),
+      pw.Container(
+        padding: const pw.EdgeInsets.all(8),
+        decoration: pw.BoxDecoration(border: pw.Border.all(color: PdfColors.black)),
+        child: pw.Column(children: [
+          ruledField('Originating from:', value: w.originatingFrom),
+          ruledField('Destination:', value: w.destination),
+          ruledField("Driver's name:", value: '${w.driverName}   Phone no: ${w.driverPhone}'),
+          ruledField("Vehicle's brand:", value: '${w.vehicleBrand}   Plate no: ${w.plateNo}'),
+          ruledField('Colour:', value: w.colour),
+          ruledField("Receiver's name:", value: '${w.receiverName}   Phone no: ${w.receiverPhone}'),
+          ruledField('Approved by:', value: w.approvedBy),
+        ]),
+      ),
+      pw.SizedBox(height: 5),
+      _signOffRow(signature, signedBy, ['Prepared by:', "Buyer's signature:"]),
+      pw.SizedBox(height: 4),
+      pw.Container(
+        width: double.infinity,
+        padding: const pw.EdgeInsets.all(6),
+        color: PdfColors.red50,
+        child: pw.Text(
+          'Caution! Once contact is established between the buyer or his agent with the '
+          'waybill company, it is only the responsibility of the customer to do goods on '
+          'transit insurance cover and tracking, until his/her goods are secured. '
+          'Therefore, we bear no liability on goods lost on transit or damaged.',
+          style: pw.TextStyle(fontSize: 7, color: PdfColors.red900, fontStyle: pw.FontStyle.italic),
+        ),
+      ),
+      pw.SizedBox(height: 4),
+      pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [
+        pw.Text('Digitally signed by $signedBy — ${_dt(w.date)}',
+            style: pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold, color: PdfColors.green900)),
+        verificationFooter('waybill', w.serial ?? 0, hashPayload),
+      ]),
+    ],
+  );
+}
+
+pw.Widget _refBox(String label, String value) {
+  return pw.Expanded(
+    child: pw.Container(
+      margin: const pw.EdgeInsets.only(right: 6),
+      padding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: pw.BoxDecoration(border: pw.Border.all(color: PdfColors.black)),
+      child: pw.Text('$label ${value.isEmpty ? '' : value}',
+          style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
+    ),
+  );
+}
+
+// =====================================================================
+// 5. DELIVERY NOTE (portrait — mirrors the pre-printed 19790088 book)
+// =====================================================================
+pw.MultiPage _deliveryNotePage(
+    pw.ImageProvider logo, pw.ImageProvider? signature, DeliveryNoteDocState d, String signedBy) {
+  final hashPayload =
+      '${d.serial}|${d.customerName}|${d.orderDate.toIso8601String()}|${d.location}';
+  final itemRows = <List<String>>[
+    for (var i = 0; i < d.rows.length; i++)
+      if (d.rows[i].description.trim().isNotEmpty)
+        [
+          '${i + 1}',
+          d.rows[i].description,
+          d.rows[i].ordered == 0 ? '' : d.rows[i].ordered.toString(),
+          d.rows[i].delivered == 0 ? '' : d.rows[i].delivered.toString(),
+          d.rows[i].outstanding == 0 ? '' : d.rows[i].outstanding.toString(),
+        ]
+  ];
+  pw.Widget addrCol(String title, List<pw.Widget> fields) => pw.Expanded(
+        child: pw.Container(
+          padding: const pw.EdgeInsets.all(8),
+          decoration: pw.BoxDecoration(border: pw.Border.all(color: PdfColors.grey500)),
+          child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
+            pw.Container(
+                width: double.infinity,
+                padding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                color: PdfColors.grey300,
+                child: pw.Text(title,
+                    style: pw.TextStyle(fontSize: 8.5, fontWeight: pw.FontWeight.bold))),
+            pw.SizedBox(height: 4),
+            ...fields,
+          ]),
+        ),
+      );
+  return pw.MultiPage(
+    pageTheme: _theme(logo, PdfPageFormat.a4.portrait),
+    maxPages: 2,
+    build: (context) => [
+      corporateHeader(logo),
+      pw.SizedBox(height: 8),
+      pw.Center(
+          child: pw.Text('DELIVERY NOTE',
+              style: pw.TextStyle(
+                  fontSize: 16, fontWeight: pw.FontWeight.bold, letterSpacing: 2, color: PdfColors.blue900))),
+      pw.SizedBox(height: 6),
+      pw.Row(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
+        addrCol('Invoice Address:', [
+          ruledField("CUSTOMER'S NAME:", value: d.customerName),
+          ruledField('INSTITUTION:', value: d.institution),
+          ruledField('ADDRESS:', value: d.address),
+          ruledField('PHONE NO.:', value: d.phone),
+        ]),
+        pw.SizedBox(width: 10),
+        addrCol('Shipping Address:', [
+          ruledField('LOCATION:', value: d.location),
+          ruledField('RECEIVER:', value: d.receiver),
+          ruledField("RECEIVER'S NO.:", value: d.receiverNo),
+          ruledField('SIGNATURE:', value: d.receiverSignature),
+        ]),
+      ]),
+      pw.SizedBox(height: 6),
+      pw.Row(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
+        pw.Expanded(
+          child: pw.Column(crossAxisAlignment: pw.CrossAxisAlignment.start, children: [
+            ruledField('Date of Order:', value: _dt(d.orderDate)),
+            ruledField('Proforma Invoice ID:', value: d.proformaInvoiceId),
+            ruledField("Customer's ID:", value: d.customerId),
+            ruledField('Dispatch:', value: d.dispatch),
+            ruledField('Delivery Method:', value: d.deliveryMethod),
+          ]),
+        ),
+        pw.SizedBox(width: 10),
+        pw.Expanded(
+          child: pw.Container(
+            padding: const pw.EdgeInsets.all(8),
+            decoration: pw.BoxDecoration(border: pw.Border.all(color: PdfColors.black, width: 1.2)),
+            child: pw.Column(children: [
+              pw.Text('Delivery Note No:',
+                  style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold)),
+              pw.Text('${d.serial}',
+                  style: pw.TextStyle(fontSize: 15, fontWeight: pw.FontWeight.bold)),
+            ]),
+          ),
+        ),
+      ]),
+      pw.SizedBox(height: 4),
+      ruledField('Account No.:', value: '${d.accountNo}   Account Name: ${d.accountName}'),
+      ruledField('Banker:', value: d.banker),
+      pw.SizedBox(height: 6),
+      pw.TableHelper.fromTextArray(
+        context,
+        headers: ['S/NO', 'DESCRIPTION', 'ORDERED', 'DELIVERED', 'OUTSTANDING'],
+        data: itemRows.isEmpty ? [['', '', '', '', '']] : itemRows,
+        headerStyle: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold, color: PdfColors.white),
+        headerDecoration: const pw.BoxDecoration(color: PdfColors.blue700),
+        cellStyle: const pw.TextStyle(fontSize: 8),
+        columnWidths: const {
+          0: pw.FixedColumnWidth(34),
+          1: pw.FlexColumnWidth(5),
+          2: pw.FixedColumnWidth(56),
+          3: pw.FixedColumnWidth(60),
+          4: pw.FixedColumnWidth(68),
+        },
+        cellPadding: const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 2.5),
+        border: pw.TableBorder.all(color: PdfColors.grey600, width: .5),
+      ),
+      pw.SizedBox(height: 6),
+      ruledField('SUMMARY:', value: d.summary),
+      pw.SizedBox(height: 6),
+      pw.Container(
+        width: double.infinity,
+        padding: const pw.EdgeInsets.all(6),
+        child: pw.Text(
+          'Goods must be checked before signing as signature and or Stamp confirms correct '
+          'quantity and satisfactory condition. Only payment made into the company\'s '
+          'designated account are recognized.',
+          style: pw.TextStyle(fontSize: 7.5, fontStyle: pw.FontStyle.italic),
+        ),
+      ),
+      pw.SizedBox(height: 5),
+      _signOffRow(signature, signedBy, ['Prepared by:', 'Approved by:', 'Client — acknowledges the receipt of the goods described above:']),
+      pw.SizedBox(height: 6),
+      pw.Center(
+          child: pw.Text('Motto: We are not competing, we are setting standards',
+              style: pw.TextStyle(fontSize: 8.5, fontWeight: pw.FontWeight.bold, fontStyle: pw.FontStyle.italic))),
+      pw.SizedBox(height: 4),
+      pw.Row(mainAxisAlignment: pw.MainAxisAlignment.spaceBetween, children: [
+        pw.Text('Digitally signed by $signedBy — ${_dt(d.orderDate)}',
+            style: pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold, color: PdfColors.green900)),
+        verificationFooter('deliverynote', d.serial ?? 0, hashPayload),
       ]),
     ],
   );

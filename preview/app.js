@@ -126,13 +126,13 @@ function settingsScreen() {
       </div>
       <div class="card form-card">
         <div class="fc-t">DOCUMENT SERIALS — continue the paper books</div>
-        ${[['receipt', 'Payment Receipt', 2131], ['invoice', 'Sales Invoice', 4335], ['mils', 'MILS Sheet', 925]].map(([k, label, seed]) => `
+        ${[['receipt', 'Payment Receipt', 2131], ['invoice', 'Sales Invoice', 4335], ['mils', 'MILS Sheet', 925], ['waybill', 'Waybill', 174], ['deliverynote', 'Delivery Note', 19790088]].map(([k, label, seed]) => `
           <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
             <span style="flex:1;font-size:12.5px">${label}</span>
             <input class="f-in" style="max-width:110px;margin:0" id="seed-${k}" type="number" value="${serials[k]}">
             <button class="btn ghost sm" onclick="reseedSerial('${k}', ${seed})">Set</button>
           </div>`).join('')}
-        <div style="font-size:11.5px;color:var(--gray-500)">Next issued: receipt <b>${serials.receipt + 1}</b> · invoice <b>${serials.invoice + 1}</b> · MILS <b>${serials.mils + 1}</b></div>
+        <div style="font-size:11.5px;color:var(--gray-500)">Next issued: receipt <b>${serials.receipt + 1}</b> · invoice <b>${serials.invoice + 1}</b> · MILS <b>${serials.mils + 1}</b> · waybill <b>${serials.waybill + 1}</b> · delivery note <b>${serials.deliverynote + 1}</b></div>
       </div>
       <div class="card form-card">
         <div class="fc-t">DANGER ZONE</div>
@@ -185,7 +185,7 @@ const SUBTITLES = {
   sales: 'Pick items — stock & receipts update automatically',
   stock: 'Quantities, prices, low-stock alerts, audit trail',
   summary: 'Business report — export or share as PDF (M4)',
-  docs: 'Write up a Receipt, Invoice or MILS sheet — PDF mirrors your paper books',
+  docs: 'Write up a Receipt, Invoice, MILS sheet, Waybill or Delivery Note — PDF mirrors your paper books',
   settings: 'Company profile, VAT, watermark & document serial counters',
 };
 
@@ -214,7 +214,7 @@ function routeButtons() {
   if (route === 'mils') return `<button class="btn primary" onclick="toast('MILS entry form — M2 (stored as Mongo documents in M3)')">＋ Log service</button>`;
   if (route === 'stock') return `<button class="btn ghost" onclick="toast('Opens the products_seed.txt importer in M2')">Import TXT</button>`;
   if (route === 'summary') return `<button class="btn ghost" onclick="toast('PDF export & share — Milestone M4')">Export PDF</button>`;
-  if (route === 'docs') return `<button class="btn ghost" onclick="toast('Serial counters are Admin-seedable in Settings (M2) — continuing paper books: 2131 / 925 / 4335')">Serials</button>`;
+  if (route === 'docs') return `<button class="btn ghost" onclick="toast('Serial counters are Admin-seedable in Settings — continuing paper books: 2131 / 4335 / 925 / 0174 / 19790088')">Serials</button>`;
   return '';
 }
 
@@ -777,7 +777,7 @@ function renderAuth(mode = 'login') {
           <label>Password</label><input id="a-pass" type="password" placeholder="••••••••">
           <button class="btn primary" style="width:100%;justify-content:center;margin-top:18px" onclick="doLogin()">Sign in</button>
           <button class="linkbtn" onclick="renderAuth('signup')">Create an account →</button>
-          <div class="auth-demo">Demo: admin@mtek.demo · admin123</div>
+          <div class="auth-demo">Demo: admin@mtek.demo · admin123<br>CEO (hardcoded): mtekfiresafetyltd@gmail.com · ceo1234</div>
         ` : `
           <label>Full name</label><input id="a-name" placeholder="e.g. Ibrahim Kabeer">
           <label>Email</label><input id="a-email" type="email" placeholder="you@mtek…">
@@ -922,8 +922,15 @@ window.gateSubmit = async () => {
 window.nextSerial = async type => {
   const r = await api('/api/docs/issue', {
     type, signedBy: currentUser().name,
-    customer: docsTab === 'receipt' ? docState.receipt.name : docsTab === 'invoice' ? docState.invoice.name : docState.mils.name,
-    total: docsTab === 'receipt' ? docState.receipt.amount : docsTab === 'invoice' ? invGrand() : milsSub() * 1.075,
+    customer: docsTab === 'receipt' ? docState.receipt.name
+      : docsTab === 'invoice' ? docState.invoice.name
+      : docsTab === 'mils' ? docState.mils.name
+      : docsTab === 'waybill' ? docState.waybill.name
+      : docState.deliverynote.name,
+    total: docsTab === 'receipt' ? docState.receipt.amount
+      : docsTab === 'invoice' ? invGrand()
+      : docsTab === 'mils' ? milsSub() * 1.075
+      : 0,
     hash: (Date.now() ^ Math.floor(Math.random() * 1e9)).toString(16),
   });
   serials = r.serials; docs = r.docs;
@@ -940,8 +947,17 @@ const docState = {
   receipt: { irn: '', name: '', addr: '', phone: '', forWhat: '', amount: 0, method: 'Cash' },
   invoice: { variant: 'SALES INVOICE', name: '', addr: '', phone: '', lpo: '', milsRef: false, recRef: false, milsNo: '', recNo: '', advance: 0, vatOn: true, rows: [{ d: '', q: 1, r: 0 }] },
   mils: { name: '', addr: '', phone: '', lpo: '', inv: '', rec: '', weights: {}, comps: {}, compsRate: {}, advance: 0 },
+  waybill: { milsNo: '', recNo: '', invNo: '', lpoNo: '', name: '', addr: '', phone: '',
+             from: 'HEAD OFFICE: YY12, Kazaure Road, By Lagos Street Round About, Kaduna',
+             dest: '', driver: '', driverPhone: '', vehicle: '', plate: '', colour: '',
+             receiver: '', receiverPhone: '', rows: [{ d: '', spec: '', brand: '', q: '' }] },
+  deliverynote: { name: '', institution: '', addr: '', phone: '', loc: '', receiver: '',
+                  receiverNo: '', orderDate: '', proforma: '', custId: '', dispatch: '',
+                  dmethod: '', acctNo: '', acctName: '', banker: '', summary: '',
+                  rows: [{ d: '', ordered: '', delivered: '', outstanding: '' }] },
 };
 let docsTab = 'receipt';
+window.setDocsTab = t => { docsTab = t; render(); };
 const W_KEYS = ['1kg','2kg','3kg','5kg','6kg','9kg','12kg','25kg','50kg','75kg'];
 const C_KEYS = ['Nipple','Horn','Hose','Manometre','Valve','Strap','Label','Lever','Seal','Powder','Pull Pin','Cartridge'];
 const invSub = () => docState.invoice.rows.reduce((s, r) => s + (r.q * (r.r || 0)), 0);
@@ -957,10 +973,10 @@ const milsSub = () => {
 function docsScreen() {
   return `
     <div class="seg">
-      ${[[['receipt', icSvg('doc', 14) + ' Payment Receipt'], ['invoice', icSvg('quote', 14) + ' Sales Invoice'], ['mils', icSvg('wrench', 14) + ' MILS Sheet']]]
-        .map(([k, l]) => `<button class="${docsTab === k ? 'active' : ''}" onclick="docsTab='${k}';render()">${l}</button>`).join('')}
+      ${[['receipt', icSvg('doc', 14) + ' Receipt'], ['invoice', icSvg('quote', 14) + ' Invoice'], ['mils', icSvg('wrench', 14) + ' MILS'], ['waybill', icSvg('truck', 14) + ' Waybill'], ['deliverynote', icSvg('box', 14) + ' Delivery Note']]
+        .map(([k, l]) => `<button class="${docsTab === k ? 'active' : ''}" onclick="setDocsTab('${k}')">${l}</button>`).join('')}
     </div>
-    ${docsTab === 'receipt' ? docsReceipt() : docsTab === 'invoice' ? docsInvoice() : docsMils()}
+    ${docsTab === 'receipt' ? docsReceipt() : docsTab === 'invoice' ? docsInvoice() : docsTab === 'mils' ? docsMils() : docsTab === 'waybill' ? docsWaybill() : docsDeliveryNote()}
     <div class="card" style="padding:14px;margin-top:14px">
       <button class="btn primary" style="width:100%;justify-content:center" onclick="generateDoc()">Sign &amp; generate PDF</button>
       <div style="font-size:11px;color:var(--gray-500);text-align:center;margin-top:8px">
@@ -1092,12 +1108,115 @@ window.updateMilsTotals = () => {
   set('mils-sub', milsSub()); set('mils-vat', milsSub() * 0.075); set('mils-grand', milsSub() * 1.075);
 };
 
+function docsWaybill() {
+  const d = docState.waybill;
+  return `
+    <div class="serial-banner">Waybill No: <b>${String(peekSerial('waybill')).padStart(4, '0')}</b><span style="flex:1"></span><span style="font-weight:400;color:var(--gray-500)">continues book numbering (last printed: 0174)</span></div>
+    <div class="card form-card">
+      <div class="fc-t">REFERENCES</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <input class="f-in" style="flex:1;min-width:100px" placeholder="MILS NO" value="${d.milsNo}" oninput="docState.waybill.milsNo=this.value">
+        <input class="f-in" style="flex:1;min-width:100px" placeholder="RECEIPT NO" value="${d.recNo}" oninput="docState.waybill.recNo=this.value">
+        <input class="f-in" style="flex:1;min-width:100px" placeholder="INVOICE NO" value="${d.invNo}" oninput="docState.waybill.invNo=this.value">
+        <input class="f-in" style="flex:1;min-width:100px" placeholder="LPO NO" value="${d.lpoNo}" oninput="docState.waybill.lpoNo=this.value">
+      </div>
+    </div>
+    <div class="card form-card">
+      <div class="fc-t">BUYER</div>
+      <input class="f-in" placeholder="Buyer's name *" value="${d.name}" oninput="docState.waybill.name=this.value">
+      <input class="f-in" placeholder="Phone no." value="${d.phone}" oninput="docState.waybill.phone=this.value">
+      <input class="f-in" placeholder="Address" value="${d.addr}" oninput="docState.waybill.addr=this.value">
+    </div>
+    <div class="card form-card">
+      <div class="fc-t">ITEMS — SNO / PRODUCTS / TECH. SPEC / BRAND / QTY</div>
+      ${d.rows.map((r, i) => `
+        <div style="display:flex;gap:6px;margin-bottom:6px">
+          <input class="f-in" style="flex:3" placeholder="Product" value="${r.d}" oninput="docState.waybill.rows[${i}].d=this.value">
+          <input class="f-in" style="flex:2" placeholder="Tech. spec" value="${r.spec}" oninput="docState.waybill.rows[${i}].spec=this.value">
+          <input class="f-in" style="flex:1.5" placeholder="Brand" value="${r.brand}" oninput="docState.waybill.rows[${i}].brand=this.value">
+          <input class="f-in" style="flex:1;max-width:70px" type="number" placeholder="Qty" value="${r.q}" oninput="docState.waybill.rows[${i}].q=this.value">
+          ${d.rows.length > 1 ? `<button class="btn ghost sm" style="color:var(--danger)" onclick="docState.waybill.rows.splice(${i},1);render()">×</button>` : ''}
+        </div>`).join('')}
+      <button class="btn ghost sm" onclick="docState.waybill.rows.push({d:'',spec:'',brand:'',q:''});render()">Add row</button>
+    </div>
+    <div class="card form-card">
+      <div class="fc-t">DELIVERY LOGISTICS</div>
+      <input class="f-in" placeholder="Originating from" value="${d.from}" oninput="docState.waybill.from=this.value">
+      <input class="f-in" placeholder="Destination *" value="${d.dest}" oninput="docState.waybill.dest=this.value">
+      <div style="display:flex;gap:8px">
+        <input class="f-in" style="flex:1" placeholder="Driver's name" value="${d.driver}" oninput="docState.waybill.driver=this.value">
+        <input class="f-in" style="flex:1" placeholder="Phone no." value="${d.driverPhone}" oninput="docState.waybill.driverPhone=this.value">
+      </div>
+      <div style="display:flex;gap:8px">
+        <input class="f-in" style="flex:1" placeholder="Vehicle's brand" value="${d.vehicle}" oninput="docState.waybill.vehicle=this.value">
+        <input class="f-in" style="flex:1" placeholder="Plate no." value="${d.plate}" oninput="docState.waybill.plate=this.value">
+        <input class="f-in" style="flex:1" placeholder="Colour" value="${d.colour}" oninput="docState.waybill.colour=this.value">
+      </div>
+      <div style="display:flex;gap:8px">
+        <input class="f-in" style="flex:1" placeholder="Receiver's name" value="${d.receiver}" oninput="docState.waybill.receiver=this.value">
+        <input class="f-in" style="flex:1" placeholder="Phone no." value="${d.receiverPhone}" oninput="docState.waybill.receiverPhone=this.value">
+      </div>
+      <input class="f-in" placeholder="Approved by" value="CEO — mtekfiresafetyltd@gmail.com" readonly style="color:var(--gray-500)">
+    </div>`;
+}
+
+function docsDeliveryNote() {
+  const d = docState.deliverynote;
+  return `
+    <div class="serial-banner">Delivery Note No: <b>${peekSerial('deliverynote')}</b><span style="flex:1"></span><span style="font-weight:400;color:var(--gray-500)">continues book numbering (last printed: 19790088)</span></div>
+    <div class="card form-card">
+      <div class="fc-t">INVOICE ADDRESS</div>
+      <input class="f-in" placeholder="Customer's name *" value="${d.name}" oninput="docState.deliverynote.name=this.value">
+      <input class="f-in" placeholder="Institution" value="${d.institution}" oninput="docState.deliverynote.institution=this.value">
+      <input class="f-in" placeholder="Address" value="${d.addr}" oninput="docState.deliverynote.addr=this.value">
+      <input class="f-in" placeholder="Phone no." value="${d.phone}" oninput="docState.deliverynote.phone=this.value">
+    </div>
+    <div class="card form-card">
+      <div class="fc-t">SHIPPING ADDRESS</div>
+      <input class="f-in" placeholder="Location" value="${d.loc}" oninput="docState.deliverynote.loc=this.value">
+      <input class="f-in" placeholder="Receiver" value="${d.receiver}" oninput="docState.deliverynote.receiver=this.value">
+      <input class="f-in" placeholder="Receiver's no." value="${d.receiverNo}" oninput="docState.deliverynote.receiverNo=this.value">
+    </div>
+    <div class="card form-card">
+      <div class="fc-t">DELIVERY DETAILS</div>
+      <div style="display:flex;gap:8px">
+        <input class="f-in" style="flex:1" type="date" value="${d.orderDate}" onchange="docState.deliverynote.orderDate=this.value">
+        <input class="f-in" style="flex:1" placeholder="Proforma Invoice ID" value="${d.proforma}" oninput="docState.deliverynote.proforma=this.value">
+      </div>
+      <div style="display:flex;gap:8px">
+        <input class="f-in" style="flex:1" placeholder="Customer's ID" value="${d.custId}" oninput="docState.deliverynote.custId=this.value">
+        <input class="f-in" style="flex:1" placeholder="Dispatch" value="${d.dispatch}" oninput="docState.deliverynote.dispatch=this.value">
+      </div>
+      <input class="f-in" placeholder="Delivery Method" value="${d.dmethod}" oninput="docState.deliverynote.dmethod=this.value">
+      <div style="display:flex;gap:8px">
+        <input class="f-in" style="flex:1" placeholder="Account No." value="${d.acctNo}" oninput="docState.deliverynote.acctNo=this.value">
+        <input class="f-in" style="flex:1" placeholder="Account Name" value="${d.acctName}" oninput="docState.deliverynote.acctName=this.value">
+      </div>
+      <input class="f-in" placeholder="Banker" value="${d.banker}" oninput="docState.deliverynote.banker=this.value">
+    </div>
+    <div class="card form-card">
+      <div class="fc-t">ITEMS — S/NO / DESCRIPTION / ORDERED / DELIVERED / OUTSTANDING</div>
+      ${d.rows.map((r, i) => `
+        <div style="display:flex;gap:6px;margin-bottom:6px">
+          <input class="f-in" style="flex:3" placeholder="Description" value="${r.d}" oninput="docState.deliverynote.rows[${i}].d=this.value">
+          <input class="f-in" style="flex:1;max-width:80px" placeholder="Ord." type="number" value="${r.ordered}" oninput="docState.deliverynote.rows[${i}].ordered=this.value">
+          <input class="f-in" style="flex:1;max-width:80px" placeholder="Deli." type="number" value="${r.delivered}" oninput="docState.deliverynote.rows[${i}].delivered=this.value">
+          <input class="f-in" style="flex:1;max-width:90px" placeholder="Outst." type="number" value="${r.outstanding}" oninput="docState.deliverynote.rows[${i}].outstanding=this.value">
+          ${d.rows.length > 1 ? `<button class="btn ghost sm" style="color:var(--danger)" onclick="docState.deliverynote.rows.splice(${i},1);render()">×</button>` : ''}
+        </div>`).join('')}
+      <button class="btn ghost sm" onclick="docState.deliverynote.rows.push({d:'',ordered:'',delivered:'',outstanding:''});render()">Add row</button>
+      <input class="f-in" placeholder="Summary" value="${d.summary}" oninput="docState.deliverynote.summary=this.value">
+    </div>`;
+}
+
 window.generateDoc = () => {
   const t = docsTab;
   const d = docState[t];
   if (t === 'receipt' && (!d.name || !d.amount)) return toast('Fill customer name and amount first');
   if (t === 'invoice' && (!d.name || !d.rows.some(r => r.d && r.r))) return toast('Fill customer name and at least one line item');
   if (t === 'mils' && (!d.name || (!Object.values(d.weights).some(q => q > 0) && !Object.values(d.comps).some(q => q > 0)))) return toast("Fill customer's name and at least one weight entry or component");
+  if (t === 'waybill' && (!d.name || !d.dest || !d.rows.some(r => r.d))) return toast('Fill buyer name, destination and at least one product');
+  if (t === 'deliverynote' && (!d.name || !d.rows.some(r => r.d))) return toast("Fill customer's name and at least one item description");
   signGate(`${t.charAt(0).toUpperCase() + t.slice(1)} — ${d.name}`, () => showDocPreview(t));
 };
 
@@ -1144,6 +1263,58 @@ async function showDocPreview(t) {
       <div class="summary-tile"><span class="l">Balance Payment</span><span class="v" style="color:var(--danger)">₦${(invGrand() - d.advance).toLocaleString()}</span></div>
       <div class="ds-field" style="margin-top:6px"><b>Amount in words:</b>${nairaWords(invGrand())} ONLY</div>
       <div class="ds-note">No guarantee cover on tested goods and services. We bear no liability on part paid and abandoned goods. This document is invalid without stamp and seal of this company.</div>`;
+  } else if (t === 'waybill') {
+    const d = docState.waybill;
+    body = `
+      <div class="banner">WAYBILL</div>
+      <div class="frow" style="margin-bottom:6px">
+        <span class="fchip ${d.milsNo ? 'active' : ''}">MILS NO: ${d.milsNo || '—'}</span>
+        <span class="fchip ${d.recNo ? 'active' : ''}">RECEIPT NO: ${d.recNo || '—'}</span>
+        <span class="fchip ${d.invNo ? 'active' : ''}">INVOICE NO: ${d.invNo || '—'}</span>
+        <span class="fchip ${d.lpoNo ? 'active' : ''}">LPO NO: ${d.lpoNo || '—'}</span>
+      </div>
+      <div class="ds-field"><b>No:</b>${String(serial).padStart(4, '0')} · <b>Date:</b>${new Date().toLocaleDateString('en-GB')}</div>
+      <div class="ds-field"><b>Buyer's name:</b>${d.name} · <b>Phone:</b>${d.phone || '—'}</div>
+      <div class="ds-field"><b>Address:</b>${d.addr || '—'}</div>
+      <table class="ledg"><thead><tr><th>SNO</th><th>PRODUCTS</th><th>TECH. SPEC</th><th>BRAND</th><th>QTY</th></tr></thead><tbody>
+      ${d.rows.filter(r => r.d).map((r, i) => `<tr><td>${i + 1}</td><td>${r.d}</td><td>${r.spec || '—'}</td><td>${r.brand || '—'}</td><td>${r.q || ''}</td></tr>`).join('')}
+      </tbody></table>
+      <div class="ds-field"><b>Originating from:</b>${d.from}</div>
+      <div class="ds-field"><b>Destination:</b>${d.dest}</div>
+      <div class="ds-field"><b>Driver:</b>${d.driver || '—'} · <b>Phone:</b>${d.driverPhone || '—'} · <b>Vehicle:</b>${d.vehicle || '—'} · <b>Plate:</b>${d.plate || '—'} · <b>Colour:</b>${d.colour || '—'}</div>
+      <div class="ds-field"><b>Receiver:</b>${d.receiver || '—'} · <b>Phone:</b>${d.receiverPhone || '—'}</div>
+      <div class="ds-field"><b>Prepared by:</b>${u ? u.name : ''} · <b>Approved by:</b>CEO</div>
+      <div class="ds-note"><b style="color:var(--danger)">Caution!</b> Once contact is established between the buyer or his agent with the waybill company, it is only the responsibility of the customer to do goods on transit insurance cover and tracking, until his/her goods are secured. Therefore, we bear no liability on goods lost on transit or damaged.</div>`;
+  } else if (t === 'deliverynote') {
+    const d = docState.deliverynote;
+    body = `
+      <div class="banner">DELIVERY NOTE</div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:6px">
+        <div style="flex:1;min-width:220px">
+          <div class="fc-t">Invoice Address:</div>
+          <div class="ds-field"><b>Customer's name:</b>${d.name}</div>
+          <div class="ds-field"><b>Institution:</b>${d.institution || '—'}</div>
+          <div class="ds-field"><b>Address:</b>${d.addr || '—'}</div>
+          <div class="ds-field"><b>Phone no.:</b>${d.phone || '—'}</div>
+        </div>
+        <div style="flex:1;min-width:220px">
+          <div class="fc-t">Shipping Address:</div>
+          <div class="ds-field"><b>Location:</b>${d.loc || '—'}</div>
+          <div class="ds-field"><b>Receiver:</b>${d.receiver || '—'}</div>
+          <div class="ds-field"><b>Receiver's no.:</b>${d.receiverNo || '—'}</div>
+        </div>
+      </div>
+      <div class="ds-field"><b>Delivery Note No:</b>${serial} · <b>Date of Order:</b>${d.orderDate || new Date().toLocaleDateString('en-GB')}</div>
+      <div class="ds-field"><b>Proforma Invoice ID:</b>${d.proforma || '—'} · <b>Customer's ID:</b>${d.custId || '—'}</div>
+      <div class="ds-field"><b>Dispatch:</b>${d.dispatch || '—'} · <b>Delivery Method:</b>${d.dmethod || '—'}</div>
+      <div class="ds-field"><b>Account No.:</b>${d.acctNo || '—'} · <b>Account Name:</b>${d.acctName || '—'} · <b>Banker:</b>${d.banker || '—'}</div>
+      <table class="ledg"><thead><tr><th>S/NO</th><th>DESCRIPTION</th><th>ORDERED</th><th>DELIVERED</th><th>OUTSTANDING</th></tr></thead><tbody>
+      ${d.rows.filter(r => r.d).map((r, i) => `<tr><td>${i + 1}</td><td>${r.d}</td><td>${r.ordered || ''}</td><td>${r.delivered || ''}</td><td>${r.outstanding || ''}</td></tr>`).join('')}
+      </tbody></table>
+      <div class="ds-field"><b>Summary:</b>${d.summary || '—'}</div>
+      <div class="ds-note">Goods must be checked before signing as signature and or Stamp confirms correct quantity and satisfactory condition. Only payment made into the company's designated account are recognized.</div>
+      <div class="ds-field"><b>Prepared by:</b>${u ? u.name : ''} · <b>Approved by:</b>__ · <b>Client:</b>__ <span style="color:var(--gray-500)">(acknowledges receipt of the goods described above)</span></div>
+      <div class="ds-field" style="text-align:center;font-style:italic"><b>Motto:</b> We are not competing, we are setting standards</div>`;
   } else {
     const d = docState.mils;
     const wRows = W_KEYS.filter(k => (d.weights[k] || 0) > 0).map(k => `<tr><td>${k}</td><td>${d.weights[k]}</td><td>${(d.weights[k + '_r'] || 0).toLocaleString()}</td><td>${(d.weights[k] * (d.weights[k + '_r'] || 0)).toLocaleString()}</td></tr>`).join('');

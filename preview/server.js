@@ -28,6 +28,9 @@ const ROOT = path.join(__dirname, '..');
 const DATA_DIR = path.join(__dirname, '.data');
 const DB_FILE = path.join(DATA_DIR, 'db.json');
 const PORT = process.env.PORT || 8080;
+// Levels of authority: ceo > admin > sales. The CEO account is locked to
+// this email and hardcoded here — it never goes through registration.
+const CEO_EMAIL = 'mtekfiresafetyltd@gmail.com';
 
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript',
@@ -57,6 +60,10 @@ function loadDb() {
     users: [{
       name: 'Admin', email: 'admin@mtek.demo', role: 'admin',
       passwordHash: hash('admin123'), sigHash: hash('1234'), signaturePng: null,
+    }, {
+      // CEO is hardcoded (NOT registrable): this email always signs in as CEO
+      name: 'CEO (M-tek)', email: 'mtekfiresafetyltd@gmail.com', role: 'ceo',
+      passwordHash: hash('ceo1234'), sigHash: hash('1234'), signaturePng: null,
     }],
     docs: [], // issued-document history (receipts/invoices/MILS generated)
   }));
@@ -153,6 +160,7 @@ const routes = {
     if (password.length < 6) throw httpErr(400, 'Password must be at least 6 characters');
     if (signature.length < 4) throw httpErr(400, 'Signature passcode must be at least 4 characters');
     if (signature === password) throw httpErr(400, 'Signature passcode must be different from your password');
+    if (email === CEO_EMAIL) throw httpErr(400, 'The CEO account is pre-provisioned — sign in directly');
     if (findUser(email)) throw httpErr(400, 'An account with that email already exists');
     const user = {
       name, email, role,
@@ -170,6 +178,7 @@ const routes = {
     if (!user || user.passwordHash !== hash(String(body.password || ''))) {
       throw httpErr(401, user ? 'Wrong password' : 'No account with that email');
     }
+    if (user.email === CEO_EMAIL) user.role = 'ceo'; // locked by hardcode
     return { user: safeUser(user) };
   },
 
@@ -266,7 +275,7 @@ const routes = {
   },
 
   'POST /api/docs/issue': body => {
-    const type = ['receipt', 'invoice', 'mils'].includes(body.type) ? body.type : null;
+    const type = ['receipt', 'invoice', 'mils', 'waybill', 'deliverynote'].includes(body.type) ? body.type : null;
     if (!type) throw httpErr(400, 'Unknown document type');
     if (!body.signedBy) throw httpErr(403, 'Not signed — document NOT issued');
     const serial = ++db.serials[type];

@@ -11,7 +11,7 @@ import 'package:flutter/foundation.dart';
 class StaffUser {
   final String name;
   final String email;
-  final String role; // 'admin' | 'sales'
+  final String role; // 'ceo' | 'admin' | 'sales'
   final String passwordHash;
   final String signaturePasscodeHash;
   final String? signaturePng; // base64 data-URL of the drawn signature
@@ -58,7 +58,20 @@ class AuthStore extends ChangeNotifier {
       passwordHash: demoHash('admin123'),
       signaturePasscodeHash: demoHash('1234'),
     ));
+    // CEO is HARDCODED (owner directive 2026-08-30): locked to this email,
+    // never appears in registration — signing in shows CEO at the top.
+    users.add(StaffUser(
+      name: 'CEO',
+      email: AuthStore.ceoEmail,
+      role: 'ceo',
+      passwordHash: demoHash('ceo1234'),
+      signaturePasscodeHash: demoHash('1234'),
+    ));
   }
+
+  /// The CEO identity is fixed to this email across the whole system
+  /// (Flutter app, preview server, Supabase backend in Phase C).
+  static const String ceoEmail = 'mtekfiresafetyltd@gmail.com';
   static final AuthStore instance = AuthStore._();
 
   final List<StaffUser> users = [];
@@ -67,10 +80,18 @@ class AuthStore extends ChangeNotifier {
   bool get isSignedIn => current != null;
   bool get isAdmin => current?.role == 'admin';
 
+  /// CEO outranks admin — full management reach everywhere.
+  bool get isCeo => current?.role == 'ceo';
+
+  /// Management-level authority (CEO or Admin): settings, seeds, approvals.
+  bool get isManagement => isAdmin || isCeo;
+
   String? signIn(String email, String password) {
-    final user = users.where((u) => u.email == email.trim().toLowerCase()).firstOrNull;
+    final mail = email.trim().toLowerCase();
+    final user = users.where((u) => u.email == mail).firstOrNull;
     if (user == null) return 'No account with that email';
     if (user.passwordHash != demoHash(password)) return 'Wrong password';
+    if (mail == ceoEmail && user.role != 'ceo') user.role = 'ceo'; // locked
     current = user;
     notifyListeners();
     return null;
@@ -95,11 +116,12 @@ class AuthStore extends ChangeNotifier {
     if (signaturePasscode == password) {
       return 'Signature passcode must be different from your password';
     }
+    if (mail == ceoEmail) return 'The CEO account is pre-provisioned — sign in directly';
     if (users.any((u) => u.email == mail)) return 'An account with that email already exists';
     users.add(StaffUser(
       name: name.trim(),
       email: mail,
-      role: role,
+      role: role == 'ceo' ? 'admin' : role,
       passwordHash: demoHash(password),
       signaturePasscodeHash: demoHash(signaturePasscode),
       signaturePng: signaturePng,

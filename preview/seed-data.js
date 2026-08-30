@@ -83,7 +83,8 @@ const adjustments = [
   { id: 'ADJ-3', d: '21 Aug', pid: 'S003', delta: 6, reason: 'RESTOCK', note: 'PO-2220' },
   { id: 'ADJ-4', d: '25 Aug', pid: 'H006', delta: -1, reason: 'CORRECTION', note: 'Shelf count correction' },
 ];
-const DEFAULT_SERIALS = { receipt: 2131, invoice: 4335, mils: 925 };
+const DEFAULT_SERIALS = { receipt: 2131, invoice: 4335, mils: 925,
+  waybill: 174, deliverynote: 19790088 };
 const DEFAULT_SETTINGS = { vatEnabled: true, vatRate: 0.075, company: 'M-TEK FIRE & SAFETY LTD.', watermark: true };
 
 module.exports = { CATS, CAT_COLOR, products, customers, sales, invoices, txns, mils, adjustments, DEFAULT_SERIALS, DEFAULT_SETTINGS };

@@ -39,17 +39,23 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
   final ReceiptDocState _receipt = ReceiptDocState();
   final InvoiceDocState _invoice = InvoiceDocState();
   final MilsDocState _mils = MilsDocState();
+  final WaybillDocState _waybill = WaybillDocState();
+  final DeliveryNoteDocState _deliveryNote = DeliveryNoteDocState();
 
   final Map<DocType, String?> _errors = {
     DocType.receipt: null,
     DocType.invoice: null,
     DocType.mils: null,
+    DocType.waybill: null,
+    DocType.deliveryNote: null,
   };
 
   static const _labels = {
     DocType.receipt: 'Receipt',
     DocType.invoice: 'Invoice',
     DocType.mils: 'MILS',
+    DocType.waybill: 'Waybill',
+    DocType.deliveryNote: 'Delivery Note',
   };
 
   @override
@@ -73,9 +79,11 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
           child: SegmentedButton<DocType>(
             segments: const [
-              ButtonSegment(value: DocType.receipt, icon: Icon(Icons.receipt_long_outlined), label: Text('Payment Receipt')),
-              ButtonSegment(value: DocType.invoice, icon: Icon(Icons.request_quote_outlined), label: Text('Sales Invoice')),
-              ButtonSegment(value: DocType.mils, icon: Icon(Icons.build_circle_outlined), label: Text('MILS Sheet')),
+              ButtonSegment(value: DocType.receipt, icon: Icon(Icons.receipt_long_outlined), label: Text('Receipt')),
+              ButtonSegment(value: DocType.invoice, icon: Icon(Icons.request_quote_outlined), label: Text('Invoice')),
+              ButtonSegment(value: DocType.mils, icon: Icon(Icons.build_circle_outlined), label: Text('MILS')),
+              ButtonSegment(value: DocType.waybill, icon: Icon(Icons.local_shipping_outlined), label: Text('Waybill')),
+              ButtonSegment(value: DocType.deliveryNote, icon: Icon(Icons.inventory_2_outlined), label: Text('Delivery')),
             ],
             selected: {_type},
             onSelectionChanged: (s) => setState(() => _type = s.first),
@@ -89,6 +97,8 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
                 DocType.receipt => _receiptForm(),
                 DocType.invoice => _invoiceForm(),
                 DocType.mils => _milsForm(),
+                DocType.waybill => _waybillForm(),
+                DocType.deliveryNote => _deliveryNoteForm(),
               },
               if (_errors[_type] != null)
                 Padding(
@@ -448,10 +458,208 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
     );
   }
 
+  // ---------- WAYBILL ----------
+
+  final _wbName = TextEditingController(), _wbAddr = TextEditingController(), _wbPhone = TextEditingController(),
+      _wbDest = TextEditingController(), _wbFrom = TextEditingController(), _wbMils = TextEditingController(),
+      _wbRec = TextEditingController(), _wbInv = TextEditingController(), _wbLpo = TextEditingController(),
+      _wbDriver = TextEditingController(), _wbDriverPhone = TextEditingController(), _wbVehicle = TextEditingController(),
+      _wbPlate = TextEditingController(), _wbColour = TextEditingController(), _wbReceiver = TextEditingController(),
+      _wbReceiverPhone = TextEditingController();
+
+  List<Widget> _waybillForm() {
+    return [
+      _serialBanner('waybill', _waybill.serial),
+      Row(children: [
+        Expanded(child: _field(_wbMils, 'MILS NO', onChanged: (v) => _waybill.milsNo = v)),
+        const SizedBox(width: 8),
+        Expanded(child: _field(_wbRec, 'RECEIPT NO', onChanged: (v) => _waybill.receiptNo = v)),
+      ]),
+      Row(children: [
+        Expanded(child: _field(_wbInv, 'INVOICE NO', onChanged: (v) => _waybill.invoiceNo = v)),
+        const SizedBox(width: 8),
+        Expanded(child: _field(_wbLpo, 'LPO NO', onChanged: (v) => _waybill.lpoNo = v)),
+      ]),
+      _field(_wbName, "Buyer's name *", onChanged: (v) => _waybill.name = v),
+      _field(_wbAddr, 'Address', onChanged: (v) => _waybill.address = v),
+      _field(_wbPhone, 'Phone no.', keyboard: TextInputType.phone, onChanged: (v) => _waybill.phone = v),
+      const SizedBox(height: 6),
+      const Text('ITEMS — PRODUCTS / TECH. SPEC / BRAND / QTY',
+          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1, color: Mtek.gray500)),
+      const SizedBox(height: 6),
+      for (var i = 0; i < _waybill.rows.length; i++)
+        Card(
+          margin: const EdgeInsets.only(bottom: 8),
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(children: [
+              TextField(
+                decoration: const InputDecoration(labelText: 'Product *'),
+                controller: TextEditingController(text: _waybill.rows[i].product),
+                onChanged: (v) => _waybill.rows[i].product = v,
+              ),
+              Row(children: [
+                Expanded(child: TextField(
+                  decoration: const InputDecoration(labelText: 'Tech. spec'),
+                  controller: TextEditingController(text: _waybill.rows[i].techSpec),
+                  onChanged: (v) => _waybill.rows[i].techSpec = v,
+                )),
+                const SizedBox(width: 8),
+                Expanded(child: TextField(
+                  decoration: const InputDecoration(labelText: 'Brand'),
+                  controller: TextEditingController(text: _waybill.rows[i].brand),
+                  onChanged: (v) => _waybill.rows[i].brand = v,
+                )),
+              ]),
+              Row(children: [
+                Expanded(child: TextField(
+                  decoration: const InputDecoration(labelText: 'Qty'),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  controller: TextEditingController(text: _waybill.rows[i].qty == 0 ? '' : '${_waybill.rows[i].qty}'),
+                  onChanged: (v) => _waybill.rows[i].qty = double.tryParse(v) ?? 0,
+                )),
+                if (_waybill.rows.length > 1)
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Mtek.danger),
+                    onPressed: () => setState(() => _waybill.rows.removeAt(i)),
+                  ),
+              ]),
+            ]),
+          ),
+        ),
+      Align(
+        alignment: Alignment.centerLeft,
+        child: TextButton.icon(
+          onPressed: () => setState(() => _waybill.rows.add(WaybillRow())),
+          icon: const Icon(Icons.add),
+          label: const Text('Add row'),
+        ),
+      ),
+      _field(_wbFrom, 'Originating from', onChanged: (v) => _waybill.originatingFrom = v),
+      _field(_wbDest, 'Destination *', onChanged: (v) => _waybill.destination = v),
+      Row(children: [
+        Expanded(child: _field(_wbDriver, "Driver's name", onChanged: (v) => _waybill.driverName = v)),
+        const SizedBox(width: 8),
+        Expanded(child: _field(_wbDriverPhone, 'Driver phone', keyboard: TextInputType.phone, onChanged: (v) => _waybill.driverPhone = v)),
+      ]),
+      Row(children: [
+        Expanded(child: _field(_wbVehicle, "Vehicle's brand", onChanged: (v) => _waybill.vehicleBrand = v)),
+        const SizedBox(width: 8),
+        Expanded(child: _field(_wbPlate, 'Plate no.', onChanged: (v) => _waybill.plateNo = v)),
+        const SizedBox(width: 8),
+        Expanded(child: _field(_wbColour, 'Colour', onChanged: (v) => _waybill.colour = v)),
+      ]),
+      Row(children: [
+        Expanded(child: _field(_wbReceiver, "Receiver's name", onChanged: (v) => _waybill.receiverName = v)),
+        const SizedBox(width: 8),
+        Expanded(child: _field(_wbReceiverPhone, 'Receiver phone', keyboard: TextInputType.phone, onChanged: (v) => _waybill.receiverPhone = v)),
+      ]),
+    ];
+  }
+
+  // ---------- DELIVERY NOTE ----------
+
+  final _dnName = TextEditingController(), _dnInst = TextEditingController(), _dnAddr = TextEditingController(),
+      _dnPhone = TextEditingController(), _dnLoc = TextEditingController(), _dnReceiver = TextEditingController(),
+      _dnReceiverNo = TextEditingController(), _dnProforma = TextEditingController(), _dnCustId = TextEditingController(),
+      _dnDispatch = TextEditingController(), _dnMethod = TextEditingController(), _dnAcctNo = TextEditingController(),
+      _dnAcctName = TextEditingController(), _dnBanker = TextEditingController(), _dnSummary = TextEditingController();
+
+  List<Widget> _deliveryNoteForm() {
+    return [
+      _serialBanner('deliverynote', _deliveryNote.serial),
+      _field(_dnName, "Customer's name *", onChanged: (v) => _deliveryNote.customerName = v),
+      _field(_dnInst, 'Institution', onChanged: (v) => _deliveryNote.institution = v),
+      _field(_dnAddr, 'Address', onChanged: (v) => _deliveryNote.address = v),
+      _field(_dnPhone, 'Phone no.', keyboard: TextInputType.phone, onChanged: (v) => _deliveryNote.phone = v),
+      const SizedBox(height: 6),
+      const Text('SHIPPING ADDRESS',
+          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1, color: Mtek.gray500)),
+      const SizedBox(height: 6),
+      _field(_dnLoc, 'Location', onChanged: (v) => _deliveryNote.location = v),
+      Row(children: [
+        Expanded(child: _field(_dnReceiver, 'Receiver', onChanged: (v) => _deliveryNote.receiver = v)),
+        const SizedBox(width: 8),
+        Expanded(child: _field(_dnReceiverNo, "Receiver's no.", keyboard: TextInputType.phone, onChanged: (v) => _deliveryNote.receiverNo = v)),
+      ]),
+      const SizedBox(height: 6),
+      const Text('DELIVERY DETAILS',
+          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1, color: Mtek.gray500)),
+      const SizedBox(height: 6),
+      _dateTile('Date of Order', _deliveryNote.orderDate, (d) => _deliveryNote.orderDate = d),
+      Row(children: [
+        Expanded(child: _field(_dnProforma, 'Proforma Invoice ID', onChanged: (v) => _deliveryNote.proformaInvoiceId = v)),
+        const SizedBox(width: 8),
+        Expanded(child: _field(_dnCustId, "Customer's ID", onChanged: (v) => _deliveryNote.customerId = v)),
+      ]),
+      Row(children: [
+        Expanded(child: _field(_dnDispatch, 'Dispatch', onChanged: (v) => _deliveryNote.dispatch = v)),
+        const SizedBox(width: 8),
+        Expanded(child: _field(_dnMethod, 'Delivery Method', onChanged: (v) => _deliveryNote.deliveryMethod = v)),
+      ]),
+      Row(children: [
+        Expanded(child: _field(_dnAcctNo, 'Account No.', onChanged: (v) => _deliveryNote.accountNo = v)),
+        const SizedBox(width: 8),
+        Expanded(child: _field(_dnAcctName, 'Account Name', onChanged: (v) => _deliveryNote.accountName = v)),
+      ]),
+      _field(_dnBanker, 'Banker', onChanged: (v) => _deliveryNote.banker = v),
+      const SizedBox(height: 6),
+      const Text('ITEMS — DESCRIPTION / ORDERED / DELIVERED / OUTSTANDING',
+          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1, color: Mtek.gray500)),
+      const SizedBox(height: 6),
+      for (var i = 0; i < _deliveryNote.rows.length; i++)
+        Card(
+          margin: const EdgeInsets.only(bottom: 8),
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(children: [
+              TextField(
+                decoration: const InputDecoration(labelText: 'Description *'),
+                controller: TextEditingController(text: _deliveryNote.rows[i].description),
+                onChanged: (v) => _deliveryNote.rows[i].description = v,
+              ),
+              Row(children: [
+                for (final (label, key) in const [('Ordered', 'o'), ('Delivered', 'd'), ('Outstanding', 'x')])
+                  Expanded(child: Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: TextField(
+                      decoration: InputDecoration(labelText: label),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      onChanged: (v) {
+                        final n = double.tryParse(v) ?? 0;
+                        if (key == 'o') _deliveryNote.rows[i].ordered = n;
+                        if (key == 'd') _deliveryNote.rows[i].delivered = n;
+                        if (key == 'x') _deliveryNote.rows[i].outstanding = n;
+                      },
+                    ),
+                  )),
+                if (_deliveryNote.rows.length > 1)
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Mtek.danger),
+                    onPressed: () => setState(() => _deliveryNote.rows.removeAt(i)),
+                  ),
+              ]),
+            ]),
+          ),
+        ),
+      Align(
+        alignment: Alignment.centerLeft,
+        child: TextButton.icon(
+          onPressed: () => setState(() => _deliveryNote.rows.add(DeliveryNoteRow())),
+          icon: const Icon(Icons.add),
+          label: const Text('Add row'),
+        ),
+      ),
+      _field(_dnSummary, 'Summary', onChanged: (v) => _deliveryNote.summary = v),
+    ];
+  }
+
   Widget _serialBanner(String type, int? assigned, {bool preview = false}) {
     final label = switch (type) {
       'receipt' => 'Receipt No',
       'invoice' => 'Invoice No',
+      'waybill' => 'Waybill No',
+      'deliverynote' => 'Delivery Note No',
       _ => 'MILS No',
     };
     final next = SerialService.instance.current(type) + 1;
@@ -478,6 +686,8 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
       DocType.receipt => _receipt.valid ? null : 'Customer name and a valid amount are required.',
       DocType.invoice => _invoice.valid ? null : 'Customer name and at least one line item (description + amount) are required.',
       DocType.mils => _mils.valid ? null : "Customer's name and at least one weight entry or component are required.",
+      DocType.waybill => _waybill.valid ? null : "Buyer's name, destination and at least one product are required.",
+      DocType.deliveryNote => _deliveryNote.valid ? null : "Customer's name and at least one item description are required.",
     };
     setState(() => _errors[_type] = err);
     if (err != null) return;
@@ -496,9 +706,12 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
       DocType.receipt => 'receipt',
       DocType.invoice => 'invoice',
       DocType.mils => 'mils',
+      DocType.waybill => 'waybill',
+      DocType.deliveryNote => 'deliverynote',
     };
     final serial = SerialService.instance.next(typeKey);
     _receipt.serial = serial; _invoice.serial = serial; _mils.serial = serial;
+    _waybill.serial = serial; _deliveryNote.serial = serial;
 
     final logoBytes = await rootBundle.load('assets/branding/logo.png');
     final signatureBytes = dataUrlToBytes(signer.signaturePng);
@@ -508,11 +721,15 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
         DocType.receipt => GeneratedDoc.receipt,
         DocType.invoice => GeneratedDoc.invoice,
         DocType.mils => GeneratedDoc.mils,
+        DocType.waybill => GeneratedDoc.waybill,
+        DocType.deliveryNote => GeneratedDoc.deliveryNote,
       },
       logoBytes: logoBytes.buffer.asUint8List(),
       receipt: _receipt,
       invoice: _invoice,
       mils: _mils,
+      waybill: _waybill,
+      deliveryNote: _deliveryNote,
       signedBy: signer.name,
       signaturePngBytes: signatureBytes,
     );
@@ -521,11 +738,15 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
       DocType.receipt => _receipt.name,
       DocType.invoice => _invoice.name,
       DocType.mils => _mils.name,
+      DocType.waybill => _waybill.name,
+      DocType.deliveryNote => _deliveryNote.customerName,
     };
     final docLabel = switch (_type) {
       DocType.receipt => 'Payment Receipt',
       DocType.invoice => 'Invoice',
       DocType.mils => 'Maintenance Information Log Sheet (MILS)',
+      DocType.waybill => 'Waybill',
+      DocType.deliveryNote => 'Delivery Note',
     };
     final filename = 'mtek_${typeKey}_$serial'
         '_${DateTime.now().millisecondsSinceEpoch}.pdf';
@@ -540,6 +761,8 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
         DocType.receipt => _receipt.amount,
         DocType.invoice => _invoice.grandTotal,
         DocType.mils => _mils.grandTotal,
+        DocType.waybill => 0,
+        DocType.deliveryNote => 0,
       },
       signedBy: signer.name,
       verifyHash: hash,

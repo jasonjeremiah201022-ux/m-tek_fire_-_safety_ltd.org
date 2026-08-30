@@ -28,6 +28,12 @@ const w = dom.window;
 const S = () => w.__mtek();
 const appText = () => w.document.querySelector('#app').textContent;
 const expect = (cond, msg) => { if (!cond) throw new Error(msg); };
+const api = async (u, body) => {
+  const r = await fetch(BASE + u, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || ('HTTP ' + r.status));
+  return d;
+};
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 (async () => {
@@ -115,6 +121,30 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   await w.resetDemo(); await sleep(500);
   expect(S().serials.receipt === 2131, 'Reset restores seed serials');
   console.log('✓ Settings: serial reseed + reset work against the API');
+
+  // ---- 9. CEO hardcode + new documents (waybill / delivery note) ----
+  const ceo = await api('/api/auth/login', { email: 'mtekfiresafetyltd@gmail.com', password: 'ceo1234' });
+  expect(ceo.user.role === 'ceo', 'CEO email signs in with role ceo');
+  const ceoShown = w.document.querySelector('.auth-demo').textContent.includes('mtekfiresafetyltd@gmail.com');
+  expect(ceoShown, 'CEO login surfaced on the auth screen');
+  let regBlocked = false;
+  try { await api('/api/auth/signup', { name: 'Test CEO', email: 'mtekfiresafetyltd@gmail.com', password: 'zzzzzz', signature: '9999' }); }
+  catch (e) { regBlocked = /CEO account is pre-provisioned/.test(e.message); }
+  expect(regBlocked, 'CEO email cannot be registered');
+  const wb = await api('/api/docs/issue', { type: 'waybill', signedBy: 'CEO (M-tek)', customer: 'Test Buyer', total: 0, hash: 'wb1' });
+  expect(wb.serial === 175, 'Waybill continues book at 0174 -> 0175');
+  const dn = await api('/api/docs/issue', { type: 'deliverynote', signedBy: 'CEO (M-tek)', customer: 'Test Buyer', total: 0, hash: 'dn1' });
+  expect(dn.serial === 19790089, 'Delivery Note continues book at 19790088 -> 19790089');
+  w.go('docs'); await sleep(80);
+  await w.setDocsTab('waybill'); await sleep(80);
+  expect(w.document.body.innerHTML.includes('Waybill No:'), 'Waybill form renders');
+  expect(w.document.body.innerHTML.includes('DELIVERY LOGISTICS'), 'Waybill logistics section renders');
+  expect(w.document.body.innerHTML.includes('continues book numbering (last printed: 0174)'), 'Waybill book continuity shown');
+  await w.setDocsTab('deliverynote'); await sleep(80);
+  expect(w.document.body.innerHTML.includes('Delivery Note No:'), 'Delivery Note form renders');
+  expect(w.document.body.innerHTML.includes('SHIPPING ADDRESS'), 'Delivery Note shipping section renders');
+  await w.setDocsTab('receipt'); await sleep(80);
+  console.log('✓ CEO hardcoded (mtekfiresafetyltd@gmail.com → role ceo) + Waybill/Delivery Note live');
 
   if (errors.length) throw new Error('JS errors: ' + errors.join('; '));
   console.log('\nALL SMOKE TESTS PASSED — real API flows, server-side signing, persistence, 0 JS errors');

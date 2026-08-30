@@ -8,7 +8,56 @@ import 'forms_spec.dart';
 ///
 /// Persisted to Drift in Phase B; Supabase in Phase C.
 
-enum DocType { receipt, invoice, mils }
+enum DocType { receipt, invoice, mils, waybill, deliveryNote }
+
+/// WAYBILL — mirrors the physical carbon-copy book (No: 0174 series).
+/// Items carry tech-spec + brand instead of prices (logistics document).
+class WaybillDocState {
+  int? serial;
+  String milsNo = '', receiptNo = '', invoiceNo = '', lpoNo = '';
+  String name = '', address = '', phone = '';
+  String originatingFrom =
+      'HEAD OFFICE: YY 12, Kazaure Road, By Lagos Street Round About, Kaduna';
+  String destination = '';
+  String driverName = '', driverPhone = '', driverSignature = '';
+  String vehicleBrand = '', plateNo = '', colour = '';
+  String receiverName = '', receiverPhone = '';
+  String approvedBy = 'CEO';
+  DateTime date = DateTime.now();
+  final List<WaybillRow> rows = [WaybillRow()];
+  bool get valid =>
+      name.trim().isNotEmpty &&
+      destination.trim().isNotEmpty &&
+      rows.any((r) => r.product.trim().isNotEmpty);
+}
+
+class WaybillRow {
+  String product = '', techSpec = '', brand = '';
+  double qty = 0;
+  WaybillRow({this.product = '', this.techSpec = '', this.brand = '', this.qty = 0});
+}
+
+/// DELIVERY NOTE — mirrors the pre-printed book (No: 19790088 series).
+/// Ordered / Delivered / Outstanding columns — no prices.
+class DeliveryNoteDocState {
+  int? serial;
+  String customerName = '', institution = '', address = '', phone = '';
+  String location = '', receiver = '', receiverNo = '', receiverSignature = '';
+  DateTime orderDate = DateTime.now();
+  String proformaInvoiceId = '', customerId = '', dispatch = '', deliveryMethod = '';
+  String accountNo = '', accountName = '', banker = '';
+  String summary = '';
+  final List<DeliveryNoteRow> rows = [DeliveryNoteRow()];
+  bool get valid =>
+      customerName.trim().isNotEmpty &&
+      rows.any((r) => r.description.trim().isNotEmpty);
+}
+
+class DeliveryNoteRow {
+  String description = '';
+  double ordered = 0, delivered = 0, outstanding = 0;
+  DeliveryNoteRow({this.description = '', this.ordered = 0, this.delivered = 0, this.outstanding = 0});
+}
 
 class LedgerRow {
   String description;

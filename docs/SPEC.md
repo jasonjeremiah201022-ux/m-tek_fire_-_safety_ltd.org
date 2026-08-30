@@ -39,6 +39,8 @@ codebase automatically updates everything.
 4. **Receipts** — auto-numbered `MTK-REC-0001`; generated on every payment received; preview, print, share (WhatsApp/email).
 5. **Invoice** — `MTK-INV-0001`; bill-now-pay-later for corporates; statuses Draft → Sent → Partial → Paid (+ Overdue); payment posts a Transaction + Receipt. Can originate from a Sale or a MILS job.
 6. **MILS** (Maintenance Information Log Sheet) — per-equipment service records: equipment type/serial/brand/capacity, client, site location, action (install/refill/inspection/repair), findings, parts used, technician, **next-due date** with overdue alerts, photos. Stored as flexible documents (Mongo). Job → optional Invoice.
+6b. **Waybill** — mirrors the physical carbon-copy book (No: 0174 series): ref chips (MILS/Receipt/Invoice/LPO No), buyer name/phone/address, items (SNO/Products/Tech. Spec/Brand/Qty), logistics (originating from, destination, driver + phone + signature, vehicle brand/plate/colour, receiver + phone, approved by), Caution! fine print on transit insurance. No prices.
+6c. **Delivery Note** — mirrors the pre-printed book (No: 19790088 series): invoice address (customer/institution/address/phone), shipping address (location/receiver/receiver's no/signature), details (date of order, proforma invoice ID, customer's ID, dispatch, delivery method, account no/name, banker), items (S/NO/Description/Ordered/Delivered/Outstanding), summary, check-before-signing note, Prepared/Approved/Client sign-off, motto line. No prices.
 7. **Sales** (POS) — pick customer → add items from live stock → discount → payment method (cash/transfer/POS/credit) → complete. Auto: decrement stock, create Transaction + Receipt (or Invoice if credit).
 8. **Stock** — products with qty on hand, cost/selling price, reorder levels, low-stock alerts; adjustments (restock/damage/correction) with full audit trail.
 9. **Summary** — period reports (daily/weekly/monthly/custom): totals, profit estimate, top products, stock valuation, outstanding invoices; export/share. **Admin only.**
@@ -72,14 +74,19 @@ Extensible: "Supabase + Mongo and maybe more as needed."
 
 ## 6. Roles & Authentication
 
-| Capability | Admin | Sales |
-|---|---|---|
-| Sell, create customers, invoices, receipts | ✅ | ✅ |
-| View stock quantities | ✅ | ✅ |
-| Stock cost prices, adjustments | ✅ | — |
-| Insights & Summary (revenue/profit) | ✅ | — |
-| MILS records | ✅ | — |
-| Settings, VAT toggle, staff management | ✅ | — |
+Levels of authority: **CEO > Admin > Sales**.
+
+| Capability | CEO | Admin | Sales |
+|---|---|---|---|
+| Sell, create customers, invoices, receipts | ✅ | ✅ | ✅ |
+| View stock quantities | ✅ | ✅ | ✅ |
+| Stock cost prices, adjustments | ✅ | ✅ | — |
+| Insights & Summary (revenue/profit) | ✅ | ✅ | — |
+| MILS records | ✅ | ✅ | — |
+| Settings, VAT toggle, serial reseed, seed import | ✅ | ✅ | — |
+| Approver of last resort on documents ("Approved by") | ✅ | — | — |
+
+**CEO account is hardcoded, never registered:** locked to `mtekfiresafetyltd@gmail.com`. The identity ships with the backend (preview server, Flutter AuthStore, and in Phase C the Supabase seed): signing in with that email always resolves role `ceo` and shows CEO at the top, same as Admin/Sales badges. Registration with that email is rejected ("pre-provisioned — sign in directly"), and no signup path can mint a CEO. (Owner directive, 2026-08-30.)
 
 (One shared Sales login is acceptable at launch; technician self-service view is a future role.)
 
