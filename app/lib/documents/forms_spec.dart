@@ -36,12 +36,14 @@ class MtekForms {
   static const receiptMethods = <String>['Cash', 'Cheque', 'Transfer', 'POS'];
 
   /// Current book numbers (Admin-seedable in Settings → Serials).
+  /// Every book starts from 000000001 (owner directive 2026-08-30).
+  /// Values are "last used" counters — CEO-reseedable in Settings.
   static const seedSerials = <String, int>{
-    'receipt': 2131,
-    'mils': 925,
-    'invoice': 4335,
-    'waybill': 174, // physical book currently on No: 0174
-    'deliverynote': 19790088, // pre-printed book (next: 19790089)
+    'receipt': 0,
+    'mils': 0,
+    'invoice': 0,
+    'waybill': 0,
+    'deliverynote': 0,
   };
 
   /// VAT shown on the Sales Invoice (7.5% — configurable in Settings, §7).

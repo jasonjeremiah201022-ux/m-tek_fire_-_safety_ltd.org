@@ -142,7 +142,7 @@ const apiExpect = async (status, u, body) => {
   expect(S().serials.receipt === 3000, 'CEO serial reseed persisted');
   await api('/api/reset', { email: CEO_EMAIL }); await sleep(400);
   await w.refreshState(); await sleep(150);
-  expect(S().serials.receipt === 2131, 'CEO reset restores seed serials');
+  expect(S().serials.receipt === 0, 'CEO reset restores zero-start serials');
   console.log('✓ CEO seeds: reseed + reset work against the API');
 
   // ---- 9. CEO hardcode + new documents (waybill / delivery note) ----
@@ -154,14 +154,14 @@ const apiExpect = async (status, u, body) => {
     { name: 'Impostor', email: CEO_EMAIL, password: 'zzzzzz', signature: '9999' });
   expect((regBlocked.error || '').includes('pre-provisioned'), 'CEO email cannot be registered');
   const wb = await api('/api/docs/issue', { type: 'waybill', signedBy: 'CEO', customer: 'Test Buyer', total: 0, hash: 'wb1', email: CEO_EMAIL });
-  expect(wb.serial === 175, 'Waybill continues book at 0174 -> 0175');
+  expect(wb.serial === 1, 'Waybill issues 000000001 (books start at 1)');
   const dn = await api('/api/docs/issue', { type: 'deliverynote', signedBy: 'CEO', customer: 'Test Buyer', total: 0, hash: 'dn1', email: CEO_EMAIL });
-  expect(dn.serial === 19790089, 'Delivery Note continues book at 19790088 -> 19790089');
+  expect(dn.serial === 1, 'Delivery Note issues 000000001 (books start at 1)');
   w.go('docs'); await sleep(80);
   await w.setDocsTab('waybill'); await sleep(80);
   expect(w.document.body.innerHTML.includes('Waybill No:'), 'Waybill form renders');
   expect(w.document.body.innerHTML.includes('DELIVERY LOGISTICS'), 'Waybill logistics section renders');
-  expect(w.document.body.innerHTML.includes('continues book numbering (last printed: 0174)'), 'Waybill book continuity shown');
+  expect(w.document.body.innerHTML.includes('book starts at 000000001'), 'Waybill zero-start note shown');
   await w.setDocsTab('deliverynote'); await sleep(80);
   expect(w.document.body.innerHTML.includes('Delivery Note No:'), 'Delivery Note form renders');
   expect(w.document.body.innerHTML.includes('SHIPPING ADDRESS'), 'Delivery Note shipping section renders');

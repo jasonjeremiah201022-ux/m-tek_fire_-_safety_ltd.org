@@ -97,7 +97,7 @@ function loadDb() {
     return c ? c.name : '—';
   };
   db.receiptsIssue = db.txns.map((t, i) => ({
-    no: 'MTK-REC-' + String(i + 1).padStart(4, '0'),
+    no: 'MTK-REC-' + String(i + 1).padStart(9, '0'),
     d: t.d, amt: Math.abs(t.amt), m: t.m, signed: 'Admin', by: 'Admin',
     cust: custName(t.ref), for: t.ref,
   }));
@@ -156,13 +156,13 @@ function invTotal(v) {
   return v.items.reduce((sum, [id, q]) => sum + (product(id) ? product(id).price * q : 0), 0);
 }
 function pushTxn(type, amt, m, ref) {
-  const t = { id: 'TXN-' + String(db.txns.length + 1).padStart(4, '0'), d: 'now', type, amt, m, ref };
+  const t = { id: 'TXN-' + String(db.txns.length + 1).padStart(9, '0'), d: 'now', type, amt, m, ref };
   db.txns.push(t);
   return t;
 }
 function pushReceipt(custName, amt, m, forDoc, signedBy) {
   const r = {
-    no: 'MTK-REC-' + String(db.serials.receiptIssue = (db.serials.receiptIssue || 0) + 1).padStart(4, '0'),
+    no: 'MTK-REC-' + String(db.serials.receiptIssue = (db.serials.receiptIssue || 0) + 1).padStart(9, '0'),
     d: 'now', amt, m, cust: custName, for: forDoc, by: signedBy, signed: signedBy,
   };
   db.receiptsIssue = db.receiptsIssue || [];
@@ -245,7 +245,7 @@ const routes = {
     let invoice = null, receipt = null, txn = null;
     if (method === 'credit') {
       invoice = {
-        no: 'MTK-INV-' + String(++db.serials.invoice).padStart(4, '0'),
+        no: 'MTK-INV-' + String(++db.serials.invoice).padStart(9, '0'),
         issued: 29, due: '12 Sep 2026', cust: customerId, items: items.slice(), paid: 0,
       };
       db.invoices.unshift(invoice);

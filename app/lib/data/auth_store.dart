@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 
+import 'api_client.dart';
 import 'env.dart';
 import 'rest_client.dart';
 import 'store.dart';
@@ -142,22 +143,22 @@ class AuthStore extends ChangeNotifier {
     return user.signaturePasscodeHash == demoHash(passcode);
   }
 
-  /// The passcode last verified OK (kept in RAM only) — passed to server
-  /// RPCs which re-verify it against the bcrypt hash in Supabase.
+  /// The passcode last verified OK (kept in RAM only) — passed to the data
+  /// API which re-verifies it against the stored hash in MongoDB.
   String? lastVerifiedPasscode;
 
-  /// Real backend path: verify against profiles.sig_passcode_hash via the
-  /// mtek_verify_signature RPC (bcrypt, server-side). Falls back to the
-  /// local check only when the backend is not configured or unreachable.
+  /// Real backend path: verify against the stored hash (scrypt) in
+  /// MongoDB via the data API. Falls back to the local check only when the
+  /// API is not configured or unreachable.
   Future<bool> verifySignatureAny(String passcode) async {
-    if (Env.backendConfigured) {
-      final res = await AppStore.instance.remote
-          ?.postRpc('mtek_verify_signature', {'p_passcode': passcode});
-      if (res == true) {
+    final api = AppStore.instance.api;
+    if (Env.apiConfigured && api != null && accessToken != null) {
+      final res = await api.post('/api/auth/signature', {'passcode': passcode});
+      if (res != null && res.ok) {
         lastVerifiedPasscode = passcode;
         return true;
       }
-      if (res == false) return false; // server actively rejected
+      if (res != null) return false; // server actively rejected
     }
     final ok = verifySignature(passcode);
     if (ok) lastVerifiedPasscode = passcode;
@@ -183,12 +184,20 @@ class AuthStore extends ChangeNotifier {
     }
     remote.accessToken = j['access_token'] as String;
     final uid = '${j['user']['id']}';
-    final rows = await remote.getRows('profiles',
-        query: 'id=eq.$uid&select=full_name,role,signature_png');
-    final profile = (rows != null && rows.isNotEmpty) ? rows.first as Map<dynamic, dynamic> : null;
-    final role = '${profile?['role'] ?? 'sales'}';
-    final name = '${profile?['full_name'] ?? mail.split('@').first}';
-    final png = profile?['signature_png'] as String?;
+    // Role/profile live in MongoDB (mtek_people.profiles) — via the data API.
+    String role = 'sales', name = mail.split('@').first;
+    final api = AppStore.instance.api;
+    if (Env.apiConfigured && api != null) {
+      api.accessToken = remote.accessToken;
+      final me = await api.get('/api/me');
+      if (me != null && me.ok && me.json is Map) {
+        final u = (me.json as Map)['user'];
+        if (u is Map) {
+          role = '${u['role'] ?? role}';
+          name = '${u['name'] ?? name}';
+        }
+      }
+    }
     remoteSignInUid = uid;
     // reconcile into the local directory so the rest of the app just works
     users.removeWhere((u) => u.email == mail);
@@ -198,15 +207,19 @@ class AuthStore extends ChangeNotifier {
       role: role,
       passwordHash: '',
       signaturePasscodeHash: '',
-      signaturePng: (png != null && png.isNotEmpty) ? png : null,
     ));
     current = users.last;
     notifyListeners();
+    // pull the live dataset from MongoDB for this account
+    await AppStore.instance.reloadRemote();
     return null;
   }
 
   /// Supabase auth.users id of the signed-in account (null offline).
   String? remoteSignInUid;
+
+  /// Current Supabase JWT for data-API calls (null when signed out/offline).
+  String? get accessToken => _remote?.accessToken;
 
   void signOut() {
     current = null;

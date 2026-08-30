@@ -62,8 +62,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ('receipt', 'Payment Receipt', MtekForms.seedSerials['receipt']!),
                   ('invoice', 'Sales Invoice', MtekForms.seedSerials['invoice']!),
                   ('mils', 'MILS Sheet', MtekForms.seedSerials['mils']!),
-                  ('waybill', 'Waybill (book on No: 0174)', MtekForms.seedSerials['waybill']!),
-                  ('deliverynote', 'Delivery Note (19790088 book)', MtekForms.seedSerials['deliverynote']!),
+                  ('waybill', 'Waybill (starts 000000001)', MtekForms.seedSerials['waybill']!),
+                  ('deliverynote', 'Delivery Note (starts 000000001)', MtekForms.seedSerials['deliverynote']!),
                 ])
                   _serialRow(context, entry.$1, entry.$2, entry.$3),
               ],

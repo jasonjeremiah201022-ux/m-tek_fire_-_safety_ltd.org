@@ -126,7 +126,7 @@ function settingsScreen() {
       </div>
       <div class="card form-card">
         <div class="fc-t">DOCUMENT SERIALS — continue the paper books</div>
-        ${[['receipt', 'Payment Receipt', 2131], ['invoice', 'Sales Invoice', 4335], ['mils', 'MILS Sheet', 925], ['waybill', 'Waybill', 174], ['deliverynote', 'Delivery Note', 19790088]].map(([k, label, seed]) => `
+        ${[['receipt', 'Payment Receipt', 0], ['invoice', 'Sales Invoice', 0], ['mils', 'MILS Sheet', 0], ['waybill', 'Waybill', 0], ['deliverynote', 'Delivery Note', 0]].map(([k, label, seed]) => `
           <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
             <span style="flex:1;font-size:12.5px">${label}</span>
             <input class="f-in" style="max-width:110px;margin:0" id="seed-${k}" type="number" value="${serials[k]}">
@@ -215,7 +215,7 @@ function routeButtons() {
   if (route === 'stock') return (sessionUser && ['ceo', 'admin'].includes(sessionUser.role))
     ? `<button class="btn ghost" onclick="toast('Opens the products_seed.txt importer in M2')">Import TXT</button>` : '';
   if (route === 'summary') return `<button class="btn ghost" onclick="toast('PDF export & share — Milestone M4')">Export PDF</button>`;
-  if (route === 'docs') return `<button class="btn ghost" onclick="toast('Serial counters are Admin-seedable in Settings — continuing paper books: 2131 / 4335 / 925 / 0174 / 19790088')">Serials</button>`;
+  if (route === 'docs') return `<button class="btn ghost" onclick="toast('Serial counters are CEO-seedable in Settings — every book starts at 000000001')">Serials</button>`;
   return '';
 }
 
@@ -999,7 +999,7 @@ function docsScreen() {
 function docsReceipt() {
   const d = docState.receipt;
   return `
-    <div class="serial-banner">Receipt No: <b>${peekSerial('receipt')}</b><span style="flex:1"></span><span style="font-weight:400;color:var(--gray-500)">continues book numbering (last printed: 2131)</span></div>
+    <div class="serial-banner">Receipt No: <b>${String(peekSerial('receipt')).padStart(9, '0')}</b><span style="flex:1"></span><span style="font-weight:400;color:var(--gray-500)">book starts at 000000001</span></div>
     <div class="card form-card">
       <div class="fc-t">CUSTOMER & PAYMENT</div>
       <input class="f-in" placeholder="IRN (Invoice Reference Number)" value="${d.irn}" oninput="docState.receipt.irn=this.value">
@@ -1018,7 +1018,7 @@ function docsReceipt() {
 function docsInvoice() {
   const d = docState.invoice;
   return `
-    <div class="serial-banner">Invoice No: <b>${peekSerial('invoice')}</b><span style="flex:1"></span><span style="font-weight:400;color:var(--gray-500)">continues book numbering (last printed: 4335)</span></div>
+    <div class="serial-banner">Invoice No: <b>${String(peekSerial('invoice')).padStart(9, '0')}</b><span style="flex:1"></span><span style="font-weight:400;color:var(--gray-500)">book starts at 000000001</span></div>
     <div class="card form-card">
       <div class="fc-t">DOCUMENT TYPE</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -1071,7 +1071,7 @@ window.updateInvTotals = () => {
 function docsMils() {
   const d = docState.mils;
   return `
-    <div class="serial-banner">MILS No: <b>${peekSerial('mils')}</b><span style="flex:1"></span><span style="font-weight:400;color:var(--gray-500)">continues book numbering (last printed: 925)</span></div>
+    <div class="serial-banner">MILS No: <b>${String(peekSerial('mils')).padStart(9, '0')}</b><span style="flex:1"></span><span style="font-weight:400;color:var(--gray-500)">book starts at 000000001</span></div>
     <div class="card form-card">
       <div class="fc-t">DATES & REFERENCES</div>
       <div class="frow">
@@ -1122,7 +1122,7 @@ window.updateMilsTotals = () => {
 function docsWaybill() {
   const d = docState.waybill;
   return `
-    <div class="serial-banner">Waybill No: <b>${String(peekSerial('waybill')).padStart(4, '0')}</b><span style="flex:1"></span><span style="font-weight:400;color:var(--gray-500)">continues book numbering (last printed: 0174)</span></div>
+    <div class="serial-banner">Waybill No: <b>${String(peekSerial('waybill')).padStart(9, '0')}</b><span style="flex:1"></span><span style="font-weight:400;color:var(--gray-500)">book starts at 000000001</span></div>
     <div class="card form-card">
       <div class="fc-t">REFERENCES</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -1174,7 +1174,7 @@ function docsWaybill() {
 function docsDeliveryNote() {
   const d = docState.deliverynote;
   return `
-    <div class="serial-banner">Delivery Note No: <b>${peekSerial('deliverynote')}</b><span style="flex:1"></span><span style="font-weight:400;color:var(--gray-500)">continues book numbering (last printed: 19790088)</span></div>
+    <div class="serial-banner">Delivery Note No: <b>${String(peekSerial('deliverynote')).padStart(9, '0')}</b><span style="flex:1"></span><span style="font-weight:400;color:var(--gray-500)">book starts at 000000001</span></div>
     <div class="card form-card">
       <div class="fc-t">INVOICE ADDRESS</div>
       <input class="f-in" placeholder="Customer's name *" value="${d.name}" oninput="docState.deliverynote.name=this.value">
@@ -1284,7 +1284,7 @@ async function showDocPreview(t) {
         <span class="fchip ${d.invNo ? 'active' : ''}">INVOICE NO: ${d.invNo || '—'}</span>
         <span class="fchip ${d.lpoNo ? 'active' : ''}">LPO NO: ${d.lpoNo || '—'}</span>
       </div>
-      <div class="ds-field"><b>No:</b>${String(serial).padStart(4, '0')} · <b>Date:</b>${new Date().toLocaleDateString('en-GB')}</div>
+      <div class="ds-field"><b>No:</b>${String(serial).padStart(9, '0')} · <b>Date:</b>${new Date().toLocaleDateString('en-GB')}</div>
       <div class="ds-field"><b>Buyer's name:</b>${d.name} · <b>Phone:</b>${d.phone || '—'}</div>
       <div class="ds-field"><b>Address:</b>${d.addr || '—'}</div>
       <table class="ledg"><thead><tr><th>SNO</th><th>PRODUCTS</th><th>TECH. SPEC</th><th>BRAND</th><th>QTY</th></tr></thead><tbody>

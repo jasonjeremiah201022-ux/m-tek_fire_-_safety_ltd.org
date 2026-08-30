@@ -5,6 +5,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
+import 'api_client.dart';
+import 'auth_store.dart';
 import 'env.dart';
 import 'local_store.dart';
 import 'models.dart';
@@ -41,9 +43,13 @@ class AppStore extends ChangeNotifier {
   bool get isLoaded => _loaded;
 
   RestClient? _remote;
+  ApiClient? _api;
 
-  /// The live Supabase REST client (null until configured & constructed).
+  /// The live Supabase auth client (null until configured).
   RestClient? get remote => _remote;
+
+  /// The M-TEK data API client (MongoDB sections) — null until configured.
+  ApiClient? get api => _api;
 
   // ---------------------------------------------------------------- init
   Future<void> init() async {
@@ -54,8 +60,11 @@ class AppStore extends ChangeNotifier {
         apiKey: Env.supabaseAnonKey,
       );
     }
+    if (Env.apiConfigured) {
+      _api = ApiClient(baseUrl: Env.apiBase);
+    }
     var loadedAny = false;
-    if (Env.backendConfigured) {
+    if (Env.apiConfigured && AuthStore.instance.accessToken != null) {
       loadedAny = await _loadRemote();
     }
     if (!loadedAny) loadedAny = await _loadLocal();
@@ -80,95 +89,119 @@ class AppStore extends ChangeNotifier {
     }
   }
 
-  /// LIVE backend load (Supabase PostgREST). Returns true when real data
-  /// arrived — the app then runs entirely against the server (offline it
-  /// silently falls back to the local cache / demo dataset).
+  /// LIVE load — one bootstrap call to the data API (MongoDB sections).
+  /// Returns true when real data arrived; otherwise offline fallbacks kick in.
   Future<bool> _loadRemote() async {
-    final r = _remote;
-    if (r == null) return false;
+    final api = _api;
+    if (api == null) return false;
     try {
-      final rp = await r.getRows('products',
-          query: 'select=id,name,category,cost_price,selling_price,qty_on_hand,reorder_level,unit,is_service&order=name');
-      final rc = await r.getRows('customers',
-          query: 'select=id,name,kind,phone,email,address,credit_balance&order=name');
-      if (rp == null || rc == null) return false; // offline
-      products.addAll(parseProducts(rp));
-      for (final e in rc) {
-        if (e is Map) customers.add(parseCustomer((e).cast<String, dynamic>()));
+      final res = await api.get('/api/bootstrap');
+      if (res == null || !res.ok || res.json is! Map) return false; // offline / not signed in
+      final data = (res.json as Map).cast<String, dynamic>();
+      final u = data['user'];
+      if (u is Map) remoteRole = '${u['role'] ?? ''}';
+
+      products.addAll(parseProducts([
+        for (final e in (data['products'] as List? ?? const []))
+          if (e is Map) {...(e).cast<String, dynamic>(), 'id': e['_id']},
+      ]));
+      for (final e in (data['customers'] as List? ?? const [])) {
+        if (e is Map) {
+          customers.add(parseCustomer(
+            {...(e).cast<String, dynamic>(), 'id': e['_id'] ?? ''}));
+        }
       }
-      final rs = await r.getRows('settings', query: 'select=*');
-      if (rs != null && rs.isNotEmpty && rs.first is Map) {
-        settings = StoreSettings.fromJson((rs.first as Map).cast<String, dynamic>());
+      final s = data['settings'];
+      if (s is Map) {
+        settings = StoreSettings.fromJson((s).cast<String, dynamic>());
       }
-      final rser = await r.getRows('serials', query: 'select=doc_type,last_used');
-      if (rser != null) {
-        final map = <String, dynamic>{
-          for (final e in rser) if (e is Map) '${e['doc_type']}': e['last_used'],
-        };
-        if (map.isNotEmpty) SerialService.instance.loadFrom(map);
-      }
-      final rtx = await r.getRows('transactions',
-          query: 'select=id,txn_type,method,amount,reference,txn_date&order=txn_date.desc');
-      for (final e in rtx ?? const []) {
+      SerialService.instance
+          .loadFrom((data['serials'] as Map? ?? {}).cast<String, dynamic>());
+      for (final e in (data['transactions'] as List? ?? const [])) {
         if (e is Map) {
           final m = (e).cast<String, dynamic>();
           transactions.add(Transaction(
-            id: '${m['id'] ?? ''}',
+            id: '${m['_id'] ?? ''}',
             date: DateTime.tryParse('${m['txn_date']}') ?? DateTime.now(),
-            type: TxnType.values.firstWhere((t) => t.name == m['txn_type'], orElse: () => TxnType.salePayment),
+            type: TxnType.values.firstWhere((t) => t.name == m['txn_type'],
+                orElse: () => TxnType.salePayment),
             amount: _asInt(m['amount']),
-            method: PaymentMethod.values.firstWhere((t) => t.name == m['method'], orElse: () => PaymentMethod.cash),
+            method: PaymentMethod.values.firstWhere((t) => t.name == m['method'],
+                orElse: () => PaymentMethod.cash),
             reference: '${m['reference'] ?? ''}',
           ));
         }
       }
-      final rrec = await r.getRows('receipts',
-          query: 'select=no,amount,method,source,customer_name,issued_name,created_at&order=created_at.desc');
-      for (final e in rrec ?? const []) {
+      for (final e in (data['receipts'] as List? ?? const [])) {
         if (e is Map) {
           final m = (e).cast<String, dynamic>();
           receipts.add(Receipt(
             number: '${m['no'] ?? ''}',
             date: DateTime.tryParse('${m['created_at']}') ?? DateTime.now(),
-            customer: Customer(id: 'r', name: '${m['customer_name'] ?? '—'}', isCorporate: false, phone: '', email: '', address: ''),
+            customer: Customer(
+                id: '${m['customer_id'] ?? 'r'}',
+                name: '${m['customer_name'] ?? '—'}',
+                isCorporate: false, phone: '', email: '', address: ''),
             amount: _asInt(m['amount']),
-            method: PaymentMethod.values.firstWhere((t) => t.name == m['method'], orElse: () => PaymentMethod.cash),
+            method: PaymentMethod.values.firstWhere((t) => t.name == m['method'],
+                orElse: () => PaymentMethod.cash),
             forDoc: '${m['source'] ?? ''}',
             signedBy: '${m['issued_name'] ?? 'Admin'}',
             issuedBy: '${m['issued_name'] ?? 'Admin'}',
+            customerSignature: '${m['customer_signature'] ?? ''}',
           ));
         }
       }
-      final rinv = await r.getRows('invoices',
-          query: 'select=no,status,total,amount_paid,created_at&order=created_at.desc');
-      for (final e in rinv ?? const []) {
+      for (final e in (data['invoices'] as List? ?? const [])) {
         if (e is Map) {
           final m = (e).cast<String, dynamic>();
-          final custName = '${m['customer_id'] ?? ''}';
-          final c = customers.where((x) => x.id == custName).firstOrNull ??
-              Customer(id: 'inv', name: '—', isCorporate: false, phone: '', email: '', address: '');
           invoices.add(Invoice(
             number: '${m['no'] ?? ''}',
             issued: DateTime.tryParse('${m['created_at']}') ?? DateTime.now(),
-            due: (DateTime.tryParse('${m['created_at']}') ?? DateTime.now()).add(const Duration(days: 14)),
-            customer: c,
+            due: (DateTime.tryParse('${m['created_at']}') ?? DateTime.now())
+                .add(const Duration(days: 14)),
+            customer: customers.firstWhere(
+                (x) => x.id == '${m['customer_id'] ?? ''}',
+                orElse: () => Customer(
+                    id: 'inv', name: '${m['customer_name'] ?? '—'}',
+                    isCorporate: false, phone: '', email: '', address: '')),
             items: const [],
             amountPaid: _asInt(m['amount_paid']),
           ));
         }
       }
-      final rdocs = await r.getRows('document_issues',
-          query: 'select=doc_type,serial,customer,total,signed_name,verify_hash,issued_at&order=issued_at.desc');
-      for (final e in rdocs ?? const []) {
+      for (final e in (data['docs'] as List? ?? const [])) {
         if (e is Map) {
           docHistory.add(IssuedDocument.fromJson((e).cast<String, dynamic>()));
         }
       }
       return products.isNotEmpty;
     } catch (_) {
-      return false; // any remote problem → offline-first fallback
+      return false;
     }
   }
+
+  /// Clears local collections and pulls the live dataset again (called right
+  /// after a successful sign-in, so the app lands on real server data).
+  Future<void> reloadRemote() async {
+    if (!Env.apiConfigured || _api == null) return;
+    _api!.accessToken = AuthStore.instance.accessToken;
+    products.clear();
+    customers.clear();
+    sales.clear();
+    transactions.clear();
+    receipts.clear();
+    invoices.clear();
+    milsLogs.clear();
+    adjustments.clear();
+    docHistory.clear();
+    final okRemote = await _loadRemote();
+    if (okRemote) await _persistAll();
+    notifyListeners();
+  }
+
+  /// Role reported by the API for the signed-in user (ceo/admin/sales).
+  String remoteRole = '';
 
   /// Next document serial — SERVER-assigned when the backend is configured
   /// (atomic RPC, paper-book continuity, passcode re-verified server-side);
@@ -180,22 +213,21 @@ class AppStore extends ChangeNotifier {
     required String passcode,
     String? verifyHash,
   }) async {
-    if (Env.backendConfigured && _remote != null) {
-      final res = await _remote!.postRpc('mtek_issue_document', {
-        'p_type': type,
-        'p_customer': customer,
-        'p_total': total,
-        'p_verify_hash': verifyHash ?? '',
-        'p_passcode': passcode,
+    if (Env.apiConfigured && _api != null && AuthStore.instance.accessToken != null) {
+      final res = await _api!.post('/api/docs/issue', {
+        'type': type, 'customer': customer, 'total': total,
+        'hash': verifyHash ?? '', 'passcode': passcode,
       });
-      if (res is List && res.isNotEmpty && res.first is Map) {
-        final serial = _asInt((res.first as Map)['serial']);
+      if (res != null && res.ok && res.json is Map) {
+        final serial = _asInt((res.json as Map)['serial']);
         if (serial > 0) {
           SerialService.instance.reseed(type, serial); // keep peek() in step
           return serial;
         }
       }
-      throw Exception('Document NOT issued — backend refused (check your Signature Passcode)');
+      throw Exception(res == null
+          ? 'Data API unreachable — document NOT issued offline'
+          : 'Document NOT issued — ${(res.json is Map ? (res.json as Map)['error'] : null) ?? 'server refused (check your Signature Passcode)'}');
     }
     return SerialService.instance.next(type);
   }
@@ -303,11 +335,28 @@ class AppStore extends ChangeNotifier {
   /// Pushes the offline queue to Supabase (PostgREST). No-op when the
   /// backend isn't configured or the device is offline — the queue stays.
   Future<void> flushSyncQueue() async {
-    if (_remote == null || _syncQueue.isEmpty) return;
+    if (!Env.apiConfigured || _api == null || _syncQueue.isEmpty) return;
+    if (AuthStore.instance.accessToken != null) _api!.accessToken = AuthStore.instance.accessToken;
+    // Offline-made mutations are replayed to the data API, collection by
+    // collection (never on a failing server response — those stay queued).
+    const endpoints = {
+      'products': '/api/products/upsert',
+      'customers': '/api/customers',
+    };
     final pending = List.of(_syncQueue);
     for (final job in pending) {
-      final ok = await _remote!.upsertRows(job['table'] as String, job['rows'] as List<Map<String, dynamic>>);
-      if (ok) _syncQueue.remove(job);
+      final table = job['table'] as String;
+      final path = endpoints[table];
+      if (path == null) { _syncQueue.remove(job); continue; } // sales/etc are RPC-backed now
+      final rows = job['rows'] as List<dynamic>;
+      try {
+        final res = await _api!.post(path, table == 'products'
+            ? {'products': rows}
+            : (rows.isNotEmpty ? rows.first as Map<String, dynamic> : <String, dynamic>{}));
+        if (res != null && res.ok) _syncQueue.remove(job);
+      } catch (_) {
+        break; // server refused — keep the queue for the next flush
+      }
     }
     await writeStore('sync_queue', _syncQueue);
   }
@@ -350,18 +399,16 @@ class AppStore extends ChangeNotifier {
     Map<String, int>? serialReseed,
   }) async {
     // CEO-only — enforced again server-side (owner directive 2026-08-30)
-    if (Env.backendConfigured && _remote != null) {
+    if (Env.apiConfigured && _api != null && AuthStore.instance.accessToken != null) {
       if (vatEnabled != null || vatRate != null) {
-        await _remote!.postRpc('mtek_update_settings', {
-          'p_vat_enabled': vatEnabled,
-          'p_vat_rate': vatRate,
-          'p_watermark': null,
+        await _api!.post('/api/settings', {
+          'vatEnabled': vatEnabled, 'vatRate': vatRate, 'watermark': null,
         });
       }
       if (serialReseed != null) {
         for (final e in serialReseed.entries) {
-          await _remote!.postRpc('mtek_reseed_serial',
-              {'p_type': e.key, 'p_last_used': e.value});
+          await _api!.post('/api/settings',
+              {'reseed': {'type': e.key, 'value': e.value}});
         }
       }
     }
@@ -522,23 +569,25 @@ class AppStore extends ChangeNotifier {
     // passcode is re-verified against the bcrypt hash server-side. If the backend
     // is unreachable we fall back to the offline path and sync later.
     String? serverReceiptNo;
-    if (Env.backendConfigured && _remote != null) {
+    if (Env.apiConfigured && _api != null && AuthStore.instance.accessToken != null) {
       try {
-        final res = await _remote!.postRpc('mtek_complete_sale', {
-          'p_customer_id': customer.id.length > 20 ? customer.id : null,
-          'p_method': method.name,
-          'p_items': [for (final i in items) {'product_id': i.product.id, 'qty': i.qty}],
-          'p_discount': discount,
-          'p_customer_signature': customerSignature,
-          'p_passcode': passcode ?? '',
+        final res = await _api!.post('/api/sales', {
+          'customerId': customer.id.length > 20 ? customer.id : null,
+          'customer': customer.id.length > 20 ? null : {'name': customer.name, 'phone': customer.phone},
+          'method': method.name,
+          'items': [for (final i in items) {'product_id': i.product.id, 'qty': i.qty}],
+          'discount': discount,
+          'customer_signature': customerSignature,
+          'passcode': passcode ?? '',
         });
-        if (res is Map) {
-          serverReceiptNo = '${res['receipt_no'] ?? ''}';
-        } else if (res == null) {
-          debugPrint('completeSale: backend unreachable — offline fallback');
+        if (res != null && res.ok && res.json is Map) {
+          serverReceiptNo = '${(res.json as Map)['receipt_no'] ?? ''}';
+        } else if (res != null) {
+          throw Exception((res.json is Map ? (res.json as Map)['error'] : null) ?? 'sale rejected');
         }
-      } catch (_) {
-        serverReceiptNo = null; // fall through to offline path
+      } catch (e) {
+        debugPrint('completeSale: server refused — offline fallback (${e.toString().split('\n').first})');
+        serverReceiptNo = null;
       }
     }
     final sale = Sale(
@@ -592,14 +641,14 @@ class AppStore extends ChangeNotifier {
     final idx = invoices.indexOf(invoice);
     final now = DateTime.now();
     String? serverReceiptNo;
-    if (Env.backendConfigured && _remote != null) {
-      final res = await _remote!.postRpc('mtek_pay_invoice', {
-        'p_invoice_no': invoice.number,
-        'p_amount': amount,
-        'p_method': 'transfer',
-        'p_passcode': passcode ?? '',
+    if (Env.apiConfigured && _api != null && AuthStore.instance.accessToken != null) {
+      final res = await _api!.post('/api/invoices/pay', {
+        'no': invoice.number, 'amount': amount, 'method': 'transfer',
+        'passcode': passcode ?? '',
       });
-      if (res is Map) serverReceiptNo = '${res['receipt_no'] ?? ''}';
+      if (res != null && res.ok && res.json is Map) {
+        serverReceiptNo = '${(res.json as Map)['receipt_no'] ?? ''}';
+      }
     }
     invoices[idx] = Invoice(
       number: invoice.number,
@@ -618,10 +667,10 @@ class AppStore extends ChangeNotifier {
 
   Future<void> adjustStock(Product product, int delta, AdjustmentReason reason, String note) async {
     // CEO/Admin only — enforced AGAIN server-side by the RPC (RLS + check)
-    final serverApplied = await _tryRpc(
-      'mtek_adjust_stock',
-      {'p_product_id': product.id, 'p_delta': delta, 'p_reason': reason.name, 'p_note': note},
-    );
+    final serverApplied = await _apiPost(
+        '/api/stock/adjust', {
+      'id': product.id, 'delta': delta, 'reason': reason.name, 'note': note,
+    });
     final idx = products.indexOf(product);
     products[idx] = product.copyWith(qtyOnHand: products[idx].qtyOnHand + delta);
     final adj = StockAdjustment(
@@ -642,12 +691,17 @@ class AppStore extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Runs an RPC, returning true when the server applied it. Throws the
-  /// server's message (e.g. permission denied) when actively rejected.
-  Future<bool> _tryRpc(String fn, Map<String, dynamic> params) async {
-    if (!Env.backendConfigured || _remote == null) return false;
-    final res = await _remote!.postRpc(fn, params);
+  /// POSTs to the data API; true when the server applied it (false when
+  /// unreachable — callers fall back to the offline queue). Throws when the
+  /// server actively refuses (e.g. permission denied).
+  Future<bool> _apiPost(String path, Map<String, dynamic> body) async {
+    if (!Env.apiConfigured || _api == null) return false;
+    if (AuthStore.instance.accessToken != null) _api!.accessToken = AuthStore.instance.accessToken;
+    final res = await _api!.post(path, body);
     if (res == null) return false; // unreachable → offline fallback
+    if (!res.ok) {
+      throw Exception((res.json is Map ? (res.json as Map)['error'] : null) ?? 'request rejected');
+    }
     return true;
   }
 
@@ -682,7 +736,7 @@ class AppStore extends ChangeNotifier {
     ));
     receipts.add(Receipt(
       number: (receiptNo == null || receiptNo.isEmpty)
-          ? 'MTK-REC-${(receipts.length + 1).toString().padLeft(4, '0')}'
+          ? 'MTK-REC-${(receipts.length + 1).toString().padLeft(9, '0')}'
           : receiptNo, // server-assigned (authoritative when online)
       date: date,
       customer: customer,

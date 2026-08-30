@@ -744,10 +744,12 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
         const Icon(Icons.tag, size: 15, color: Mtek.warn),
         const SizedBox(width: 6),
         Text('$label: ', style: const TextStyle(fontWeight: FontWeight.w700)),
-        Text(preview ? 'next on paper sequence: $next' : '${assigned ?? next}',
+        Text(preview
+            ? 'next: ${next.toString().padLeft(9, '0')}'
+            : (assigned ?? next).toString().padLeft(9, '0'),
             style: const TextStyle(fontWeight: FontWeight.w800)),
         const Spacer(),
-        Text('continues book numbering', style: TextStyle(fontSize: 10.5, color: Mtek.gray600)),
+        Text('books start at 000000001', style: TextStyle(fontSize: 10.5, color: Mtek.gray600)),
       ]),
     );
   }
