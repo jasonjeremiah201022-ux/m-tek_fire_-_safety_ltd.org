@@ -80,10 +80,10 @@ Levels of authority: **CEO > Admin > Sales**.
 |---|---|---|---|
 | Sell, create customers, invoices, receipts | ✅ | ✅ | ✅ |
 | View stock quantities | ✅ | ✅ | ✅ |
-| Stock cost prices, adjustments | ✅ | ✅ | — |
+| Stock cost prices, adjustments (stock EDITS) | ✅ | ✅ | — |
 | Insights & Summary (revenue/profit) | ✅ | ✅ | — |
 | MILS records | ✅ | ✅ | — |
-| Settings, VAT toggle, serial reseed, seed import | ✅ | ✅ | — |
+| Settings: VAT toggle, serial reseed, seed import, reset (**CEO only**) | ✅ | — | — |
 | Approver of last resort on documents ("Approved by") | ✅ | — | — |
 
 **CEO account is hardcoded, never registered:** locked to `mtekfiresafetyltd@gmail.com`. The identity ships with the backend (preview server, Flutter AuthStore, and in Phase C the Supabase seed): signing in with that email always resolves role `ceo` and shows CEO at the top, same as Admin/Sales badges. Registration with that email is rejected ("pre-provisioned — sign in directly"), and no signup path can mint a CEO. (Owner directive, 2026-08-30.)

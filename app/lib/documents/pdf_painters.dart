@@ -27,23 +27,27 @@ Future<Uint8List> buildDocument(
   required DeliveryNoteDocState? deliveryNote,
   required String signedBy,
   Uint8List? signaturePngBytes,
+  Uint8List? customerSignaturePngBytes,
 }) async {
   await MtekPdfFonts.load();
   final logo = pw.MemoryImage(logoBytes);
   final signature = signaturePngBytes == null ? null : pw.MemoryImage(signaturePngBytes);
+  final customerSig = customerSignaturePngBytes == null
+      ? null
+      : pw.MemoryImage(customerSignaturePngBytes);
 
   final doc = pw.Document();
   switch (type) {
     case GeneratedDoc.receipt:
-      doc.addPage(_receiptPage(logo, signature, receipt!, signedBy));
+      doc.addPage(_receiptPage(logo, signature, customerSig, receipt!, signedBy));
     case GeneratedDoc.invoice:
-      doc.addPage(_invoicePage(logo, signature, invoice!, signedBy));
+      doc.addPage(_invoicePage(logo, signature, customerSig, invoice!, signedBy));
     case GeneratedDoc.mils:
       doc.addPage(_milsPage(logo, signature, mils!, signedBy));
     case GeneratedDoc.waybill:
-      doc.addPage(_waybillPage(logo, signature, waybill!, signedBy));
+      doc.addPage(_waybillPage(logo, signature, customerSig, waybill!, signedBy));
     case GeneratedDoc.deliveryNote:
-      doc.addPage(_deliveryNotePage(logo, signature, deliveryNote!, signedBy));
+      doc.addPage(_deliveryNotePage(logo, signature, customerSig, deliveryNote!, signedBy));
   }
   return doc.save();
 }
@@ -61,7 +65,11 @@ pw.PageTheme _theme(pw.ImageProvider logo, PdfPageFormat format) {
 // 1. PAYMENT RECEIPT (landscape — mirrors No: 2131 book)
 // =====================================================================
 pw.MultiPage _receiptPage(
-    pw.ImageProvider logo, pw.ImageProvider? signature, ReceiptDocState r, String signedBy) {
+    pw.ImageProvider logo,
+    pw.ImageProvider? signature,
+    pw.ImageProvider? customerSig,
+    ReceiptDocState r,
+    String signedBy) {
   final methodChecked = (String m) => r.method.toLowerCase() == m.toLowerCase();
   final hashPayload =
       '${r.serial}|${r.amount}|${r.date.toIso8601String()}|${r.name}';
@@ -249,7 +257,11 @@ pw.Widget _methodBox(String label, bool checked, [String value = '']) {
 // 2. SALES INVOICE (portrait — mirrors No: 4335 book)
 // =====================================================================
 pw.MultiPage _invoicePage(
-    pw.ImageProvider logo, pw.ImageProvider? signature, InvoiceDocState v, String signedBy) {
+    pw.ImageProvider logo,
+    pw.ImageProvider? signature,
+    pw.ImageProvider? customerSig,
+    InvoiceDocState v,
+    String signedBy) {
   final hashPayload = '${v.serial}|${v.grandTotal}|${v.date.toIso8601String()}|${v.name}';
 
   final rows = <List<String>>[
@@ -366,6 +378,15 @@ pw.MultiPage _invoicePage(
       pw.SizedBox(height: 12),
 
       _signOffRow(signature, signedBy, ['Prepared by:', 'Approved by:', 'Customer/Client']),
+      if (customerSig != null)
+        pw.Padding(
+          padding: const pw.EdgeInsets.only(top: 4),
+          child: pw.Row(children: [
+            pw.Text("Customer's signature:", style: pw.TextStyle(fontSize: 8.5, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(width: 8),
+            pw.Image(customerSig, height: 34),
+          ]),
+        ),
       pw.SizedBox(height: 8),
       pw.Container(
         width: double.infinity,
@@ -518,6 +539,15 @@ pw.MultiPage _milsPage(
       ]),
       pw.SizedBox(height: 10),
 
+      if (customerSig != null)
+        pw.Padding(
+          padding: const pw.EdgeInsets.only(bottom: 4),
+          child: pw.Row(children: [
+            pw.Text("Customer's assent:", style: pw.TextStyle(fontSize: 8.5, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(width: 8),
+            pw.Image(customerSig, height: 34),
+          ]),
+        ),
       _signOffRow(signature, signedBy,
           ['Prepared by:', 'APPROVED by:', "Customer's Assent:", "Collector's Assent:"]),
       pw.SizedBox(height: 8),
@@ -543,7 +573,11 @@ pw.MultiPage _milsPage(
 // 4. WAYBILL (landscape — mirrors the No: 0174 carbon-copy book)
 // =====================================================================
 pw.MultiPage _waybillPage(
-    pw.ImageProvider logo, pw.ImageProvider? signature, WaybillDocState w, String signedBy) {
+    pw.ImageProvider logo,
+    pw.ImageProvider? signature,
+    pw.ImageProvider? customerSig,
+    WaybillDocState w,
+    String signedBy) {
   final hashPayload =
       '${w.serial}|${w.destination}|${w.date.toIso8601String()}|${w.name}';
   final itemRows = <List<String>>[
@@ -644,6 +678,15 @@ pw.MultiPage _waybillPage(
       ),
       pw.SizedBox(height: 5),
       _signOffRow(signature, signedBy, ['Prepared by:', "Buyer's signature:"]),
+      if (customerSig != null)
+        pw.Padding(
+          padding: const pw.EdgeInsets.only(top: 4),
+          child: pw.Row(children: [
+            pw.Text("Receiver's signature:", style: pw.TextStyle(fontSize: 8.5, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(width: 8),
+            pw.Image(customerSig, height: 34),
+          ]),
+        ),
       pw.SizedBox(height: 4),
       pw.Container(
         width: double.infinity,
@@ -683,7 +726,11 @@ pw.Widget _refBox(String label, String value) {
 // 5. DELIVERY NOTE (portrait — mirrors the pre-printed 19790088 book)
 // =====================================================================
 pw.MultiPage _deliveryNotePage(
-    pw.ImageProvider logo, pw.ImageProvider? signature, DeliveryNoteDocState d, String signedBy) {
+    pw.ImageProvider logo,
+    pw.ImageProvider? signature,
+    pw.ImageProvider? customerSig,
+    DeliveryNoteDocState d,
+    String signedBy) {
   final hashPayload =
       '${d.serial}|${d.customerName}|${d.orderDate.toIso8601String()}|${d.location}';
   final itemRows = <List<String>>[
@@ -800,6 +847,15 @@ pw.MultiPage _deliveryNotePage(
       ),
       pw.SizedBox(height: 5),
       _signOffRow(signature, signedBy, ['Prepared by:', 'Approved by:', 'Client — acknowledges the receipt of the goods described above:']),
+      if (customerSig != null)
+        pw.Padding(
+          padding: const pw.EdgeInsets.only(top: 4),
+          child: pw.Row(children: [
+            pw.Text("Client's signature:", style: pw.TextStyle(fontSize: 8.5, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(width: 8),
+            pw.Image(customerSig, height: 34),
+          ]),
+        ),
       pw.SizedBox(height: 6),
       pw.Center(
           child: pw.Text('Motto: We are not competing, we are setting standards',

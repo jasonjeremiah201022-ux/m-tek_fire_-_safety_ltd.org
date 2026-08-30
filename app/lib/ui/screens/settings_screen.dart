@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 import '../../core/theme.dart';
+import '../../data/auth_store.dart';
 import '../../data/store.dart';
 import '../../documents/forms_spec.dart';
 import '../../documents/serial_service.dart';

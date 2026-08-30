@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/format.dart' as fmt;
 import '../../core/theme.dart';
 import '../../data/models.dart';
+import '../../data/auth_store.dart';
 import '../../data/store.dart';
 import '../widgets.dart';
 
@@ -40,11 +41,13 @@ class _StockScreenState extends State<StockScreen> {
             subtitle:
                 '${store.products.length} items · $lowCount low/out of stock · ${fmt.naira(store.stockValueAtCost())} at cost',
             actions: [
-              FilledButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.upload_file),
-                label: const Text('Import TXT'),
-              ),
+              // seed import: CEO ONLY (owner directive 2026-08-30)
+              if (AuthStore.instance.isCeo)
+                FilledButton.icon(
+                  onPressed: () {},
+                  icon: const Icon(Icons.upload_file),
+                  label: const Text('Import TXT'),
+                ),
             ],
           ),
           const SizedBox(height: 14),
@@ -102,11 +105,13 @@ class _StockScreenState extends State<StockScreen> {
                       children: [
                         AmountText(p.sellingPrice),
                         const SizedBox(width: 12),
-                        IconButton(
-                          tooltip: 'Adjust stock',
-                          icon: const Icon(Icons.tune, color: Mtek.navy700),
-                          onPressed: () => _adjustDialog(context, p),
-                        ),
+                        // stock edits: CEO/Admin only (server-enforced too)
+                        if (AuthStore.instance.isManagement)
+                          IconButton(
+                            tooltip: 'Adjust stock',
+                            icon: const Icon(Icons.tune, color: Mtek.navy700),
+                            onPressed: () => _adjustDialog(context, p),
+                          ),
                       ],
                     ),
                   );

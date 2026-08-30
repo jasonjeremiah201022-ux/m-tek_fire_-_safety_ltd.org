@@ -32,6 +32,22 @@ const PORT = process.env.PORT || 8080;
 // this email and hardcoded here — it never goes through registration.
 const CEO_EMAIL = 'mtekfiresafetyltd@gmail.com';
 
+// backend/.env (gitignored) carries the REAL CEO credentials — never in git.
+function loadDotEnv() {
+  try {
+    const out = {};
+    for (const line of fs.readFileSync(path.join(__dirname, '..', 'backend', '.env'), 'utf8').split('\n')) {
+      if (!line.trim() || line.trim().startsWith('#')) continue;
+      const i = line.indexOf('=');
+      if (i > 0) out[line.slice(0, i).trim()] = line.slice(i + 1).trim();
+    }
+    return out;
+  } catch { return {}; }
+}
+const DOTENV = loadDotEnv();
+const CEO_PASSWORD = DOTENV.MTEK_CEO_PASSWORD || 'ceo1234';       // dev fallback only
+const CEO_SIG = DOTENV.MTEK_CEO_SIG || '1234';                    // dev fallback only
+
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.css': 'text/css', '.js': 'text/javascript',
   '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.json': 'application/json',
@@ -61,9 +77,10 @@ function loadDb() {
       name: 'Admin', email: 'admin@mtek.demo', role: 'admin',
       passwordHash: hash('admin123'), sigHash: hash('1234'), signaturePng: null,
     }, {
-      // CEO is hardcoded (NOT registrable): this email always signs in as CEO
-      name: 'CEO (M-tek)', email: 'mtekfiresafetyltd@gmail.com', role: 'ceo',
-      passwordHash: hash('ceo1234'), sigHash: hash('1234'), signaturePng: null,
+      // CEO is hardcoded (NOT registrable): this email always signs in as CEO.
+      // Credentials come from backend/.env (mirrors the real Supabase account).
+      name: 'CEO', email: 'mtekfiresafetyltd@gmail.com', role: 'ceo',
+      passwordHash: hash(CEO_PASSWORD), sigHash: hash(CEO_SIG), signaturePng: null,
     }],
     docs: [], // issued-document history (receipts/invoices/MILS generated)
   }));
@@ -107,6 +124,19 @@ function hash(input) {
   return crypto.scryptSync(salt + input, 'mtek-static-salt', 16).toString('hex');
 }
 const safeUser = u => ({ name: u.name, email: u.email, role: u.role, signaturePng: u.signaturePng || null });
+const roleOf = email => {
+  const u = findUser(email);
+  return u ? u.role : null;
+};
+function requireRole(email, roles, what) {
+  const role = roleOf(email);
+  if (!role) throw httpErr(401, 'Sign in first');
+  if (!roles.includes(role)) {
+    throw httpErr(403, roles.includes('ceo') && roles.length === 1
+      ? `Only the CEO can ${what}`
+      : `Only CEO or Admin can ${what}`);
+  }
+}
 const findUser = email => db.users.find(u => u.email === String(email || '').trim().toLowerCase());
 
 // ---------------------------------------------------------------- helpers
@@ -245,6 +275,7 @@ const routes = {
   },
 
   'POST /api/stock/adjust': body => {
+    requireRole(body.email, ['ceo', 'admin'], 'edit stock');
     const p = product(body.id);
     if (!p) throw httpErr(404, 'Product not found');
     const delta = Math.trunc(Number(body.delta) || 0);
@@ -275,6 +306,9 @@ const routes = {
   },
 
   'POST /api/docs/issue': body => {
+    // ad-hoc (freehand) documents: Admin/CEO only — Sales issue documents
+    // automatically from recorded sales/payments (SPEC §6)
+    requireRole(body.email, ['ceo', 'admin'], 'issue freehand documents');
     const type = ['receipt', 'invoice', 'mils', 'waybill', 'deliverynote'].includes(body.type) ? body.type : null;
     if (!type) throw httpErr(400, 'Unknown document type');
     if (!body.signedBy) throw httpErr(403, 'Not signed — document NOT issued');
@@ -296,6 +330,8 @@ const routes = {
   'GET /api/docs/history': () => ({ docs: db.docs }),
 
   'POST /api/settings': body => {
+    // seeding authority (serials, VAT, watermark): CEO ONLY (owner directive)
+    requireRole(body.email, ['ceo'], 'change settings or seed data');
     const s = db.settings;
     if (typeof body.vatEnabled === 'boolean') s.vatEnabled = body.vatEnabled;
     if (typeof body.vatRate === 'number' && body.vatRate >= 0 && body.vatRate <= 0.5) s.vatRate = body.vatRate;
@@ -308,7 +344,8 @@ const routes = {
     return { settings: db.settings, serials: db.serials };
   },
 
-  'POST /api/reset': () => {
+  'POST /api/reset': body => {
+    requireRole(body.email, ['ceo'], 'reset data');
     try { fs.unlinkSync(DB_FILE); } catch (e) { /* not present */ }
     loadDb();
     return { ok: true };

@@ -2,6 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 
+import 'env.dart';
+import 'rest_client.dart';
+import 'store.dart';
+
 /// Staff accounts with TWO separate secrets:
 ///  • account password  → signs in
 ///  • signature passcode → authorises/signs documents (SPEC §6.1)
@@ -131,12 +135,78 @@ class AuthStore extends ChangeNotifier {
     return null;
   }
 
-  /// Verifies the Signature Passcode when issuing a document.
+  /// Verifies the Signature Passcode when issuing a document (local/offline).
   bool verifySignature(String passcode) {
     final user = current;
     if (user == null) return false;
     return user.signaturePasscodeHash == demoHash(passcode);
   }
+
+  /// The passcode last verified OK (kept in RAM only) — passed to server
+  /// RPCs which re-verify it against the bcrypt hash in Supabase.
+  String? lastVerifiedPasscode;
+
+  /// Real backend path: verify against profiles.sig_passcode_hash via the
+  /// mtek_verify_signature RPC (bcrypt, server-side). Falls back to the
+  /// local check only when the backend is not configured or unreachable.
+  Future<bool> verifySignatureAny(String passcode) async {
+    if (Env.backendConfigured) {
+      final res = await AppStore.instance.remote
+          ?.postRpc('mtek_verify_signature', {'p_passcode': passcode});
+      if (res == true) {
+        lastVerifiedPasscode = passcode;
+        return true;
+      }
+      if (res == false) return false; // server actively rejected
+    }
+    final ok = verifySignature(passcode);
+    if (ok) lastVerifiedPasscode = passcode;
+    return ok;
+  }
+
+  /// Real Supabase Auth sign-in. On success the RestClient carries the
+  /// user's JWT so every read/write runs under RLS as that account, and
+  /// the profile (name/role) comes from public.profiles.
+  Future<String?> remoteSignIn(String email, String password) async {
+    final remote = AppStore.instance.remote;
+    if (!Env.backendConfigured || remote == null) return null; // caller falls back to local
+    final mail = email.trim().toLowerCase();
+    final res = await remote.authSignInRaw(mail, password);
+    if (res == null) return 'Network unreachable — check your connection';
+    final j = res.json;
+    if (!res.ok) {
+      final msg = (j is Map ? (j['error_description'] ?? j['error'] ?? j['msg']) : null);
+      return msg is String ? msg : 'Sign-in failed (HTTP ${res.status})';
+    }
+    if (j is! Map || j['access_token'] is! String || j['user'] is! Map) {
+      return 'Unexpected auth response';
+    }
+    remote.accessToken = j['access_token'] as String;
+    final uid = '${j['user']['id']}';
+    final rows = await remote.getRows('profiles',
+        query: 'id=eq.$uid&select=full_name,role,signature_png');
+    final profile = (rows != null && rows.isNotEmpty) ? rows.first as Map<dynamic, dynamic> : null;
+    final role = '${profile?['role'] ?? 'sales'}';
+    final name = '${profile?['full_name'] ?? mail.split('@').first}';
+    final png = profile?['signature_png'] as String?;
+    remoteSignInUid = uid;
+    // reconcile into the local directory so the rest of the app just works
+    users.removeWhere((u) => u.email == mail);
+    users.add(StaffUser(
+      name: name,
+      email: mail,
+      role: role,
+      passwordHash: '',
+      signaturePasscodeHash: '',
+      signaturePng: (png != null && png.isNotEmpty) ? png : null,
+    ));
+    current = users.last;
+    notifyListeners();
+    return null;
+  }
+
+  /// Supabase auth.users id of the signed-in account (null offline).
+  String? remoteSignInUid;
 
   void signOut() {
     current = null;

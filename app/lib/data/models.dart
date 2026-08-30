@@ -130,6 +130,7 @@ class Receipt {
   final String forDoc; // sale id or invoice number
   final String signedBy; // digitally signed via Signature Passcode
   final String issuedBy;
+  final String customerSignature; // data: URL — customer signs on the device
 
   const Receipt({
     required this.number,
@@ -140,6 +141,7 @@ class Receipt {
     required this.forDoc,
     required this.signedBy,
     this.issuedBy = 'Admin',
+    this.customerSignature = '',
   });
 }
 

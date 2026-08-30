@@ -59,8 +59,13 @@ Future<StaffUser?> confirmSignature(BuildContext context) async {
             child: const Text('Cancel'),
           ),
           FilledButton(
-            onPressed: () {
-              if (auth.verifySignature(passcode.text)) {
+            onPressed: () async {
+              // verified SERVER-SIDE when the backend is configured
+              // (bcrypt against profiles.sig_passcode_hash); local fallback
+              // keeps the app usable offline.
+              final ok = await auth.verifySignatureAny(passcode.text);
+              if (!context.mounted) return;
+              if (ok) {
                 Navigator.pop(context, true);
               } else {
                 setState(() => error = 'Signature passcode does not match');

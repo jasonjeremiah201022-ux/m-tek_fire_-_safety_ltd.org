@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/format.dart' as fmt;
 import '../../core/theme.dart';
 import '../../data/models.dart';
+import '../../data/auth_store.dart';
 import '../../data/store.dart';
 import '../signature_dialog.dart';
 import '../widgets.dart';
@@ -128,7 +129,8 @@ class InvoicesScreen extends StatelessWidget {
       }
       return;
     }
-    AppStore.instance.payInvoice(inv, inv.balance, signedBy: signer.name);
+    await AppStore.instance.payInvoice(inv, inv.balance,
+        signedBy: signer.name, passcode: AuthStore.instance.lastVerifiedPasscode);
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(
             'Payment recorded — receipt issued & signed by ${signer.name}, stock untouched.')));

@@ -38,17 +38,22 @@ const _settings = Destination('Settings', Icons.settings_outlined, Icons.setting
 
 /// Admin sees everything; Sales never sees revenue/profit/settings (SPEC §6).
 List<Destination> destinationsFor(String? role) {
-  // CEO has the full management set (outranks admin)
-  if (role == 'admin' || role == 'ceo') {
-    return const [
-      _insights, _transactions, _customers, _receipts, _invoices,
-      _mils, _sales, _stock, _summary, _docs, _settings,
-    ];
+  // Authority: CEO > Admin > Sales. Settings (VAT/serials/seed import/reset)
+  // is CEO-ONLY (owner directive 2026-08-30); stock editing is CEO/Admin.
+  if (role == 'ceo') return _allDestinations;
+  if (role == 'admin') {
+    return _allDestinations.where((d) => d.id != 'settings').toList();
   }
   return const [
     _sales, _stock, _customers, _receipts, _invoices, _docs,
   ];
 }
+
+/// The complete management destination set (CEO view).
+const _allDestinations = <Destination>[
+  _insights, _transactions, _customers, _receipts, _invoices,
+  _mils, _sales, _stock, _summary, _docs, _settings,
+];
 
 /// Kept for backwards compatibility (admin view).
 const destinations = <Destination>[

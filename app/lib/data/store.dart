@@ -42,6 +42,9 @@ class AppStore extends ChangeNotifier {
 
   RestClient? _remote;
 
+  /// The live Supabase REST client (null until configured & constructed).
+  RestClient? get remote => _remote;
+
   // ---------------------------------------------------------------- init
   Future<void> init() async {
     if (_loaded) return;
@@ -51,7 +54,11 @@ class AppStore extends ChangeNotifier {
         apiKey: Env.supabaseAnonKey,
       );
     }
-    final loadedAny = await _loadLocal();
+    var loadedAny = false;
+    if (Env.backendConfigured) {
+      loadedAny = await _loadRemote();
+    }
+    if (!loadedAny) loadedAny = await _loadLocal();
     if (!loadedAny) {
       await _importBundledSeed();
       _seedDemo();
@@ -71,6 +78,126 @@ class AppStore extends ChangeNotifier {
     } catch (_) {
       return const [];
     }
+  }
+
+  /// LIVE backend load (Supabase PostgREST). Returns true when real data
+  /// arrived — the app then runs entirely against the server (offline it
+  /// silently falls back to the local cache / demo dataset).
+  Future<bool> _loadRemote() async {
+    final r = _remote;
+    if (r == null) return false;
+    try {
+      final rp = await r.getRows('products',
+          query: 'select=id,name,category,cost_price,selling_price,qty_on_hand,reorder_level,unit,is_service&order=name');
+      final rc = await r.getRows('customers',
+          query: 'select=id,name,kind,phone,email,address,credit_balance&order=name');
+      if (rp == null || rc == null) return false; // offline
+      products.addAll(parseProducts(rp));
+      for (final e in rc) {
+        if (e is Map) customers.add(parseCustomer((e).cast<String, dynamic>()));
+      }
+      final rs = await r.getRows('settings', query: 'select=*');
+      if (rs != null && rs.isNotEmpty && rs.first is Map) {
+        settings = StoreSettings.fromJson((rs.first as Map).cast<String, dynamic>());
+      }
+      final rser = await r.getRows('serials', query: 'select=doc_type,last_used');
+      if (rser != null) {
+        final map = <String, dynamic>{
+          for (final e in rser) if (e is Map) '${e['doc_type']}': e['last_used'],
+        };
+        if (map.isNotEmpty) SerialService.instance.loadFrom(map);
+      }
+      final rtx = await r.getRows('transactions',
+          query: 'select=id,txn_type,method,amount,reference,txn_date&order=txn_date.desc');
+      for (final e in rtx ?? const []) {
+        if (e is Map) {
+          final m = (e).cast<String, dynamic>();
+          transactions.add(Transaction(
+            id: '${m['id'] ?? ''}',
+            date: DateTime.tryParse('${m['txn_date']}') ?? DateTime.now(),
+            type: TxnType.values.firstWhere((t) => t.name == m['txn_type'], orElse: () => TxnType.salePayment),
+            amount: _asInt(m['amount']),
+            method: PaymentMethod.values.firstWhere((t) => t.name == m['method'], orElse: () => PaymentMethod.cash),
+            reference: '${m['reference'] ?? ''}',
+          ));
+        }
+      }
+      final rrec = await r.getRows('receipts',
+          query: 'select=no,amount,method,source,customer_name,issued_name,created_at&order=created_at.desc');
+      for (final e in rrec ?? const []) {
+        if (e is Map) {
+          final m = (e).cast<String, dynamic>();
+          receipts.add(Receipt(
+            number: '${m['no'] ?? ''}',
+            date: DateTime.tryParse('${m['created_at']}') ?? DateTime.now(),
+            customer: Customer(id: 'r', name: '${m['customer_name'] ?? '—'}', isCorporate: false, phone: '', email: '', address: ''),
+            amount: _asInt(m['amount']),
+            method: PaymentMethod.values.firstWhere((t) => t.name == m['method'], orElse: () => PaymentMethod.cash),
+            forDoc: '${m['source'] ?? ''}',
+            signedBy: '${m['issued_name'] ?? 'Admin'}',
+            issuedBy: '${m['issued_name'] ?? 'Admin'}',
+          ));
+        }
+      }
+      final rinv = await r.getRows('invoices',
+          query: 'select=no,status,total,amount_paid,created_at&order=created_at.desc');
+      for (final e in rinv ?? const []) {
+        if (e is Map) {
+          final m = (e).cast<String, dynamic>();
+          final custName = '${m['customer_id'] ?? ''}';
+          final c = customers.where((x) => x.id == custName).firstOrNull ??
+              Customer(id: 'inv', name: '—', isCorporate: false, phone: '', email: '', address: '');
+          invoices.add(Invoice(
+            number: '${m['no'] ?? ''}',
+            issued: DateTime.tryParse('${m['created_at']}') ?? DateTime.now(),
+            due: (DateTime.tryParse('${m['created_at']}') ?? DateTime.now()).add(const Duration(days: 14)),
+            customer: c,
+            items: const [],
+            amountPaid: _asInt(m['amount_paid']),
+          ));
+        }
+      }
+      final rdocs = await r.getRows('document_issues',
+          query: 'select=doc_type,serial,customer,total,signed_name,verify_hash,issued_at&order=issued_at.desc');
+      for (final e in rdocs ?? const []) {
+        if (e is Map) {
+          docHistory.add(IssuedDocument.fromJson((e).cast<String, dynamic>()));
+        }
+      }
+      return products.isNotEmpty;
+    } catch (_) {
+      return false; // any remote problem → offline-first fallback
+    }
+  }
+
+  /// Next document serial — SERVER-assigned when the backend is configured
+  /// (atomic RPC, paper-book continuity, passcode re-verified server-side);
+  /// local counter otherwise (offline dev).
+  Future<int> nextDocSerial({
+    required String type,
+    required String customer,
+    required double total,
+    required String passcode,
+    String? verifyHash,
+  }) async {
+    if (Env.backendConfigured && _remote != null) {
+      final res = await _remote!.postRpc('mtek_issue_document', {
+        'p_type': type,
+        'p_customer': customer,
+        'p_total': total,
+        'p_verify_hash': verifyHash ?? '',
+        'p_passcode': passcode,
+      });
+      if (res is List && res.isNotEmpty && res.first is Map) {
+        final serial = _asInt((res.first as Map)['serial']);
+        if (serial > 0) {
+          SerialService.instance.reseed(type, serial); // keep peek() in step
+          return serial;
+        }
+      }
+      throw Exception('Document NOT issued — backend refused (check your Signature Passcode)');
+    }
+    return SerialService.instance.next(type);
   }
 
   Future<bool> _loadLocal() async {
@@ -194,6 +321,7 @@ class AppStore extends ChangeNotifier {
     required double total,
     required String signedBy,
     required String verifyHash,
+    bool serverIssued = false,
   }) async {
     final doc = IssuedDocument(
       type: type,
@@ -206,8 +334,11 @@ class AppStore extends ChangeNotifier {
     );
     docHistory.insert(0, doc);
     await writeStore('doc_history', docHistory.map((d) => d.toJson()).toList());
-    enqueueSync('documents', [doc.toJson()]);
-    unawaited(flushSyncQueue());
+    if (!serverIssued) {
+      // server already recorded it via mtek_issue_document — local mirror only
+      enqueueSync('documents', [doc.toJson()]);
+      unawaited(flushSyncQueue());
+    }
     notifyListeners();
     return doc;
   }
@@ -218,6 +349,22 @@ class AppStore extends ChangeNotifier {
     double? vatRate,
     Map<String, int>? serialReseed,
   }) async {
+    // CEO-only — enforced again server-side (owner directive 2026-08-30)
+    if (Env.backendConfigured && _remote != null) {
+      if (vatEnabled != null || vatRate != null) {
+        await _remote!.postRpc('mtek_update_settings', {
+          'p_vat_enabled': vatEnabled,
+          'p_vat_rate': vatRate,
+          'p_watermark': null,
+        });
+      }
+      if (serialReseed != null) {
+        for (final e in serialReseed.entries) {
+          await _remote!.postRpc('mtek_reseed_serial',
+              {'p_type': e.key, 'p_last_used': e.value});
+        }
+      }
+    }
     if (vatEnabled != null) settings = settings.copyWith(vatEnabled: vatEnabled);
     if (vatRate != null) settings = settings.copyWith(vatRate: vatRate);
     if (serialReseed != null) {
@@ -360,14 +507,40 @@ class AppStore extends ChangeNotifier {
   }
 
   // ------------------------------------------------------------ mutations
-  void completeSale({
+  Future<void> completeSale({
     required Customer customer,
     required List<SaleItem> items,
     required PaymentMethod method,
     int discount = 0,
     required String signedBy,
-  }) {
+    String? customerSignature,
+    String? passcode,
+  }) async {
     final now = DateTime.now();
+    // SERVER-AUTHENTICATED SALE: stock check, pricing (server prices),
+    // decrement, transaction + receipt happen in ONE Supabase RPC. The
+    // passcode is re-verified against the bcrypt hash server-side. If the backend
+    // is unreachable we fall back to the offline path and sync later.
+    String? serverReceiptNo;
+    if (Env.backendConfigured && _remote != null) {
+      try {
+        final res = await _remote!.postRpc('mtek_complete_sale', {
+          'p_customer_id': customer.id.length > 20 ? customer.id : null,
+          'p_method': method.name,
+          'p_items': [for (final i in items) {'product_id': i.product.id, 'qty': i.qty}],
+          'p_discount': discount,
+          'p_customer_signature': customerSignature,
+          'p_passcode': passcode ?? '',
+        });
+        if (res is Map) {
+          serverReceiptNo = '${res['receipt_no'] ?? ''}';
+        } else if (res == null) {
+          debugPrint('completeSale: backend unreachable — offline fallback');
+        }
+      } catch (_) {
+        serverReceiptNo = null; // fall through to offline path
+      }
+    }
     final sale = Sale(
       id: 'S${sales.length + 1}',
       date: now,
@@ -393,25 +566,41 @@ class AppStore extends ChangeNotifier {
         items: List.of(items),
       ));
     } else {
-      _postPayment(date: now, amount: sale.total, method: method, forDoc: sale.id, customer: customer, signedBy: signedBy);
+      _postPayment(date: now, amount: sale.total, method: method, forDoc: sale.id,
+          customer: customer, signedBy: signedBy,
+          receiptNo: serverReceiptNo, customerSignature: customerSignature);
     }
-    unawaited(_persistSaleSide(sale));
+    final serverApplied = serverReceiptNo != null && serverReceiptNo.isNotEmpty;
+    await _persistSaleSide(sale, enqueue: !serverApplied);
     notifyListeners();
   }
 
-  Future<void> _persistSaleSide(Sale sale) async {
+  Future<void> _persistSaleSide(Sale sale, {bool enqueue = true}) async {
     await writeStore('products', products.map(productToJson).toList());
     await writeStore('sales', sales.map(saleToJson).toList());
     await writeStore('transactions', transactions.map(txnToJson).toList());
     await writeStore('receipts', receipts.map(receiptToJson).toList());
     await writeStore('invoices', invoices.map(invoiceToJson).toList());
-    enqueueSync('sales', [saleToJson(sale)]);
-    unawaited(flushSyncQueue());
+    if (enqueue) {
+      // only queue when the server has NOT already applied this sale
+      enqueueSync('sales', [saleToJson(sale)]);
+      unawaited(flushSyncQueue());
+    }
   }
 
-  void payInvoice(Invoice invoice, int amount, {required String signedBy}) {
+  Future<void> payInvoice(Invoice invoice, int amount, {required String signedBy, String? passcode}) async {
     final idx = invoices.indexOf(invoice);
     final now = DateTime.now();
+    String? serverReceiptNo;
+    if (Env.backendConfigured && _remote != null) {
+      final res = await _remote!.postRpc('mtek_pay_invoice', {
+        'p_invoice_no': invoice.number,
+        'p_amount': amount,
+        'p_method': 'transfer',
+        'p_passcode': passcode ?? '',
+      });
+      if (res is Map) serverReceiptNo = '${res['receipt_no'] ?? ''}';
+    }
     invoices[idx] = Invoice(
       number: invoice.number,
       issued: invoice.issued,
@@ -420,14 +609,21 @@ class AppStore extends ChangeNotifier {
       items: invoice.items,
       amountPaid: invoice.amountPaid + amount,
     );
-    _postPayment(date: now, amount: amount, method: PaymentMethod.transfer, forDoc: invoice.number, customer: invoice.customer, signedBy: signedBy);
-    unawaited(_persistSaleSide(invoices[idx]));
+    _postPayment(date: now, amount: amount, method: PaymentMethod.transfer, forDoc: invoice.number,
+        customer: invoice.customer, signedBy: signedBy, receiptNo: serverReceiptNo);
+    final serverApplied = serverReceiptNo != null && serverReceiptNo.isNotEmpty;
+    await _persistSaleSide(invoices[idx], enqueue: !serverApplied);
     notifyListeners();
   }
 
-  void adjustStock(Product product, int delta, AdjustmentReason reason, String note) {
+  Future<void> adjustStock(Product product, int delta, AdjustmentReason reason, String note) async {
+    // CEO/Admin only — enforced AGAIN server-side by the RPC (RLS + check)
+    final serverApplied = await _tryRpc(
+      'mtek_adjust_stock',
+      {'p_product_id': product.id, 'p_delta': delta, 'p_reason': reason.name, 'p_note': note},
+    );
     final idx = products.indexOf(product);
-    products[idx] = product.copyWith(qtyOnHand: product.qtyOnHand + delta);
+    products[idx] = product.copyWith(qtyOnHand: products[idx].qtyOnHand + delta);
     final adj = StockAdjustment(
       id: 'ADJ-${adjustments.length + 1}',
       date: DateTime.now(),
@@ -437,13 +633,22 @@ class AppStore extends ChangeNotifier {
       note: note,
     );
     adjustments.insert(0, adj);
-    unawaited(() async {
-      await writeStore('products', products.map(productToJson).toList());
-      await writeStore('adjustments', adjustments.map(adjToJson).toList());
+    await writeStore('products', products.map(productToJson).toList());
+    await writeStore('adjustments', adjustments.map(adjToJson).toList());
+    if (!serverApplied) {
       enqueueSync('stock_adjustments', [adjToJson(adj)]);
       unawaited(flushSyncQueue());
-    }());
+    }
     notifyListeners();
+  }
+
+  /// Runs an RPC, returning true when the server applied it. Throws the
+  /// server's message (e.g. permission denied) when actively rejected.
+  Future<bool> _tryRpc(String fn, Map<String, dynamic> params) async {
+    if (!Env.backendConfigured || _remote == null) return false;
+    final res = await _remote!.postRpc(fn, params);
+    if (res == null) return false; // unreachable → offline fallback
+    return true;
   }
 
   void addCustomer(Customer c) {
@@ -463,6 +668,8 @@ class AppStore extends ChangeNotifier {
     required String forDoc,
     required Customer customer,
     required String signedBy,
+    String? receiptNo,
+    String? customerSignature,
   }) {
     final txnSeq = transactions.length + 1;
     transactions.add(Transaction(
@@ -474,7 +681,9 @@ class AppStore extends ChangeNotifier {
       reference: forDoc,
     ));
     receipts.add(Receipt(
-      number: 'MTK-REC-${(receipts.length + 1).toString().padLeft(4, '0')}',
+      number: (receiptNo == null || receiptNo.isEmpty)
+          ? 'MTK-REC-${(receipts.length + 1).toString().padLeft(4, '0')}'
+          : receiptNo, // server-assigned (authoritative when online)
       date: date,
       customer: customer,
       amount: amount,
@@ -482,6 +691,7 @@ class AppStore extends ChangeNotifier {
       forDoc: forDoc,
       signedBy: signedBy,
       issuedBy: 'Admin',
+      customerSignature: customerSignature,
     ));
   }
 
@@ -583,6 +793,7 @@ Map<String, dynamic> txnToJson(Transaction t) => {
 
 Map<String, dynamic> receiptToJson(Receipt r) => {
       'number': r.number, 'date': r.date.toIso8601String(),
+      'customer_signature': r.customerSignature,
       'customer': r.customer.name, 'amount': r.amount,
       'method': r.method.name, 'for_doc': r.forDoc,
       'signed_by': r.signedBy, 'issued_by': r.issuedBy,

@@ -35,9 +35,23 @@ const api = async (u, body) => {
   return d;
 };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+// CEO credentials come from backend/.env (gitignored) — the real account values.
+const dotEnv = Object.fromEntries(
+  fs.readFileSync(path.join(__dirname, '..', 'backend', '.env'), 'utf8').split('\n')
+    .filter(l => l.trim() && !l.trim().startsWith('#'))
+    .map(l => { const i = l.indexOf('='); return [l.slice(0, i).trim(), l.slice(i + 1).trim()]; }));
+const CEO_EMAIL = 'mtekfiresafetyltd@gmail.com';
+const CEO_PASS = dotEnv.MTEK_CEO_PASSWORD;
+const CEO_SIG = dotEnv.MTEK_CEO_SIG;
+if (!CEO_PASS || !CEO_SIG) throw new Error('backend/.env must define MTEK_CEO_PASSWORD and MTEK_CEO_SIG');
+const apiExpect = async (status, u, body) => {
+  const r = await fetch(BASE + u, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  expect(r.status === status, `expected HTTP ${status} for ${u}, got ${r.status}`);
+  return r.json().catch(() => ({}));
+};
 
 (async () => {
-  await fetch(BASE + '/api/reset', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+  await fetch(BASE + '/api/reset', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: CEO_EMAIL }) });
   await w.eval('boot()');
   await sleep(400);
 
@@ -53,7 +67,8 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   console.log('✓ Server-side login + state loaded from API (' + S().products.length + ' products)');
 
   // ---- 2. all screens render ----
-  for (const r of ['insights','transactions','customers','receipts','invoices','mils','sales','stock','summary','docs','settings']) {
+  expect(!w.document.querySelector('#nav').innerHTML.includes('Settings'), 'Admin nav hides Settings (CEO-only seeding)');
+  for (const r of ['insights','transactions','customers','receipts','invoices','mils','sales','stock','summary','docs']) {
     w.go(r); await sleep(30);
     expect(appText().length > 100, r + ': screen looks empty');
   }
@@ -113,27 +128,34 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
   expect(dbNow.users.length >= 1, 'Accounts persisted');
   console.log('✓ Everything persisted server-side (preview/.data/db.json) — refresh-proof');
 
-  // ---- 8. settings: reseed + reset ----
-  w.go('settings'); await sleep(80);
-  w.document.querySelector('#seed-receipt').value = '3000';
-  await w.reseedSerial('receipt', 3000); await sleep(300);
-  expect(S().serials.receipt === 3000, 'Serial reseed persisted');
-  await w.resetDemo(); await sleep(500);
-  expect(S().serials.receipt === 2131, 'Reset restores seed serials');
-  console.log('✓ Settings: serial reseed + reset work against the API');
+  // ---- 8. permission matrix (server-enforced roles) ----
+  w.go('stock'); await sleep(60);
+  await apiExpect(403, '/api/settings', { reseed: { type: 'receipt', value: 3000 }, email: 'admin@mtek.demo' });
+  console.log('✓ Admin cannot seed — reseed rejected (CEO-only)');
+  // a Sales account must not edit stock or issue freehand docs
+  await api('/api/auth/signup', { name: 'Smoke Sales', email: 'sales@mtek.demo', password: 'sales123', signature: '4321', role: 'sales' });
+  await apiExpect(403, '/api/stock/adjust', { id: 'F002', delta: -1, reason: 'CORRECTION', email: 'sales@mtek.demo' });
+  await apiExpect(403, '/api/docs/issue', { type: 'invoice', signedBy: 'Smoke Sales', email: 'sales@mtek.demo' });
+  console.log('✓ Sales blocked from stock edits + freehand documents (server-side)');
+  await api('/api/settings', { reseed: { type: 'receipt', value: 3000 }, email: CEO_EMAIL });
+  await w.refreshState(); await sleep(150);
+  expect(S().serials.receipt === 3000, 'CEO serial reseed persisted');
+  await api('/api/reset', { email: CEO_EMAIL }); await sleep(400);
+  await w.refreshState(); await sleep(150);
+  expect(S().serials.receipt === 2131, 'CEO reset restores seed serials');
+  console.log('✓ CEO seeds: reseed + reset work against the API');
 
   // ---- 9. CEO hardcode + new documents (waybill / delivery note) ----
-  const ceo = await api('/api/auth/login', { email: 'mtekfiresafetyltd@gmail.com', password: 'ceo1234' });
+  const ceo = await api('/api/auth/login', { email: CEO_EMAIL, password: CEO_PASS });
   expect(ceo.user.role === 'ceo', 'CEO email signs in with role ceo');
-  const ceoShown = w.document.querySelector('.auth-demo').textContent.includes('mtekfiresafetyltd@gmail.com');
-  expect(ceoShown, 'CEO login surfaced on the auth screen');
-  let regBlocked = false;
-  try { await api('/api/auth/signup', { name: 'Test CEO', email: 'mtekfiresafetyltd@gmail.com', password: 'zzzzzz', signature: '9999' }); }
-  catch (e) { regBlocked = /CEO account is pre-provisioned/.test(e.message); }
-  expect(regBlocked, 'CEO email cannot be registered');
-  const wb = await api('/api/docs/issue', { type: 'waybill', signedBy: 'CEO (M-tek)', customer: 'Test Buyer', total: 0, hash: 'wb1' });
+  const sigOk = await api('/api/auth/signature', { email: CEO_EMAIL, passcode: CEO_SIG });
+  expect(sigOk.ok === true, 'CEO signature passcode verified server-side');
+  const regBlocked = await apiExpect(400, '/api/auth/signup',
+    { name: 'Impostor', email: CEO_EMAIL, password: 'zzzzzz', signature: '9999' });
+  expect((regBlocked.error || '').includes('pre-provisioned'), 'CEO email cannot be registered');
+  const wb = await api('/api/docs/issue', { type: 'waybill', signedBy: 'CEO', customer: 'Test Buyer', total: 0, hash: 'wb1', email: CEO_EMAIL });
   expect(wb.serial === 175, 'Waybill continues book at 0174 -> 0175');
-  const dn = await api('/api/docs/issue', { type: 'deliverynote', signedBy: 'CEO (M-tek)', customer: 'Test Buyer', total: 0, hash: 'dn1' });
+  const dn = await api('/api/docs/issue', { type: 'deliverynote', signedBy: 'CEO', customer: 'Test Buyer', total: 0, hash: 'dn1', email: CEO_EMAIL });
   expect(dn.serial === 19790089, 'Delivery Note continues book at 19790088 -> 19790089');
   w.go('docs'); await sleep(80);
   await w.setDocsTab('waybill'); await sleep(80);

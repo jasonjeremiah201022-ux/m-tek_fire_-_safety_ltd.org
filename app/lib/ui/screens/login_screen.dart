@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme.dart';
 import '../../data/auth_store.dart';
+import '../../data/env.dart';
 import '../signature_pad.dart';
 
 /// Sign-in / create-account. Account creation REQUIRES a Signature
@@ -93,7 +94,6 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         const SizedBox(height: 6),
         const Text('Demo: admin@mtek.demo · admin123', textAlign: TextAlign.center, style: TextStyle(fontSize: 11.5, color: Mtek.gray400)),
-        const Text('CEO: mtekfiresafetyltd@gmail.com · ceo1234', textAlign: TextAlign.center, style: TextStyle(fontSize: 11.5, color: Mtek.gray400)),
       ],
     );
   }
@@ -176,7 +176,15 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void _signIn() {
+  Future<void> _signIn() async {
+    // REAL backend first (Supabase Auth + profiles role); offline dev
+    // (backend not configured) falls back to the local directory.
+    if (Env.backendConfigured) {
+      final remoteErr = await AuthStore.instance.remoteSignIn(_email.text, _password.text);
+      if (remoteErr == null) return; // signed in via Supabase
+      setState(() => _error = remoteErr);
+      return;
+    }
     final err = AuthStore.instance.signIn(_email.text, _password.text);
     setState(() => _error = err);
   }

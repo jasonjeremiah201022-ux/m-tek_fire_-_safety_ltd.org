@@ -1,10 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 
 import '../../core/format.dart' as fmt;
 import '../../core/theme.dart';
 import '../../data/models.dart';
+import '../../data/auth_store.dart';
 import '../../data/store.dart';
 import '../signature_dialog.dart';
+import '../signature_pad.dart';
 import '../widgets.dart';
 
 /// SALES — the POS screen. Complete a sale → stock decremented, and a
@@ -217,12 +221,17 @@ class _SalesScreenState extends State<SalesScreen> {
       }
       return;
     }
+    // CUSTOMER SIGNS TOO (optional when absent): captured on the device and
+    // stored with the sale + receipt — proof of purchase on the PDF.
+    final customerSig = await _captureCustomerSignature();
     final store = AppStore.instance;
-    store.completeSale(
+    await store.completeSale(
       customer: _customer!,
       items: _cart.values.toList(),
       method: _method,
       signedBy: signer.name,
+      customerSignature: customerSig,
+      passcode: AuthStore.instance.lastVerifiedPasscode,
     );
     setState(() => _cart.clear());
     if (!mounted) return;
@@ -232,5 +241,38 @@ class _SalesScreenState extends State<SalesScreen> {
           ? 'Invoice created & signed by ${signer.name} — payable later, stock deducted.'
           : 'Sale complete — receipt signed by ${signer.name}, stock updated.'),
     ));
+  }
+
+  /// Customer signs on the device (skippable when they're not present).
+  Future<String?> _captureCustomerSignature() async {
+    String? captured;
+    await showModalBottomSheet<void>(
+      context: context,
+      builder: (sheetCtx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text("Customer's signature",
+                  style: TextStyle(fontWeight: FontWeight.w800)),
+              const SizedBox(height: 4),
+              const Text('Proof of purchase — printed on the receipt. You may skip.',
+                  style: TextStyle(fontSize: 11.5, color: Mtek.gray500)),
+              const SizedBox(height: 12),
+              SignaturePad(
+                onDone: (bytes) {
+                  if (bytes != null) {
+                    captured = 'data:image/png;base64,${base64Encode(bytes)}';
+                  }
+                  Navigator.of(sheetCtx).pop();
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    return captured;
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -6,7 +7,9 @@ import 'package:flutter/services.dart' show rootBundle;
 import '../../core/format.dart' as fmt;
 import '../../core/theme.dart';
 import '../../data/auth_store.dart';
+import '../../data/env.dart';
 import '../../data/store.dart';
+import '../signature_pad.dart';
 import '../../documents/doc_models.dart';
 import '../../documents/forms_spec.dart';
 import '../../documents/pdf_painters.dart';
@@ -159,6 +162,72 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
     );
   }
 
+  // ------- CUSTOMER / RECEIVER SIGNATURE (data URLs, stored with docs) -------
+
+  String get _customerSigDataUrl => switch (_type) {
+        DocType.receipt => _receipt.customerSignature,
+        DocType.invoice => _invoice.customerSignature,
+        DocType.waybill => _waybill.receiverSignature,
+        DocType.deliveryNote => _deliveryNote.receiverSignature,
+        DocType.mils => '',
+      };
+
+  void _setCustomerSig(String v) {
+    switch (_type) {
+      case DocType.receipt: _receipt.customerSignature = v;
+      case DocType.invoice: _invoice.customerSignature = v;
+      case DocType.waybill: _waybill.receiverSignature = v;
+      case DocType.deliveryNote: _deliveryNote.receiverSignature = v;
+      case DocType.mils: break;
+    }
+    setState(() {});
+  }
+
+  Future<void> _captureSignature(String label) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      builder: (sheetCtx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(label, style: const TextStyle(fontWeight: FontWeight.w800)),
+              const SizedBox(height: 12),
+              SignaturePad(
+                onDone: (bytes) {
+                  if (bytes != null) {
+                    _setCustomerSig('data:image/png;base64,${base64Encode(bytes)}');
+                  }
+                  Navigator.of(sheetCtx).pop();
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _sigTile(String label) {
+    final current = _customerSigDataUrl;
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: ListTile(
+        leading: current.isEmpty
+            ? const Icon(Icons.draw, color: Mtek.navy700)
+            : Image.memory(base64Decode(current.split(',').last), width: 64),
+        title: Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+        subtitle: Text(current.isEmpty ? 'They sign here on the device — stored with the document'
+                                        : 'Captured — tap to replace', style: const TextStyle(fontSize: 11)),
+        trailing: TextButton(
+          onPressed: () => _captureSignature(label),
+          child: Text(current.isEmpty ? 'Capture' : 'Replace'),
+        ),
+      ),
+    );
+  }
+
   // ---------- RECEIPT ----------
 
   final _rName = TextEditingController(), _rAddr = TextEditingController(), _rPhone = TextEditingController(),
@@ -174,6 +243,7 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
       _field(_rFor, 'Being Payment for', hint: 'e.g. Refill of 24 × 6kg extinguishers', onChanged: (v) => _receipt.beingPaymentFor = v),
       _field(_rAmount, 'The Sum of (₦) *', keyboard: const TextInputType.numberWithOptions(decimal: true),
           onChanged: (v) => setState(() => _receipt.amount = double.tryParse(v) ?? 0)),
+      _sigTile("Customer's signature"),
       const SizedBox(height: 6),
       const Text('PAYMENT METHOD', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1, color: Mtek.gray500)),
       const SizedBox(height: 6),
@@ -204,6 +274,7 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
   List<Widget> _invoiceForm() {
     return [
       _serialBanner('invoice', _invoice.serial),
+      _sigTile("Customer's signature (assent)"),
       Wrap(
         spacing: 6,
         runSpacing: 6,
@@ -554,6 +625,7 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
         const SizedBox(width: 8),
         Expanded(child: _field(_wbReceiverPhone, 'Receiver phone', keyboard: TextInputType.phone, onChanged: (v) => _waybill.receiverPhone = v)),
       ]),
+      _sigTile("Receiver's signature (signs at hand-over)"),
     ];
   }
 
@@ -651,6 +723,7 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
         ),
       ),
       _field(_dnSummary, 'Summary', onChanged: (v) => _deliveryNote.summary = v),
+      _sigTile("Client's signature (acknowledges receipt of the goods)"),
     ];
   }
 
@@ -701,7 +774,9 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
       return;
     }
 
-    // serial assignment (paper-book sequence)
+    // serial assignment — SERVER-assigned when the backend is configured
+    // (atomic RPC; passcode re-verified against bcrypt server-side). Local
+    // counter keeps offline development usable.
     final typeKey = switch (_type) {
       DocType.receipt => 'receipt',
       DocType.invoice => 'invoice',
@@ -709,7 +784,37 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
       DocType.waybill => 'waybill',
       DocType.deliveryNote => 'deliverynote',
     };
-    final serial = SerialService.instance.next(typeKey);
+    final customer = switch (_type) {
+      DocType.receipt => _receipt.name,
+      DocType.invoice => _invoice.name,
+      DocType.mils => _mils.name,
+      DocType.waybill => _waybill.name,
+      DocType.deliveryNote => _deliveryNote.customerName,
+    };
+    final docTotal = switch (_type) {
+      DocType.receipt => _receipt.amount,
+      DocType.invoice => _invoice.grandTotal,
+      DocType.mils => _mils.grandTotal,
+      DocType.waybill => 0.0,
+      DocType.deliveryNote => 0.0,
+    };
+    final int serial;
+    try {
+      serial = await AppStore.instance.nextDocSerial(
+        type: typeKey,
+        customer: customer,
+        total: docTotal,
+        passcode: AuthStore.instance.lastVerifiedPasscode ?? '',
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        backgroundColor: Mtek.danger,
+        content: Text('Document NOT issued — '
+            '${e.toString().replaceFirst('Exception: ', '')}'),
+      ));
+      return;
+    }
     _receipt.serial = serial; _invoice.serial = serial; _mils.serial = serial;
     _waybill.serial = serial; _deliveryNote.serial = serial;
 
@@ -732,15 +837,9 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
       deliveryNote: _deliveryNote,
       signedBy: signer.name,
       signaturePngBytes: signatureBytes,
+      customerSignaturePngBytes: dataUrlToBytes(_customerSigDataUrl),
     );
 
-    final customer = switch (_type) {
-      DocType.receipt => _receipt.name,
-      DocType.invoice => _invoice.name,
-      DocType.mils => _mils.name,
-      DocType.waybill => _waybill.name,
-      DocType.deliveryNote => _deliveryNote.customerName,
-    };
     final docLabel = switch (_type) {
       DocType.receipt => 'Payment Receipt',
       DocType.invoice => 'Invoice',
@@ -757,15 +856,10 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
       type: typeKey,
       serial: serial,
       customer: customer,
-      total: switch (_type) {
-        DocType.receipt => _receipt.amount,
-        DocType.invoice => _invoice.grandTotal,
-        DocType.mils => _mils.grandTotal,
-        DocType.waybill => 0,
-        DocType.deliveryNote => 0,
-      },
+      total: docTotal,
       signedBy: signer.name,
       verifyHash: hash,
+      serverIssued: Env.backendConfigured,
     );
 
     final outcome = await dispatchPdf(

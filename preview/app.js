@@ -142,19 +142,19 @@ function settingsScreen() {
     </div>`;
 }
 window.setSetting = async (k, v) => {
-  try { const r = await api('/api/settings', { [k]: v }); settings = r.settings; toast('Setting saved.', 'success'); } catch (e) { toast(e.message); }
+  try { const r = await api('/api/settings', { [k]: v, email: currentUser()?.email }); settings = r.settings; toast('Setting saved.', 'success'); } catch (e) { toast(e.message); }
 };
 window.reseedSerial = async (type, seedVal) => {
   const el = document.getElementById('seed-' + type);
   try {
-    const r = await api('/api/settings', { reseed: { type, value: parseInt(el.value) || seedVal } });
+    const r = await api('/api/settings', { reseed: { type, value: parseInt(el.value) || seedVal }, email: currentUser()?.email });
     serials = r.serials;
     toast('Serial counter updated — next ' + type + ' will be ' + (r.serials[type] + 1) + '.', 'success');
     render();
   } catch (e) { toast(e.message); }
 };
 window.resetDemo = async () => {
-  await api('/api/reset', {});
+  await api('/api/reset', { email: currentUser()?.email });
   await refreshState();
   render();
   toast('Preview data reset to seed.', 'success');
@@ -212,7 +212,8 @@ function routeButtons() {
   if (route === 'customers') return `<button class="btn primary" onclick="newCustomer()">＋ New customer</button>`;
   if (route === 'invoices') return `<button class="btn primary" onclick="toast('New invoice — full builder arrives in M2')">＋ New invoice</button>`;
   if (route === 'mils') return `<button class="btn primary" onclick="toast('MILS entry form — M2 (stored as Mongo documents in M3)')">＋ Log service</button>`;
-  if (route === 'stock') return `<button class="btn ghost" onclick="toast('Opens the products_seed.txt importer in M2')">Import TXT</button>`;
+  if (route === 'stock') return (sessionUser && ['ceo', 'admin'].includes(sessionUser.role))
+    ? `<button class="btn ghost" onclick="toast('Opens the products_seed.txt importer in M2')">Import TXT</button>` : '';
   if (route === 'summary') return `<button class="btn ghost" onclick="toast('PDF export & share — Milestone M4')">Export PDF</button>`;
   if (route === 'docs') return `<button class="btn ghost" onclick="toast('Serial counters are Admin-seedable in Settings — continuing paper books: 2131 / 4335 / 925 / 0174 / 19790088')">Serials</button>`;
   return '';
@@ -375,7 +376,7 @@ window.newCustomer = () => {
 };
 window.saveCustomer = async () => {
   try {
-    await api('/api/customers', { name: $('#nc-name').value, phone: $('#nc-phone').value, corp: $('#nc-corp').checked });
+    await api('/api/customers', { name: $('#nc-name').value, phone: $('#nc-phone').value, corp: $('#nc-corp').checked, email: currentUser()?.email });
     closeModal();
     await refreshState();
     render();
@@ -466,7 +467,7 @@ window.signThenPay = no => {
 window.doInvPay = async no => {
   const signer = currentUser().name;
   try {
-    const r = await api('/api/invoices/pay', { no, signedBy: signer });
+    const r = await api('/api/invoices/pay', { no, signedBy: signer, email: currentUser()?.email });
     if (r.receipt) receipts.push(r.receipt);
     await refreshState();
     render();
@@ -590,7 +591,7 @@ window.doCompleteSale = async () => {
   const signer = currentUser().name;
   const items = Object.values(cart).map(l => [l.p.id, l.qty]);
   try {
-    const r = await api('/api/sales', { customerId: posCust, method: posMethod, items, signedBy: signer });
+    const r = await api('/api/sales', { customerId: posCust, method: posMethod, items, signedBy: signer, email: currentUser()?.email });
     if (r.receipt) receipts.push(r.receipt);
     cart = {}; posCust = null; cartOpen = false;
     await refreshState();
@@ -627,7 +628,7 @@ function stockScreen() {
           </div>
           ${out ? '<span class="chip bad">OUT</span>' : isLow ? '<span class="chip pending">LOW</span>' : ''}
           <div class="money">${naira(p.price)}</div>
-          ${!p.service ? `<button class="btn ghost sm" onclick="adjustStock('${p.id}')">Adjust</button>` : ''}
+          ${!p.service && sessionUser && ['ceo', 'admin'].includes(sessionUser.role) ? `<button class="btn ghost sm" onclick="adjustStock('${p.id}')">Adjust</button>` : ''}
         </div>`;
       }).join('')}
     </div>
@@ -661,7 +662,7 @@ window.doAdjust = async pid => {
   const delta = parseInt($('#adj-q').value) || 0;
   if (delta !== 0) {
     try {
-      await api('/api/stock/adjust', { id: pid, delta, reason: $('#adj-r').value, note: 'Manual adjustment', signedBy: currentUser().name });
+      await api('/api/stock/adjust', { id: pid, delta, reason: $('#adj-r').value, note: 'Manual adjustment', signedBy: currentUser().name, email: currentUser()?.email });
       await refreshState();
       toast(`Stock adjusted (${delta >= 0 ? '+' : ''}${delta}) — logged in audit trail.`, 'success');
     } catch (e) { toast(e.message); }
@@ -742,12 +743,22 @@ window.go = r => { route = r; location.hash = '#/' + r; closeDrawer(); render();
 window.openDrawer = () => { $('#m-drawer').classList.add('open'); $('#drawer-back').classList.add('open'); };
 window.closeDrawer = () => { $('#m-drawer')?.classList.remove('open'); $('#drawer-back')?.classList.remove('open'); };
 
+function navForRole() {
+  const role = sessionUser ? sessionUser.role : 'sales';
+  // CEO: everything. Admin: management set minus Settings (seeding is CEO-only).
+  // Sales: operational set.
+  if (role === 'ceo') return NAV;
+  if (role === 'admin') return NAV.filter(([id]) => id !== 'settings');
+  return NAV.filter(([id]) => ['insights', 'sales', 'stock', 'customers', 'receipts', 'invoices', 'docs'].includes(id));
+}
 function buildNav() {
-  const html = NAV.map(([id, icon, label]) =>
+  const visible = navForRole();
+  const html = visible.map(([id, icon, label]) =>
     `<button class="${route === id ? 'active' : ''}" onclick="go('${id}')"><span class="ic">${icSvg(icon, 17)}</span>${label}</button>`).join('');
   $('#nav').innerHTML = html;
   $('#m-nav').innerHTML = html;
-  $('#pagetitle').textContent = NAV.find(n => n[0] === route)[2];
+  if (!visible.some(n => n[0] === route)) route = visible[0][0];
+  $('#pagetitle').textContent = visible.find(n => n[0] === route)[2];
 }
 
 window.addEventListener('hashchange', () => {
@@ -777,7 +788,7 @@ function renderAuth(mode = 'login') {
           <label>Password</label><input id="a-pass" type="password" placeholder="••••••••">
           <button class="btn primary" style="width:100%;justify-content:center;margin-top:18px" onclick="doLogin()">Sign in</button>
           <button class="linkbtn" onclick="renderAuth('signup')">Create an account →</button>
-          <div class="auth-demo">Demo: admin@mtek.demo · admin123<br>CEO (hardcoded): mtekfiresafetyltd@gmail.com · ceo1234</div>
+          <div class="auth-demo">Demo: admin@mtek.demo · admin123</div>
         ` : `
           <label>Full name</label><input id="a-name" placeholder="e.g. Ibrahim Kabeer">
           <label>Email</label><input id="a-email" type="email" placeholder="you@mtek…">
@@ -921,7 +932,7 @@ window.gateSubmit = async () => {
 // =====================================================================
 window.nextSerial = async type => {
   const r = await api('/api/docs/issue', {
-    type, signedBy: currentUser().name,
+    type, signedBy: currentUser().name, email: currentUser()?.email,
     customer: docsTab === 'receipt' ? docState.receipt.name
       : docsTab === 'invoice' ? docState.invoice.name
       : docsTab === 'mils' ? docState.mils.name

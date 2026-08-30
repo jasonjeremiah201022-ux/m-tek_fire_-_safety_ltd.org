@@ -22,6 +22,7 @@ class WaybillDocState {
   String driverName = '', driverPhone = '', driverSignature = '';
   String vehicleBrand = '', plateNo = '', colour = '';
   String receiverName = '', receiverPhone = '';
+  String receiverSignature = ''; // data URL — receiver signs at hand-over
   String approvedBy = 'CEO';
   DateTime date = DateTime.now();
   final List<WaybillRow> rows = [WaybillRow()];
@@ -77,6 +78,7 @@ class ReceiptDocState {
   String beingPaymentFor = '';
   String method = 'Cash'; // Cash | Cheque | Transfer | POS
   DateTime date = DateTime.now();
+  String customerSignature = ''; // data URL — the customer signs on the device
 
   bool get valid => name.trim().isNotEmpty && amount > 0;
 
@@ -90,6 +92,7 @@ class InvoiceDocState {
   String milsNo = '', receiptNo = '', lpoNo = '';
   String name = '', address = '', phone = '';
   DateTime date = DateTime.now();
+  String customerSignature = ''; // data URL — customer assent on the device
   List<LedgerRow> rows = [LedgerRow()];
   double advancePayment = 0;
   bool vatEnabled = true;
