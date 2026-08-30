@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>M-Tek Inventory — App Preview</title>
+  <meta name="description" content="M1 design preview of the M-Tek Inventory app (Flutter). Mirrors lib/ screens with sample data.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="logo.png" alt="M-Tek logo">
+        <div>
+          <div class="t1">M-Tek Inventory</div>
+          <div class="t2">Fire &amp; Safety Ltd</div>
+        </div>
+      </div>
+      <nav class="nav" id="nav"></nav>
+      <div class="foot">
+        <div class="avatar" id="uavatar">–</div>
+        <div>
+          <div style="color:#e2e8f0;font-weight:600" id="fname">—</div>
+          <div id="frole" style="font-size:11px;color:#8fa0ba">sign in to continue</div>
+        </div>
+      </div>
+    </aside>
+
+    <div class="main">
+      <div class="topbar">
+        <button class="hamb" onclick="openDrawer()" aria-label="Menu"><svg class="ic" style="width:20px;height:20px"><use href="/icons.svg#menu"/></svg></button>
+        <span class="pagetitle" id="pagetitle">Insights</span>
+        <span class="spacer"></span>
+        <span class="bell"><svg class="ic" style="width:17px;height:17px"><use href="/icons.svg#bell"/></svg></span>
+        <span class="userchip" id="userchip"><span class="uname" id="uname"></span><span class="urole" id="urole"></span></span>
+        <button class="logoutbtn" id="logoutbtn" onclick="signOut()" title="Sign out"><svg class="ic" style="width:17px;height:17px"><use href="/icons.svg#close"/></svg></button>
+      </div>
+      <div class="content" id="app"></div>
+    </div>
+  </div>
+
+  <!-- mobile drawer -->
+  <div class="drawer-back" id="drawer-back" onclick="closeDrawer()"></div>
+  <nav class="m-drawer" id="m-drawer">
+    <div class="brand">
+      <img src="logo.png" alt="M-Tek logo">
+      <div><div class="t1" style="color:#fff">M-Tek Inventory</div><div class="t2">Fire &amp; Safety Ltd</div></div>
+    </div>
+    <div class="nav" id="m-nav"></div>
+  </nav>
+
+  <!-- auth layer (login / create account with Signature Passcode) -->
+  <div id="auth"></div>
+
+  <script src="pdf-lite.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

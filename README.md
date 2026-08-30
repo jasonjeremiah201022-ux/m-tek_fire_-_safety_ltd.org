@@ -48,3 +48,15 @@ security and solar equipment supplier since 2012 (RC: 1082534).
 
 This is a static site — upload the whole folder to any static host (GitHub Pages, Netlify,
 Vercel, cPanel) or keep using the existing GitHub Pages workflow.
+
+## Inventory & Business App (in development)
+
+See [`docs/SPEC.md`](docs/SPEC.md) for the agreed spec of the **M-Tek Inventory app** —
+one Flutter codebase in [`app/`](app/) targeting Android, Windows and a PWA served at
+`/app`. Backend: Supabase + MongoDB (`backend/`, credentials in gitignored `.env`).
+`seed/` holds the owner-editable product import file. `preview/` is a runnable
+design preview of the app's 9 screens (M1), including login and the digital
+**Signature Passcode** flow. Target PWA URL:
+`https://mtekfiresafetyltd.github.io/m-tek_fire_safety_ltd.org/` (company
+GitHub Pages — the app opens at the bare URL, website under `/site/`;
+activation steps in `docs/SPEC.md` §11).
