@@ -52,7 +52,7 @@ input, select { font-family: inherit; font-size: 13px; }
 .topbar .bell { position: relative; font-size: 17px; opacity: .85; }
 .topbar .bell::after { content: ''; position: absolute; top: 0; right: -1px; width: 7px; height: 7px; background: var(--brand-500); border-radius: 50%; }
 .hamb { display: none; font-size: 20px; }
-.content { flex: 1; overflow-y: auto; padding: 22px; background: var(--gray-50) url('watermark.svg') repeat; background-size: 300px 210px; }
+.content { flex: 1; overflow-y: auto; padding: 22px; background: var(--gray-50) url('watermark.svg') repeat; background-size: 460px 460px; }
 
 /* drawer (mobile) */
 .drawer-back { display: none; position: fixed; inset: 0; background: rgba(6,11,22,.55); z-index: 40; }
@@ -131,7 +131,7 @@ input, select { font-family: inherit; font-size: 13px; }
 
 /* modal */
 .modal-back { position: fixed; inset: 0; background: rgba(6,11,22,.55); z-index: 60; display: flex; align-items: center; justify-content: center; padding: 18px; }
-.modal { background: #fff url('watermark.svg') repeat; background-size: 260px 182px; border-radius: 18px; max-width: 460px; width: 100%; max-height: 88vh; overflow-y: auto; padding: 26px; }
+.modal { background: #fff url('watermark.svg') repeat; background-size: 380px 380px; border-radius: 18px; max-width: 460px; width: 100%; max-height: 88vh; overflow-y: auto; padding: 26px; }
 .modal h3 { font-size: 17px; margin-bottom: 4px; }
 .modal .kv { display: flex; padding: 7px 0; font-size: 13px; }
 .modal .kv b { width: 130px; color: var(--gray-500); font-weight: 500; flex-shrink: 0; }
@@ -326,7 +326,7 @@ methods {}
 .wcell b { font-size: 12px; min-width: 34px; }
 .wcell input { width: 100%; border: none; border-bottom: 1px solid var(--gray-300); outline: none; font-size: 13px; padding: 2px 4px; }
 /* paper doc preview */
-.doc-sheet { position: relative; background: #fff url('watermark.svg') repeat; background-size: 300px 210px; border: 1px solid var(--gray-300); border-radius: 10px; padding: 22px 24px; overflow: hidden; }
+.doc-sheet { position: relative; background: #fff url('watermark.svg') repeat; background-size: 460px 460px; border: 1px solid var(--gray-300); border-radius: 10px; padding: 22px 24px; overflow: hidden; }
 .doc-sheet .corp { text-align: center; font-weight: 800; color: var(--brand-700); letter-spacing: .5px; font-size: 15px; }
 .doc-sheet .corp-serv { text-align: center; font-size: 8.5px; color: var(--gray-600); margin: 3px 0 6px; }
 .doc-sheet .banner { background: var(--brand-600); color: #fff; text-align: center; font-weight: 800; padding: 5px; letter-spacing: 1.5px; font-size: 12.5px; margin: 8px 0; border-radius: 4px; }

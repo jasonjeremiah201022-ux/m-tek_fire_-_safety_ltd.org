@@ -17,6 +17,28 @@ class StockScreen extends StatefulWidget {
 }
 
 class _StockScreenState extends State<StockScreen> {
+
+  /// CEO stock import: pick the edited products_seed.txt, rows upsert over
+  /// the catalogue (existing IDs update, new IDs append) — no terminal needed.
+  Future<void> _importTxt(BuildContext context) async {
+    final text = await pickProductsTxt();
+    if (text == null || text.trim().isEmpty) return;
+    try {
+      final count = await AppStore.instance.importProductsTsv(text);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            backgroundColor: Mtek.success,
+            content: Text('$count product row(s) imported — catalogue updated.')));
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            backgroundColor: Mtek.danger,
+            content: Text(e.toString().replaceFirst('Exception: ', ''))));
+      }
+    }
+  }
+
   String _query = '';
   String? _category;
 
@@ -44,7 +66,7 @@ class _StockScreenState extends State<StockScreen> {
               // seed import: CEO ONLY (owner directive 2026-08-30)
               if (AuthStore.instance.isCeo)
                 FilledButton.icon(
-                  onPressed: () {},
+                  onPressed: () => _importTxt(context),
                   icon: const Icon(Icons.upload_file),
                   label: const Text('Import TXT'),
                 ),

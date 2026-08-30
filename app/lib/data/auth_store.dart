@@ -56,22 +56,10 @@ String demoHash(String input) {
 
 class AuthStore extends ChangeNotifier {
   AuthStore._() {
-    users.add(StaffUser(
-      name: 'Admin',
-      email: 'admin@mtek.demo',
-      role: 'admin',
-      passwordHash: demoHash('admin123'),
-      signaturePasscodeHash: demoHash('1234'),
-    ));
-    // CEO is HARDCODED (owner directive 2026-08-30): locked to this email,
-    // never appears in registration — signing in shows CEO at the top.
-    users.add(StaffUser(
-      name: 'CEO',
-      email: AuthStore.ceoEmail,
-      role: 'ceo',
-      passwordHash: demoHash('ceo1234'),
-      signaturePasscodeHash: demoHash('1234'),
-    ));
+    // NO preset accounts (owner directive 2026-08-30): real sign-in happens
+    // against Supabase Auth; the local directory fills from real sign-ins
+    // and real Sign Ups only. The CEO identity is locked via [ceoEmail] and
+    // is never registrable — it signs in with the owner's real credentials.
   }
 
   /// The CEO identity is fixed to this email across the whole system
@@ -92,6 +80,10 @@ class AuthStore extends ChangeNotifier {
   bool get isManagement => isAdmin || isCeo;
 
   String? signIn(String email, String password) {
+    if (users.isEmpty) {
+      return 'No backend configured in this build — sign-in needs the M-TEK'
+          ' Supabase settings. Accounts you create appear here.';
+    }
     final mail = email.trim().toLowerCase();
     final user = users.where((u) => u.email == mail).firstOrNull;
     if (user == null) return 'No account with that email';

@@ -74,10 +74,8 @@ function loadDb() {
     adjustments: seed.adjustments, serials: { ...seed.DEFAULT_SERIALS },
     settings: { ...seed.DEFAULT_SETTINGS },
     users: [{
-      name: 'Admin', email: 'admin@mtek.demo', role: 'admin',
-      passwordHash: hash('admin123'), sigHash: hash('1234'), signaturePng: null,
-    }, {
-      // CEO is hardcoded (NOT registrable): this email always signs in as CEO.
+      // CEO is hardcoded (NOT registrable). NO preset/demo accounts — real
+      // staff accounts are created through Sign Up in the app.
       // Credentials come from backend/.env (mirrors the real Supabase account).
       name: 'CEO', email: 'mtekfiresafetyltd@gmail.com', role: 'ceo',
       passwordHash: hash(CEO_PASSWORD), sigHash: hash(CEO_SIG), signaturePng: null,
@@ -96,11 +94,7 @@ function loadDb() {
     const c = sale && db.customers.find(x => x.id === sale.cust);
     return c ? c.name : '—';
   };
-  db.receiptsIssue = db.txns.map((t, i) => ({
-    no: 'MTK-REC-' + String(i + 1).padStart(9, '0'),
-    d: t.d, amt: Math.abs(t.amt), m: t.m, signed: 'Admin', by: 'Admin',
-    cust: custName(t.ref), for: t.ref,
-  }));
+  db.receiptsIssue = []; // no sample receipts — real ones come from real payments
   persistNow();
 }
 
@@ -160,10 +154,11 @@ function pushTxn(type, amt, m, ref) {
   db.txns.push(t);
   return t;
 }
-function pushReceipt(custName, amt, m, forDoc, signedBy) {
+function pushReceipt(custName, amt, m, forDoc, signedBy, contact) {
   const r = {
     no: 'MTK-REC-' + String(db.serials.receiptIssue = (db.serials.receiptIssue || 0) + 1).padStart(9, '0'),
     d: 'now', amt, m, cust: custName, for: forDoc, by: signedBy, signed: signedBy,
+    contact: String(contact || ''),
   };
   db.receiptsIssue = db.receiptsIssue || [];
   db.receiptsIssue.push(r);
@@ -252,7 +247,7 @@ const routes = {
       cust.balance += total;
     } else {
       txn = pushTxn('sale', total, method, sale.id);
-      receipt = pushReceipt(cust.name, total, method, sale.id, signedBy);
+      receipt = pushReceipt(cust.name, total, method, sale.id, signedBy, body.customer_contact);
     }
     persist();
     return { sale, invoice, receipt, txn, total, products: db.products, customers: db.customers,
@@ -269,7 +264,7 @@ const routes = {
     const cust = db.customers.find(c => c.id === inv.cust);
     if (cust) cust.balance = Math.max(0, cust.balance - bal);
     const txn = pushTxn('invoice', bal, 'transfer', inv.no);
-    const receipt = pushReceipt(cust ? cust.name : '—', bal, 'transfer', inv.no, body.signedBy);
+    const receipt = pushReceipt(cust ? cust.name : '—', bal, 'transfer', inv.no, body.signedBy, cust ? (cust.phone || cust.email) : '');
     persist();
     return { invoice: inv, txn, receipt, customers: db.customers, txns: db.txns };
   },
@@ -305,17 +300,69 @@ const routes = {
     return { customer: c, customers: db.customers };
   },
 
+  'GET /api/mils': () => ({ mils: db.mils }),
+  'POST /api/mils': body => {
+    requireRole(body.email, ['ceo', 'admin'], 'record MILS jobs');
+    if (!body.customer_name || !body.equipment) throw httpErr(400, 'Customer and equipment are required');
+    const doc = {
+      id: 'ML-' + (db.mils.length + 1),
+      customer_name: String(body.customer_name).slice(0, 120),
+      customer_contact: String(body.customer_contact || ''),
+      equipment: String(body.equipment).slice(0, 120),
+      action: String(body.action || 'INSPECTION'),
+      findings: String(body.findings || ''),
+      next_due: String(body.next_due || ''),
+      photos: Array.isArray(body.photos) ? body.photos.slice(0, 12).map(p => String(p).slice(0, 400000)) : [],
+      recorded_by: body.signedBy || '—', created_at: new Date().toISOString(),
+    };
+    if (body.id) {
+      const i = db.mils.findIndex(m => m.id === body.id);
+      if (i === -1) throw httpErr(404, 'MILS record not found');
+      db.mils[i] = { ...db.mils[i], ...doc, id: body.id, created_at: db.mils[i].created_at };
+      persist();
+      return { ok: true, mils: db.mils, doc: db.mils[i] };
+    }
+    db.mils.unshift(doc);
+    persist();
+    return { ok: true, mils: db.mils, doc };
+  },
+
+  'POST /api/products/upsert': body => {
+    requireRole(body.email, ['ceo', 'admin'], 'import products');
+    const rows = Array.isArray(body.products) ? body.products : [];
+    let upserted = 0;
+    for (const r of rows) {
+      if (!r.id || !r.name) continue;
+      const p = {
+        id: String(r.id).slice(0, 20), name: String(r.name).slice(0, 120), cat: r.category || r.cat || 'Fire',
+        cost: Number(r.cost_price ?? r.cost) || 0, price: Number(r.selling_price ?? r.price) || 0,
+        qty: Math.max(0, Math.trunc(Number(r.qty_on_hand ?? r.qty) || 0)),
+        reorder: Math.max(0, Math.trunc(Number(r.reorder_level ?? r.reorder) || 0)),
+        unit: r.unit || 'unit', service: !!r.is_service,
+      };
+      const i = db.products.findIndex(x => x.id === p.id);
+      if (i === -1) db.products.push(p); else db.products[i] = p;
+      upserted++;
+    }
+    persist();
+    return { ok: true, upserted, products: db.products };
+  },
+
   'POST /api/docs/issue': body => {
     // ad-hoc (freehand) documents: Admin/CEO only — Sales issue documents
     // automatically from recorded sales/payments (SPEC §6)
     requireRole(body.email, ['ceo', 'admin'], 'issue freehand documents');
     const type = ['receipt', 'invoice', 'mils', 'waybill', 'deliverynote'].includes(body.type) ? body.type : null;
     if (!type) throw httpErr(400, 'Unknown document type');
+    if (!String(body.contact || '').trim()) {
+      throw httpErr(400, 'Customer phone or email is required on every document');
+    }
     if (!body.signedBy) throw httpErr(403, 'Not signed — document NOT issued');
     const serial = ++db.serials[type];
     const record = {
       type, serial,
       customer: String(body.customer || '—').slice(0, 120),
+      customer_contact: String(body.contact || '').slice(0, 120),
       total: Number(body.total) || 0,
       signedBy: String(body.signedBy).slice(0, 80),
       verifyHash: String(body.hash || '').slice(0, 64),

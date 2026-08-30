@@ -4,7 +4,9 @@ import '../../core/format.dart' as fmt;
 import '../../core/theme.dart';
 import '../../data/models.dart';
 import '../../data/store.dart';
+import '../../documents/doc_models.dart';
 import '../widgets.dart';
+import 'generator_screen.dart';
 
 /// MILS — Maintenance Information Log Sheet.
 /// Per-equipment service records with next-due tracking & overdue alerts.
@@ -45,7 +47,10 @@ class _MilsScreenState extends State<MilsScreen> {
                 '${store.milsLogs.length} service records · $overdueCount overdue',
             actions: [
               FilledButton.icon(
-                onPressed: () {},
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const GeneratorScreen(initialType: DocType.mils)),
+                ),
                 icon: const Icon(Icons.add_task),
                 label: const Text('Log service'),
               ),
@@ -123,6 +128,39 @@ class _MilsScreenState extends State<MilsScreen> {
     );
   }
 
+  Future<void> _attachPhotos(BuildContext context, MaintenanceLog l) async {
+    final store = AppStore.instance;
+    final result = await pickMilsPhotos();
+    if (result == null || result.isEmpty) return;
+    await store.attachMilsPhotos(l.id, result);
+    if (context.mounted) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          backgroundColor: Mtek.success,
+          content: Text('${result.length} photo(s) attached to ${l.id}.')));
+    }
+  }
+
+  Widget _photosStrip(MaintenanceLog l) {
+    final photos = AppStore.instance.milsPhotos[l.id] ?? const <String>[];
+    if (photos.isEmpty) {
+      return const Text('No site photos yet — use Photos to attach real ones.',
+          style: TextStyle(fontSize: 11.5, color: Mtek.gray500));
+    }
+    return SizedBox(
+      height: 64,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: photos.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (context, i) => ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: MilsPhotoImage(dataUrl: photos[i], size: 64),
+        ),
+      ),
+    );
+  }
+
   void _detail(BuildContext context, MaintenanceLog l) {
     showModalBottomSheet<void>(
       context: context,
@@ -147,10 +185,24 @@ class _MilsScreenState extends State<MilsScreen> {
             Wrap(
               spacing: 10,
               children: [
-                OutlinedButton.icon(onPressed: () {}, icon: const Icon(Icons.request_quote_outlined, size: 18), label: const Text('Invoice this job')),
-                OutlinedButton.icon(onPressed: () {}, icon: const Icon(Icons.photo_camera_outlined, size: 18), label: const Text('Photos (M3)')),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    Navigator.push(context, MaterialPageRoute(
+                        builder: (_) => const GeneratorScreen(initialType: DocType.invoice)));
+                  },
+                  icon: const Icon(Icons.request_quote_outlined, size: 18),
+                  label: const Text('Invoice this job'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: () => _attachPhotos(context, l),
+                  icon: const Icon(Icons.photo_camera_outlined, size: 18),
+                  label: const Text('Photos'),
+                ),
               ],
             ),
+            const SizedBox(height: 10),
+            _photosStrip(l),
           ],
         ),
       ),

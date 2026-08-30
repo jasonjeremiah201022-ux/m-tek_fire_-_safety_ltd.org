@@ -104,7 +104,6 @@ class _LoginScreenState extends State<LoginScreen> {
           child: const Text('Create an account →'),
         ),
         const SizedBox(height: 6),
-        const Text('Demo: admin@mtek.demo · admin123', textAlign: TextAlign.center, style: TextStyle(fontSize: 11.5, color: Mtek.gray400)),
       ],
     );
   }

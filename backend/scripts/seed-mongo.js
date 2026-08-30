@@ -27,7 +27,7 @@ if (!env.MONGODB_URI) { console.error('✗ MONGODB_URI missing in backend/.env')
 if (!CEO_UID || !CEO_SIG) { console.error('✗ MTEK_CEO_UID / MTEK_CEO_SIG missing in backend/.env'); process.exit(1); }
 
 const hashPass = (secret, salt) =>
-  crypto.scryptSync(String(salt) + String(secret), 'mtek-store-salt', 32).toString('hex');
+  crypto.createHmac('sha512', 'mtek-store-salt').update(String(salt) + String(secret)).digest('hex');
 
 const seed = require('../../preview/seed-data.js');
 

@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:printing/printing.dart';
 
 import 'package:flutter/foundation.dart' show base64Decode;
 
@@ -9,6 +10,10 @@ import '../../core/theme.dart';
 import '../../data/auth_store.dart';
 import '../../data/models.dart';
 import '../../data/store.dart';
+import '../../documents/doc_models.dart';
+import '../../documents/pdf_painters.dart';
+import '../../documents/pdf_shared.dart';
+import '../../documents/share_service.dart';
 import '../widgets.dart';
 
 Uint8List? _signatureImage(String signerName) {
@@ -71,7 +76,7 @@ class ReceiptsScreen extends StatelessWidget {
                               AmountText(r.amount),
                               const SizedBox(width: 12),
                               IconButton(
-                                tooltip: 'Preview PDF (M4)',
+                                tooltip: 'Preview PDF',
                                 icon: const Icon(Icons.picture_as_pdf_outlined, color: Mtek.brand600),
                                 onPressed: () => _preview(context, r),
                               ),
@@ -161,7 +166,7 @@ class ReceiptsScreen extends StatelessWidget {
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: () {},
+                      onPressed: () => _sendReceipt(context, r),
                       icon: const Icon(Icons.chat_outlined, size: 18),
                       label: const Text('WhatsApp'),
                     ),
@@ -169,7 +174,7 @@ class ReceiptsScreen extends StatelessWidget {
                   const SizedBox(width: 10),
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: () {},
+                      onPressed: () => _sendReceipt(context, r),
                       icon: const Icon(Icons.mail_outline, size: 18),
                       label: const Text('Email'),
                     ),
@@ -177,7 +182,7 @@ class ReceiptsScreen extends StatelessWidget {
                   const SizedBox(width: 10),
                   Expanded(
                     child: FilledButton.icon(
-                      onPressed: () {},
+                      onPressed: () => _printReceipt(context, r),
                       icon: const Icon(Icons.print_outlined, size: 18),
                       label: const Text('Print'),
                     ),
@@ -188,6 +193,66 @@ class ReceiptsScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  /// Builds the REAL receipt PDF bytes (branded, signed) and hands the file
+  /// to the OS share sheet — never pre-filled text (owner directive).
+  Future<void> _sendReceipt(BuildContext context, Receipt r) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final bytes = await _receiptBytes(context, r);
+      final filename = r.number.toLowerCase().replaceAll('_', '-') +
+          '_${DateTime.now().millisecondsSinceEpoch}.pdf';
+      final outcome = await dispatchPdf(bytes: bytes, filename: filename);
+      messenger.showSnackBar(SnackBar(
+        backgroundColor: outcome.result == ShareResult.failed ? Mtek.danger : Mtek.success,
+        content: Text(outcome.message),
+      ));
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(
+          backgroundColor: Mtek.danger,
+          content: Text('Could not build the PDF: $e')));
+    }
+  }
+
+  /// Opens the system print dialog on the real receipt PDF.
+  Future<void> _printReceipt(BuildContext context, Receipt r) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final bytes = await _receiptBytes(context, r);
+      await Printing.layoutPdf(onLayout: (_) async => bytes);
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(
+          backgroundColor: Mtek.danger,
+          content: Text('Could not build the PDF: $e')));
+    }
+  }
+
+  Future<Uint8List> _receiptBytes(BuildContext context, Receipt r) async {
+    final logo = await DefaultAssetBundle.of(context).load('assets/branding/logo.png');
+    final doc = ReceiptDocState()
+      ..serial = int.tryParse(r.number.replaceAll(RegExp(r'\D'), '')) ?? 0
+      ..name = r.customer.name
+      ..address = r.customer.address
+      ..phone = r.customer.phone
+      ..customerEmail = r.customer.email
+      ..amount = r.amount.toDouble()
+      ..beingPaymentFor = r.forDoc
+      ..method = MethodIcon.label(r.method)
+      ..date = r.date
+      ..customerSignature = r.customerSignature;
+    return buildDocument(
+      GeneratedDoc.receipt,
+      logoBytes: logo.buffer.asUint8List(),
+      receipt: doc,
+      invoice: null,
+      mils: null,
+      waybill: null,
+      deliveryNote: null,
+      signedBy: r.signedBy,
+      signaturePngBytes: _signatureImage(r.signedBy),
+      customerSignaturePngBytes: dataUrlToBytes(r.customerSignature),
     );
   }
 

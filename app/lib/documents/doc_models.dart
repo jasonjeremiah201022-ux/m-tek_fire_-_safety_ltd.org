@@ -15,6 +15,7 @@ enum DocType { receipt, invoice, mils, waybill, deliveryNote }
 class WaybillDocState {
   int? serial;
   String milsNo = '', receiptNo = '', invoiceNo = '', lpoNo = '';
+  String customerEmail = ''; // contact rule: phone OR email is required
   String name = '', address = '', phone = '';
   String originatingFrom =
       'HEAD OFFICE: YY 12, Kazaure Road, By Lagos Street Round About, Kaduna';
@@ -42,6 +43,7 @@ class WaybillRow {
 /// Ordered / Delivered / Outstanding columns — no prices.
 class DeliveryNoteDocState {
   int? serial;
+  String customerEmail = ''; // contact rule: phone OR email is required
   String customerName = '', institution = '', address = '', phone = '';
   String location = '', receiver = '', receiverNo = '', receiverSignature = '';
   DateTime orderDate = DateTime.now();
@@ -73,6 +75,7 @@ class ReceiptDocState {
   String irn = '';
   String name = '';
   String address = '';
+  String customerEmail = ''; // contact rule: phone OR email is required
   String phone = '';
   double amount = 0;
   String beingPaymentFor = '';
@@ -90,6 +93,7 @@ class InvoiceDocState {
   String variant = 'SALES INVOICE'; // WAY BILL | PRO-FORMER | SERVICE INVOICE | SALES INVOICE
   bool showMilsNo = false, showReceiptNo = false;
   String milsNo = '', receiptNo = '', lpoNo = '';
+  String customerEmail = ''; // contact rule: phone OR email is required
   String name = '', address = '', phone = '';
   DateTime date = DateTime.now();
   String customerSignature = ''; // data URL — customer assent on the device
@@ -107,6 +111,7 @@ class InvoiceDocState {
 }
 
 class MilsDocState {
+  String customerEmail = ''; // contact rule: phone OR email is required
   int? serial;
   DateTime entryDate = DateTime.now();
   DateTime collectionDate = DateTime.now().add(const Duration(days: 7));

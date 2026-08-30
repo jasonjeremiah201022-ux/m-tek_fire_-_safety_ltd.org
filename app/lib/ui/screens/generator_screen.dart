@@ -230,7 +230,7 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
 
   // ---------- RECEIPT ----------
 
-  final _rName = TextEditingController(), _rAddr = TextEditingController(), _rPhone = TextEditingController(),
+  final _rName = TextEditingController(), _rAddr = TextEditingController(), _rPhone = TextEditingController(), _rEmail = TextEditingController(),
       _rAmount = TextEditingController(), _rFor = TextEditingController(), _rIrn = TextEditingController();
 
   List<Widget> _receiptForm() {
@@ -239,7 +239,8 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
       _field(_rIrn, 'IRN (Invoice Reference Number)', onChanged: (v) => _receipt.irn = v),
       _field(_rName, 'Customer name *', onChanged: (v) => _receipt.name = v),
       _field(_rAddr, 'Address', onChanged: (v) => _receipt.address = v),
-      _field(_rPhone, 'Phone No.', keyboard: TextInputType.phone, onChanged: (v) => _receipt.phone = v),
+      _field(_rPhone, 'Phone No. or Email (to send the PDF) *', keyboard: TextInputType.phone, onChanged: (v) => _receipt.phone = v),
+      _field(_rEmail, 'Email (optional if phone given)', keyboard: TextInputType.emailAddress, onChanged: (v) => _receipt.customerEmail = v),
       _field(_rFor, 'Being Payment for', hint: 'e.g. Refill of 24 × 6kg extinguishers', onChanged: (v) => _receipt.beingPaymentFor = v),
       _field(_rAmount, 'The Sum of (₦) *', keyboard: const TextInputType.numberWithOptions(decimal: true),
           onChanged: (v) => setState(() => _receipt.amount = double.tryParse(v) ?? 0)),
@@ -267,7 +268,7 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
 
   // ---------- INVOICE ----------
 
-  final _iName = TextEditingController(), _iAddr = TextEditingController(), _iPhone = TextEditingController(),
+  final _iName = TextEditingController(), _iAddr = TextEditingController(), _iPhone = TextEditingController(), _iEmail = TextEditingController(),
       _iMils = TextEditingController(), _iRec = TextEditingController(), _iLpo = TextEditingController(),
       _iAdvance = TextEditingController();
 
@@ -306,7 +307,8 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
       _field(_iLpo, 'L.P.O. No', onChanged: (v) => _invoice.lpoNo = v),
       _field(_iName, 'Customer name *', onChanged: (v) => _invoice.name = v),
       _field(_iAddr, 'Address', onChanged: (v) => _invoice.address = v),
-      _field(_iPhone, 'Phone No.', keyboard: TextInputType.phone, onChanged: (v) => _invoice.phone = v),
+      _field(_iPhone, 'Phone No. or Email (to send the PDF) *', keyboard: TextInputType.phone, onChanged: (v) => _invoice.phone = v),
+      _field(_iEmail, 'Email (optional if phone given)', keyboard: TextInputType.emailAddress, onChanged: (v) => _invoice.customerEmail = v),
       const SizedBox(height: 6),
       const Text('ITEMISED LEDGER', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1, color: Mtek.gray500)),
       ..._invoiceFormRows(),
@@ -381,7 +383,7 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
 
   // ---------- MILS ----------
 
-  final _mName = TextEditingController(), _mAddr = TextEditingController(), _mPhone = TextEditingController(),
+  final _mName = TextEditingController(), _mAddr = TextEditingController(), _mPhone = TextEditingController(), _mEmail = TextEditingController(),
       _mInvoiceNo = TextEditingController(), _mReceiptNo = TextEditingController(), _mLpo = TextEditingController(),
       _mAdvance = TextEditingController();
 
@@ -427,7 +429,8 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
       const SizedBox(height: 10),
       _field(_mName, "Customer's Name *", onChanged: (v) => _mils.name = v),
       _field(_mAddr, 'Address', onChanged: (v) => _mils.address = v),
-      _field(_mPhone, 'Phone Number', keyboard: TextInputType.phone, onChanged: (v) => _mils.phone = v),
+      _field(_mPhone, 'Phone Number or Email (to send the PDF) *', keyboard: TextInputType.phone, onChanged: (v) => _mils.phone = v),
+      _field(_mEmail, 'Email (optional if phone given)', keyboard: TextInputType.emailAddress, onChanged: (v) => _mils.customerEmail = v),
       const SizedBox(height: 6),
       _summaryTile('Subtotal', fmt.naira(_mils.subtotal)),
       _summaryTile('VAT', fmt.naira(_mils.vat)),
@@ -531,7 +534,7 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
 
   // ---------- WAYBILL ----------
 
-  final _wbName = TextEditingController(), _wbAddr = TextEditingController(), _wbPhone = TextEditingController(),
+  final _wbName = TextEditingController(), _wbAddr = TextEditingController(), _wbPhone = TextEditingController(), _wbEmail = TextEditingController(),
       _wbDest = TextEditingController(), _wbFrom = TextEditingController(), _wbMils = TextEditingController(),
       _wbRec = TextEditingController(), _wbInv = TextEditingController(), _wbLpo = TextEditingController(),
       _wbDriver = TextEditingController(), _wbDriverPhone = TextEditingController(), _wbVehicle = TextEditingController(),
@@ -553,7 +556,8 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
       ]),
       _field(_wbName, "Buyer's name *", onChanged: (v) => _waybill.name = v),
       _field(_wbAddr, 'Address', onChanged: (v) => _waybill.address = v),
-      _field(_wbPhone, 'Phone no.', keyboard: TextInputType.phone, onChanged: (v) => _waybill.phone = v),
+      _field(_wbPhone, 'Phone no. or Email (to send the PDF) *', keyboard: TextInputType.phone, onChanged: (v) => _waybill.phone = v),
+      _field(_wbEmail, 'Email (optional if phone given)', keyboard: TextInputType.emailAddress, onChanged: (v) => _waybill.customerEmail = v),
       const SizedBox(height: 6),
       const Text('ITEMS — PRODUCTS / TECH. SPEC / BRAND / QTY',
           style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1, color: Mtek.gray500)),
@@ -632,7 +636,7 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
   // ---------- DELIVERY NOTE ----------
 
   final _dnName = TextEditingController(), _dnInst = TextEditingController(), _dnAddr = TextEditingController(),
-      _dnPhone = TextEditingController(), _dnLoc = TextEditingController(), _dnReceiver = TextEditingController(),
+      _dnPhone = TextEditingController(), _dnEmail = TextEditingController(), _dnLoc = TextEditingController(), _dnReceiver = TextEditingController(),
       _dnReceiverNo = TextEditingController(), _dnProforma = TextEditingController(), _dnCustId = TextEditingController(),
       _dnDispatch = TextEditingController(), _dnMethod = TextEditingController(), _dnAcctNo = TextEditingController(),
       _dnAcctName = TextEditingController(), _dnBanker = TextEditingController(), _dnSummary = TextEditingController();
@@ -643,7 +647,8 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
       _field(_dnName, "Customer's name *", onChanged: (v) => _deliveryNote.customerName = v),
       _field(_dnInst, 'Institution', onChanged: (v) => _deliveryNote.institution = v),
       _field(_dnAddr, 'Address', onChanged: (v) => _deliveryNote.address = v),
-      _field(_dnPhone, 'Phone no.', keyboard: TextInputType.phone, onChanged: (v) => _deliveryNote.phone = v),
+      _field(_dnPhone, 'Phone no. or Email (to send the PDF) *', keyboard: TextInputType.phone, onChanged: (v) => _deliveryNote.phone = v),
+      _field(_dnEmail, 'Email (optional if phone given)', keyboard: TextInputType.emailAddress, onChanged: (v) => _deliveryNote.customerEmail = v),
       const SizedBox(height: 6),
       const Text('SHIPPING ADDRESS',
           style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1, color: Mtek.gray500)),
@@ -757,12 +762,26 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
   // ---------- validation → signature → PDF → share ----------
 
   Future<void> _generate() async {
+    String? contactError(String phone, String email) =>
+        (phone.trim().isEmpty && email.trim().isEmpty)
+            ? 'Add the customer\u2019s phone or email \u2014 the PDF is sent to them.'
+            : null;
     final err = switch (_type) {
-      DocType.receipt => _receipt.valid ? null : 'Customer name and a valid amount are required.',
-      DocType.invoice => _invoice.valid ? null : 'Customer name and at least one line item (description + amount) are required.',
-      DocType.mils => _mils.valid ? null : "Customer's name and at least one weight entry or component are required.",
-      DocType.waybill => _waybill.valid ? null : "Buyer's name, destination and at least one product are required.",
-      DocType.deliveryNote => _deliveryNote.valid ? null : "Customer's name and at least one item description are required.",
+      DocType.receipt => _receipt.valid
+          ? contactError(_receipt.phone, _receipt.customerEmail)
+          : 'Customer name and a valid amount are required.',
+      DocType.invoice => _invoice.valid
+          ? contactError(_invoice.phone, _invoice.customerEmail)
+          : 'Customer name and at least one line item (description + amount) are required.',
+      DocType.mils => _mils.valid
+          ? contactError(_mils.phone, _mils.customerEmail)
+          : "Customer's name and at least one weight entry or component are required.",
+      DocType.waybill => _waybill.valid
+          ? contactError(_waybill.phone, _waybill.customerEmail)
+          : "Buyer's name, destination and at least one product are required.",
+      DocType.deliveryNote => _deliveryNote.valid
+          ? contactError(_deliveryNote.phone, _deliveryNote.customerEmail)
+          : "Customer's name and at least one item description are required.",
     };
     setState(() => _errors[_type] = err);
     if (err != null) return;
@@ -800,6 +819,13 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
       DocType.waybill => 0.0,
       DocType.deliveryNote => 0.0,
     };
+    final contact = switch (_type) {
+      DocType.receipt => _receipt.phone.trim().isNotEmpty ? _receipt.phone.trim() : _receipt.customerEmail.trim(),
+      DocType.invoice => _invoice.phone.trim().isNotEmpty ? _invoice.phone.trim() : _invoice.customerEmail.trim(),
+      DocType.mils => _mils.phone.trim().isNotEmpty ? _mils.phone.trim() : _mils.customerEmail.trim(),
+      DocType.waybill => _waybill.phone.trim().isNotEmpty ? _waybill.phone.trim() : _waybill.customerEmail.trim(),
+      DocType.deliveryNote => _deliveryNote.phone.trim().isNotEmpty ? _deliveryNote.phone.trim() : _deliveryNote.customerEmail.trim(),
+    };
     final int serial;
     try {
       serial = await AppStore.instance.nextDocSerial(
@@ -807,6 +833,7 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
         customer: customer,
         total: docTotal,
         passcode: AuthStore.instance.lastVerifiedPasscode ?? '',
+        contact: contact,
       );
     } catch (e) {
       if (!mounted) return;
@@ -864,11 +891,7 @@ class _GeneratorScreenState extends State<GeneratorScreen> {
       serverIssued: Env.backendConfigured,
     );
 
-    final outcome = await dispatchPdf(
-      bytes: bytes,
-      filename: filename,
-      message: shareMessage(docLabel: docLabel, serial: serial, customerName: customer),
-    );
+    final outcome = await dispatchPdf(bytes: bytes, filename: filename);
 
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(

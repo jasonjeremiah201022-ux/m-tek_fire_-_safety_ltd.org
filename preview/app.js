@@ -184,7 +184,7 @@ const SUBTITLES = {
   mils: 'Maintenance Information Log Sheet — next-due tracking',
   sales: 'Pick items — stock & receipts update automatically',
   stock: 'Quantities, prices, low-stock alerts, audit trail',
-  summary: 'Business report — export or share as PDF (M4)',
+  summary: 'Business report — print or share as PDF',
   docs: 'Write up a Receipt, Invoice, MILS sheet, Waybill or Delivery Note — PDF mirrors your paper books',
   settings: 'Company profile, VAT, watermark & document serial counters',
 };
@@ -210,12 +210,12 @@ function render() {
 
 function routeButtons() {
   if (route === 'customers') return `<button class="btn primary" onclick="newCustomer()">＋ New customer</button>`;
-  if (route === 'invoices') return `<button class="btn primary" onclick="toast('New invoice — full builder arrives in M2')">＋ New invoice</button>`;
-  if (route === 'mils') return `<button class="btn primary" onclick="toast('MILS entry form — M2 (stored as Mongo documents in M3)')">＋ Log service</button>`;
+  if (route === 'invoices') return `<button class="btn primary" onclick="go('docs');setDocsTab('invoice')">＋ New invoice</button>`;
+  if (route === 'mils') return `<button class="btn primary" onclick="logService()">Log service</button>`;
   if (route === 'stock') return (sessionUser && ['ceo', 'admin'].includes(sessionUser.role))
-    ? `<button class="btn ghost" onclick="toast('Opens the products_seed.txt importer in M2')">Import TXT</button>` : '';
-  if (route === 'summary') return `<button class="btn ghost" onclick="toast('PDF export & share — Milestone M4')">Export PDF</button>`;
-  if (route === 'docs') return `<button class="btn ghost" onclick="toast('Serial counters are CEO-seedable in Settings — every book starts at 000000001')">Serials</button>`;
+    ? `<button class="btn ghost" onclick="importTxt()">Import TXT</button>` : '';
+  if (route === 'summary') return `<button class="btn ghost" onclick="exportSummaryPdf()">Export PDF</button>`;
+  if (route === 'docs') return `<button class="btn ghost" onclick="go('settings')">Serials</button>`;
   return '';
 }
 
@@ -415,11 +415,11 @@ window.receiptPreview = no => {
     <div class="stamp">✓ Digitally signed by ${r.signed || r.by} — ${r.d} · 2026
     </div>
     ${(users.find(u => u.name === (r.signed || r.by)) || {}).signaturePng ? `<img class="stamp" src="${users.find(u => u.name === (r.signed || r.by)).signaturePng}" style="margin:4px 0 8px">` : ''}
-    <div style="font-size:11px;color:var(--gray-500)">Issued by: ${r.by} — thank you for your business. VAT configurable per document (M2 setting).</div>
+    <div style="font-size:11px;color:var(--gray-500)">Issued by: ${r.by} — thank you for your business.</div>
     <div style="display:flex;gap:8px;margin-top:16px">
-      <button class="btn ghost sm" style="flex:1" onclick="toast('Sharing via wa.me — wired in M4')">WhatsApp</button>
-      <button class="btn ghost sm" style="flex:1" onclick="toast('mailto: share — wired in M4')">Email</button>
-      <button class="btn primary sm" style="flex:1" onclick="toast('Print dialog — wired in M4')">Print</button>
+      <button class="btn ghost sm" style="flex:1" onclick="shareReceiptPdf('${r.no}', 'whatsapp')">WhatsApp</button>
+      <button class="btn ghost sm" style="flex:1" onclick="shareReceiptPdf('${r.no}', 'email')">Email</button>
+      <button class="btn primary sm" style="flex:1" onclick="printReceipt('${r.no}')">Print</button>
     </div>`);
 };
 
@@ -515,7 +515,7 @@ window.milsDetail = id => {
     <div class="kv"><b>Next due</b><span>${l.next} ${l.overdue ? '— OVERDUE' : ''}</span></div>
     <div style="display:flex;gap:8px;margin-top:14px">
       <button class="btn ghost sm" onclick="closeModal();route='invoices';render();toast('Link a MILS job to an invoice — M2')">${icSvg('quote', 14)} Invoice this job</button>
-      <button class="btn ghost sm" onclick="toast('Site photos stored in Mongo/GridFS — M3')">Photos (M3)</button>
+      <button class="btn ghost sm" onclick="addMilsPhotos('${l.id}')">Photos</button>
     </div>`);
 };
 
@@ -795,11 +795,10 @@ function renderAuth(mode = 'login') {
         <div class="co">M-TEK FIRE &amp; SAFETY LTD</div>
         <div class="sub">${mode === 'login' ? 'Sign in to your workspace' : 'Create your account'}</div>
         ${mode === 'login' ? `
-          <label>Email</label><input id="a-email" type="email" placeholder="you@mtek…" value="admin@mtek.demo">
+          <label>Email</label><input id="a-email" type="email" placeholder="you@mtek…">
           <label>Password</label><input id="a-pass" type="password" placeholder="••••••••">
           <button class="btn primary" style="width:100%;justify-content:center;margin-top:18px" onclick="doLogin()">Sign in</button>
           <button class="linkbtn" onclick="renderAuth('signup')">Create an account →</button>
-          <div class="auth-demo">Demo: admin@mtek.demo · admin123</div>
         ` : `
           <label>Full name</label><input id="a-name" placeholder="e.g. Ibrahim Kabeer">
           <label>Email</label><input id="a-email" type="email" placeholder="you@mtek…">
@@ -952,6 +951,7 @@ window.nextSerial = async type => {
       : docsTab === 'mils' ? docState.mils.name
       : docsTab === 'waybill' ? docState.waybill.name
       : docState.deliverynote.name,
+    contact: (docState[docsTab].phone || docState[docsTab].email || '').trim(),
     total: docsTab === 'receipt' ? docState.receipt.amount
       : docsTab === 'invoice' ? invGrand()
       : docsTab === 'mils' ? milsSub() * 1.075
@@ -969,14 +969,14 @@ const nairaWords = n => {
 
 // form state (persists per type in-session, like the Flutter generators)
 const docState = {
-  receipt: { irn: '', name: '', addr: '', phone: '', forWhat: '', amount: 0, method: 'Cash' },
-  invoice: { variant: 'SALES INVOICE', name: '', addr: '', phone: '', lpo: '', milsRef: false, recRef: false, milsNo: '', recNo: '', advance: 0, vatOn: true, rows: [{ d: '', q: 1, r: 0 }] },
-  mils: { name: '', addr: '', phone: '', lpo: '', inv: '', rec: '', weights: {}, comps: {}, compsRate: {}, advance: 0 },
-  waybill: { milsNo: '', recNo: '', invNo: '', lpoNo: '', name: '', addr: '', phone: '',
+  receipt: { irn: '', name: '', addr: '', phone: '', email: '', forWhat: '', amount: 0, method: 'Cash' },
+  invoice: { variant: 'SALES INVOICE', name: '', addr: '', phone: '', email: '', lpo: '', milsRef: false, recRef: false, milsNo: '', recNo: '', advance: 0, vatOn: true, rows: [{ d: '', q: 1, r: 0 }] },
+  mils: { name: '', addr: '', phone: '', email: '', lpo: '', inv: '', rec: '', weights: {}, comps: {}, compsRate: {}, advance: 0 },
+  waybill: { milsNo: '', recNo: '', invNo: '', lpoNo: '', name: '', addr: '', phone: '', email: '',
              from: 'HEAD OFFICE: YY12, Kazaure Road, By Lagos Street Round About, Kaduna',
              dest: '', driver: '', driverPhone: '', vehicle: '', plate: '', colour: '',
              receiver: '', receiverPhone: '', rows: [{ d: '', spec: '', brand: '', q: '' }] },
-  deliverynote: { name: '', institution: '', addr: '', phone: '', loc: '', receiver: '',
+  deliverynote: { name: '', institution: '', addr: '', phone: '', email: '', loc: '', receiver: '',
                   receiverNo: '', orderDate: '', proforma: '', custId: '', dispatch: '',
                   dmethod: '', acctNo: '', acctName: '', banker: '', summary: '',
                   rows: [{ d: '', ordered: '', delivered: '', outstanding: '' }] },
@@ -1019,7 +1019,8 @@ function docsReceipt() {
       <input class="f-in" placeholder="IRN (Invoice Reference Number)" value="${d.irn}" oninput="docState.receipt.irn=this.value">
       <input class="f-in" placeholder="Customer name *" value="${d.name}" oninput="docState.receipt.name=this.value">
       <input class="f-in" placeholder="Address" value="${d.addr}" oninput="docState.receipt.addr=this.value">
-      <input class="f-in" placeholder="Phone No." value="${d.phone}" oninput="docState.receipt.phone=this.value">
+      <input class="f-in" placeholder="Phone No. or Email (for sending the PDF) *" value="${d.phone}" oninput="docState.receipt.phone=this.value">
+      <input class="f-in" placeholder="Email (optional if phone given)" value="${d.email}" oninput="docState.receipt.email=this.value">
       <input class="f-in" placeholder="Being Payment for" value="${d.forWhat}" oninput="docState.receipt.forWhat=this.value">
       <input class="f-in" placeholder="The Sum of (₦) *" type="number" value="${d.amount || ''}" oninput="docState.receipt.amount=parseFloat(this.value)||0;this.closest('.card').querySelector('.sumwords').textContent=docState.receipt.amount?'₦'+docState.receipt.amount.toLocaleString()+' — '+nairaWords(docState.receipt.amount):'—'">
       <div class="frow" style="margin-top:4px">
@@ -1048,7 +1049,8 @@ function docsInvoice() {
       <input class="f-in" placeholder="L.P.O. No" value="${d.lpo}" oninput="docState.invoice.lpo=this.value">
       <input class="f-in" placeholder="Customer name *" value="${d.name}" oninput="docState.invoice.name=this.value">
       <input class="f-in" placeholder="Address" value="${d.addr}" oninput="docState.invoice.addr=this.value">
-      <input class="f-in" placeholder="Phone No." value="${d.phone}" oninput="docState.invoice.phone=this.value">
+      <input class="f-in" placeholder="Phone No. or Email (for sending the PDF) *" value="${d.phone}" oninput="docState.invoice.phone=this.value">
+      <input class="f-in" placeholder="Email (optional if phone given)" value="${d.email}" oninput="docState.invoice.email=this.value">
     </div>
     <div class="card form-card">
       <div class="fc-t">ITEMISED LEDGER</div>
@@ -1121,7 +1123,8 @@ function docsMils() {
       <div class="fc-t">CUSTOMER & BILL</div>
       <input class="f-in" placeholder="Customer's Name *" value="${d.name}" oninput="docState.mils.name=this.value">
       <input class="f-in" placeholder="Address" value="${d.addr}" oninput="docState.mils.addr=this.value">
-      <input class="f-in" placeholder="Phone Number" value="${d.phone}" oninput="docState.mils.phone=this.value">
+      <input class="f-in" placeholder="Phone Number or Email (for sending the PDF) *" value="${d.phone}" oninput="docState.mils.phone=this.value">
+      <input class="f-in" placeholder="Email (optional if phone given)" value="${d.email}" oninput="docState.mils.email=this.value">
       <input class="f-in" placeholder="Advance Payment (₦) — min 50% by policy" type="number" value="${d.advance || ''}" oninput="docState.mils.advance=parseFloat(this.value)||0;updateMilsTotals()">
       <div class="summary-tile"><span class="l">Subtotal</span><span class="v" id="mils-sub">₦${milsSub().toLocaleString()}</span></div>
       <div class="summary-tile"><span class="l">VAT</span><span class="v" id="mils-vat">₦${(milsSub() * 0.075).toLocaleString()}</span></div>
@@ -1149,7 +1152,8 @@ function docsWaybill() {
     <div class="card form-card">
       <div class="fc-t">BUYER</div>
       <input class="f-in" placeholder="Buyer's name *" value="${d.name}" oninput="docState.waybill.name=this.value">
-      <input class="f-in" placeholder="Phone no." value="${d.phone}" oninput="docState.waybill.phone=this.value">
+      <input class="f-in" placeholder="Phone no. or Email (for sending the PDF) *" value="${d.phone}" oninput="docState.waybill.phone=this.value">
+      <input class="f-in" placeholder="Email (optional if phone given)" value="${d.email}" oninput="docState.waybill.email=this.value">
       <input class="f-in" placeholder="Address" value="${d.addr}" oninput="docState.waybill.addr=this.value">
     </div>
     <div class="card form-card">
@@ -1194,7 +1198,8 @@ function docsDeliveryNote() {
       <input class="f-in" placeholder="Customer's name *" value="${d.name}" oninput="docState.deliverynote.name=this.value">
       <input class="f-in" placeholder="Institution" value="${d.institution}" oninput="docState.deliverynote.institution=this.value">
       <input class="f-in" placeholder="Address" value="${d.addr}" oninput="docState.deliverynote.addr=this.value">
-      <input class="f-in" placeholder="Phone no." value="${d.phone}" oninput="docState.deliverynote.phone=this.value">
+      <input class="f-in" placeholder="Phone no. or Email (for sending the PDF) *" value="${d.phone}" oninput="docState.deliverynote.phone=this.value">
+      <input class="f-in" placeholder="Email (optional if phone given)" value="${d.email}" oninput="docState.deliverynote.email=this.value">
     </div>
     <div class="card form-card">
       <div class="fc-t">SHIPPING ADDRESS</div>
@@ -1237,6 +1242,7 @@ function docsDeliveryNote() {
 window.generateDoc = () => {
   const t = docsTab;
   const d = docState[t];
+  if (!(d.phone || '').trim() && !(d.email || '').trim()) return toast('Add the customer\u2019s phone or email \u2014 the PDF is sent to them');
   if (t === 'receipt' && (!d.name || !d.amount)) return toast('Fill customer name and amount first');
   if (t === 'invoice' && (!d.name || !d.rows.some(r => r.d && r.r))) return toast('Fill customer name and at least one line item');
   if (t === 'mils' && (!d.name || (!Object.values(d.weights).some(q => q > 0) && !Object.values(d.comps).some(q => q > 0)))) return toast("Fill customer's name and at least one weight entry or component");
@@ -1261,6 +1267,7 @@ async function showDocPreview(t) {
       <div class="ds-field"><b>Name:</b>${d.name}</div>
       <div class="ds-field"><b>Address:</b>${d.addr || '—'}</div>
       <div class="ds-field"><b>Phone No.</b>${d.phone || '—'}</div>
+      ${d.email ? `<div class="ds-field"><b>Email</b>${d.email}</div>` : ''}
       <div class="ds-field"><b>The Sum of</b>${nairaWords(d.amount)}</div>
       <div class="ds-field"><b>Being Payment for</b>${d.forWhat || '—'}</div>
       <div class="frow" style="margin:8px 0">
@@ -1365,12 +1372,168 @@ async function showDocPreview(t) {
       <div class="ds-signed">✓ Digitally signed by ${u ? u.name : ''} · ${new Date().toLocaleString('en-GB')} ${sigImg}<span style="margin-left:auto;font-size:9px;color:var(--gray-500)">QR verification hash on PDF</span></div>
     </div>
     <div style="display:flex;gap:8px;margin-top:14px">
-      <button class="btn ghost sm" style="flex:1" onclick="toast('Pre-formatted message + PDF → WhatsApp (native share sheet in the app)')">WhatsApp</button>
-      <button class="btn ghost sm" style="flex:1" onclick="toast('Pre-formatted message + PDF → Email (native share sheet in the app)')">Email</button>
-      <button class="btn primary sm" style="flex:1" onclick="toast('Saved as mtek_${t}_${serial}_[timestamp].pdf · share sheet opens (real file in the app/PWA)')">⤓ PDF + Share</button>
+      <button class="btn ghost sm" style="flex:1" onclick="shareDocPdf('${t}', ${serial}, 'whatsapp')">WhatsApp</button>
+      <button class="btn ghost sm" style="flex:1" onclick="shareDocPdf('${t}', ${serial}, 'email')">Email</button>
+      <button class="btn primary sm" style="flex:1" onclick="printDocPdf('${t}', ${serial})">PDF + Print</button>
     </div>`);
   toast(`Document No: ${serial} signed & issued — serial continues the paper book.`, 'success');
 }
+
+// =====================================================================
+// REAL ACTIONS — PDF file share (no pre-filled text), printing, MILS
+// logging, product import, contact capture. (owner directive 2026-08-30)
+// =====================================================================
+window.shareReceiptPdf = async (no, channel) => {
+  const r = receipts.find(x => x.no === no);
+  if (!r) return toast('Receipt not found');
+  const byName = Object.values(C).find(c => c.name === r.cust);
+  const contact = r.contact || (byName && (byName.phone || byName.email)) || '';
+  const file = MtekPdf.build('receipt', {
+    serial: parseInt(String(no).replace(/\D/g, '')) || 0,
+    customer: r.cust || '—',
+    contact, total: r.amt, forWhat: r['for'] || r.ref || '', method: (r.m || 'cash').toUpperCase(),
+    signedBy: r.signed || r.by || '', hash: no,
+  });
+  const how = await MtekPdf.share(file, channel === 'whatsapp' ? contact : '');
+  toast(channel === 'whatsapp'
+    ? (how === 'shared' ? 'Pick WhatsApp in the share sheet — the PDF rides along.'
+                        : 'PDF downloaded — attach it in the WhatsApp chat that just opened.')
+    : (how === 'shared' ? 'Pick your mail app in the share sheet — the PDF is attached.'
+                        : 'PDF downloaded — attach it to your email.'), 'success');
+};
+window.printReceipt = no => {
+  const r = receipts.find(x => x.no === no);
+  if (!r) return toast('Receipt not found');
+  const file = MtekPdf.build('receipt', {
+    serial: parseInt(String(no).replace(/\D/g, '')) || 0,
+    customer: r.cust || '—',
+    contact: r.contact || '', total: r.amt, forWhat: r['for'] || r.ref || '',
+    method: (r.m || 'cash').toUpperCase(), signedBy: r.signed || r.by || '', hash: no,
+  });
+  const url = URL.createObjectURL(new Blob([file], { type: 'application/pdf' }));
+  window.open(url, '_blank'); // browser PDF viewer → print / save
+};
+window.shareDocPdf = async (t, serial, channel) => {
+  const d = docState[t] || {};
+  const contact = d.contact || d.phone || '';
+  const file = MtekPdf.build(t, { ...d, serial, signedBy: currentUser().name, contact });
+  const how = await MtekPdf.share(file, channel === 'whatsapp' ? contact : '');
+  toast(how === 'shared' ? 'Pick the app in the share sheet — the PDF is attached.'
+                         : 'PDF downloaded — attach it in the app that just opened.', 'success');
+};
+window.printDocPdf = (t, serial) => {
+  const d = docState[t] || {};
+  const file = MtekPdf.build(t, { ...d, serial, signedBy: currentUser().name, contact: d.contact || d.phone || '' });
+  const url = URL.createObjectURL(new Blob([file], { type: 'application/pdf' }));
+  window.open(url, '_blank');
+};
+
+// ---- summary: real printable report ----
+window.exportSummaryPdf = () => {
+  const rev = revAll(), today = txns.filter(t => t.d === new Date().toISOString().slice(0, 10));
+  const low = products.filter(p => !p.service && p.qty <= p.reorder);
+  const unpaid = invoices.filter(v => v.paid < invTotal(v));
+  const w = window.open('', '_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>M-TEK Summary</title>
+    <style>body{font-family:Arial,sans-serif;padding:34px;color:#111}h1{margin:0 0 2px}h2{margin:22px 0 6px;font-size:15px}
+    table{width:100%;border-collapse:collapse;font-size:12px}td,th{border:1px solid #ccd;padding:6px;text-align:left}
+    .mu{color:#667;font-size:11px}.tot{font-size:15px;font-weight:800}</style></head><body>
+    <h1>M-TEK FIRE &amp; SAFETY LTD.</h1><div class="mu">RC: 1082534 · Business summary · ${new Date().toLocaleString('en-GB')}</div>
+    <h2>Revenue</h2><div class="tot">Net revenue: ${'₦' + rev.toLocaleString()}</div><div class="mu">${today.length} transaction(s) today</div>
+    <h2>Low / out of stock (${low.length})</h2><table><tr><th>Product</th><th>Qty</th><th>Reorder</th></tr>
+    ${low.slice(0, 40).map(p => `<tr><td>${p.name}</td><td>${p.qty}</td><td>${p.reorder}</td></tr>`).join('') || '<tr><td colspan=3>None — stock healthy</td></tr>'}</table>
+    <h2>Outstanding invoices (${outstanding.length})</h2><table><tr><th>Invoice</th><th>Customer</th><th>Balance</th></tr>
+    ${unpaid.map(v => `<tr><td>${v.no}</td><td>${(C[v.cust] || {}).name || '—'}</td><td>₦${(invTotal(v) - v.paid).toLocaleString()}</td></tr>`).join('') || '<tr><td colspan=3>None — all paid</td></tr>'}</table>
+    <p class="mu">Digitally generated by the M-TEK workspace.</p>
+    </body></html>`);
+  w.document.close();
+  setTimeout(() => { try { w.print(); } catch { /* viewer */ } }, 350);
+};
+
+// ---- MILS: real logging + photo attach ----
+window.logService = () => {
+  if (!(sessionUser && ['ceo', 'admin'].includes(sessionUser.role))) return toast('Only CEO or Admin can log MILS jobs');
+  modal('Log service — MILS', `
+    <input class="f-in" id="ml-cust" placeholder="Customer name *">
+    <input class="f-in" id="ml-contact" placeholder="Customer phone or email *" style="margin-top:6px">
+    <input class="f-in" id="ml-equip" placeholder="Equipment (type · brand · capacity) *" style="margin-top:6px">
+    <select class="f-in" id="ml-action" style="margin-top:6px">
+      ${['INSTALLATION', 'REFILL', 'INSPECTION', 'REPAIR', 'MAINTENANCE'].map(a => `<option>${a}</option>`).join('')}
+    </select>
+    <textarea class="f-in" id="ml-find" placeholder="Findings / work done" style="margin-top:6px;height:70px"></textarea>
+    <input class="f-in" id="ml-due" type="date" placeholder="Next due" style="margin-top:6px">
+    <input class="f-in" id="ml-photos" type="file" accept="image/*" multiple style="margin-top:6px">
+    <button class="btn primary" style="width:100%;justify-content:center;margin-top:12px" onclick="submitMils()">Log service</button>`);
+};
+window.submitMils = async () => {
+  try {
+    const photos = [];
+    for (const f of $('#ml-photos').files) {
+      photos.push(await new Promise(res => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.readAsDataURL(f); }));
+    }
+    const r = await api('/api/mils', {
+      customer_name: $('#ml-cust').value, customer_contact: $('#ml-contact').value,
+      equipment: $('#ml-equip').value, action: $('#ml-action').value,
+      findings: $('#ml-find').value, next_due: $('#ml-due').value,
+      photos, signedBy: currentUser().name, email: currentUser()?.email,
+    });
+    closeModal(); await refreshState(); render();
+    toast(`MILS ${r.doc.id} logged.`, 'success');
+  } catch (e) { toast(e.message); }
+};
+window.addMilsPhotos = id => {
+  const l = S().mils.find(x => x.id === id);
+  if (!l) return toast('MILS record not found');
+  modal(`Photos — ${l.mils_no || l.id}`, `
+    ${(l.photos || []).map(p => `<img src="${p}" style="width:100%;border-radius:10px;margin:6px 0">`).join('') || '<div style="color:var(--gray-500);font-size:12px">No photos yet.</div>'}
+    <input class="f-in" id="mlp-${id}" type="file" accept="image/*" multiple style="margin-top:8px">
+    <button class="btn primary" style="width:100%;justify-content:center;margin-top:10px" onclick="saveMilsPhotos('${id}')">Attach</button>`);
+};
+window.saveMilsPhotos = async id => {
+  try {
+    const existing = (S().mils.find(x => x.id === id)?.photos) || [];
+    const photos = [...existing];
+    for (const f of $(`#mlp-${id}`).files) {
+      photos.push(await new Promise(res => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.readAsDataURL(f); }));
+    }
+    await api('/api/mils', { ...S().mils.find(x => x.id === id), photos, signedBy: currentUser().name, email: currentUser()?.email });
+    closeModal(); await refreshState(); render();
+    toast('Photos attached.', 'success');
+  } catch (e) { toast(e.message); }
+};
+
+// ---- stock: real TXT import (owner's products_seed.txt) ----
+window.importTxt = () => {
+  modal('Import products — TXT seed', `
+    <div style="font-size:12px;color:var(--gray-500);margin-bottom:8px">Pick the <b>products_seed.txt</b> you edited (tab-separated, first column ID). Existing IDs are updated, new ones added.</div>
+    <input class="f-in" id="txt-file" type="file" accept=".txt,.tsv,text/plain">
+    <div class="fc-t" style="margin:12px 0 6px">…or paste rows</div>
+    <textarea id="txt-paste" style="width:100%;height:120px;border:1px solid var(--gray-200);border-radius:10px;padding:10px;font-size:12px" placeholder="ID	NAME	CATEGORY	COST	SELLING	QTY	REORDER	UNIT"></textarea>
+    <button class="btn primary" style="width:100%;justify-content:center;margin-top:12px" onclick="submitTxt()">Import</button>`);
+};
+window.submitTxt = async () => {
+  try {
+    let text = $('#txt-paste').value;
+    const f = $('#txt-file').files[0];
+    if (f) text = await f.text();
+    if (!text.trim()) return toast('Choose a file or paste rows first');
+    const rows = [];
+    for (const line of text.split('\n')) {
+      if (!line.trim() || line.startsWith('#')) continue;
+      const c = line.split('\t');
+      if (c[0].trim().toUpperCase() === 'ID') continue;
+      const num = v => { try { return parseFloat(String(v).replace(/,/g, '')) || 0; } catch { return 0; } };
+      if (!c[0].trim() || !c[1]?.trim()) continue;
+      rows.push({ id: c[0].trim(), name: c[1].trim(), category: (c[2] || 'Fire').trim(),
+        cost_price: num(c[3]), selling_price: num(c[4]), qty_on_hand: num(c[5]),
+        reorder_level: num(c[6]), unit: (c[7] || 'unit').trim() });
+    }
+    if (!rows.length) return toast('No valid rows found');
+    const r = await api('/api/products/upsert', { products: rows, email: currentUser()?.email });
+    closeModal(); await refreshState(); render();
+    toast(`${r.upserted} products imported.`, 'success');
+  } catch (e) { toast(e.message); }
+};
 
 function enterApp() {
   $('#auth').style.display = 'none';

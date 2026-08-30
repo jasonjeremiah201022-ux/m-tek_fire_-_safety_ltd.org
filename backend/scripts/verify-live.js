@@ -30,7 +30,7 @@ const step = m => console.log(`\n— ${m}`);
 const expect = (c, m) => { if (c) ok(m); else fail(m); };
 
 const hashPass = (secret, salt) =>
-  crypto.scryptSync(String(salt) + String(secret), 'mtek-store-salt', 32).toString('hex');
+  crypto.createHmac('sha512', 'mtek-store-salt').update(String(salt) + String(secret)).digest('hex');
 
 (async () => {
   console.log('M-TEK live verification\n=======================');

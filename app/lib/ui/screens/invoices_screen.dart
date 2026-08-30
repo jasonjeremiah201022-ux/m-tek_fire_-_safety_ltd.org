@@ -5,8 +5,10 @@ import '../../core/theme.dart';
 import '../../data/models.dart';
 import '../../data/auth_store.dart';
 import '../../data/store.dart';
+import '../../documents/doc_models.dart';
 import '../signature_dialog.dart';
 import '../widgets.dart';
+import 'generator_screen.dart';
 
 /// INVOICES — bill now, pay later (corporate clients).
 /// Payments post a Transaction + Receipt automatically.
@@ -28,7 +30,10 @@ class InvoicesScreen extends StatelessWidget {
             subtitle: '${store.outstandingInvoicesTotal() == 0 ? "All settled" : "${fmt.naira(store.outstandingInvoicesTotal())} outstanding"}',
             actions: [
               FilledButton.icon(
-                onPressed: () {},
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const GeneratorScreen(initialType: DocType.invoice)),
+                ),
                 icon: const Icon(Icons.post_add),
                 label: const Text('New invoice'),
               ),

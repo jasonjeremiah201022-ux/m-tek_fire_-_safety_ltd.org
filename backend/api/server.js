@@ -96,7 +96,7 @@ function readBody(req) {
   });
 }
 const hashPass = (secret, salt) =>
-  crypto.scryptSync(String(salt) + String(secret), 'mtek-store-salt', 32).toString('hex');
+  crypto.createHmac('sha512', 'mtek-store-salt').update(String(salt) + String(secret)).digest('hex');
 const newSalt = () => crypto.randomBytes(8).toString('hex');
 const pad9 = n => String(n).padStart(9, '0'); // 000000001 series (owner directive)
 

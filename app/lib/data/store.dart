@@ -17,7 +17,7 @@ import 'seed_import.dart';
 /// AppStore — the Phase B data layer. Same observable API the screens were
 /// built against, now:
 ///   1. loads from the LOCAL CACHE (local_store, JSON per collection),
-///   2. falls back to the bundled TXT seed (products) + demo dataset,
+///   2. falls back to the bundled TXT seed (the owner's REAL catalogue),
 ///   3. every mutation PERSISTS locally and enqueues a sync record,
 ///   4. a sync flush pushes the queue to Supabase REST when configured
 ///      (env.dart) — the app stays fully usable offline (SPEC §5, §12 Phase B).
@@ -69,8 +69,10 @@ class AppStore extends ChangeNotifier {
     }
     if (!loadedAny) loadedAny = await _loadLocal();
     if (!loadedAny) {
+      // NO preset/demo data (owner directive): first boot imports the owner's
+      // REAL catalogue (bundled products_seed.txt). Books start empty —
+      // customers, sales, receipts and documents come from real activity only.
       await _importBundledSeed();
-      _seedDemo();
       await _persistAll();
     }
     _loaded = true;
@@ -203,6 +205,42 @@ class AppStore extends ChangeNotifier {
   /// Role reported by the API for the signed-in user (ceo/admin/sales).
   String remoteRole = '';
 
+  /// Site photos attached to MILS jobs: logId → data URLs. Real captures
+  /// from the device camera/gallery (no placeholders).
+  final Map<String, List<String>> milsPhotos = {};
+
+  /// CEO/Admin stock import: upsert rows parsed from a products_seed.txt-style
+  /// TSV (the owner edits the file, picks it here — no terminal needed).
+  Future<int> importProductsTsv(String tsv) async {
+    final imported = parseSeedTsv(tsv);
+    if (imported.isEmpty) throw Exception('No valid rows found in that file');
+    for (final p in imported) {
+      final idx = products.indexWhere((x) => x.id == p.id);
+      if (idx == -1) {
+        products.add(p);
+      } else {
+        products[idx] = p;
+      }
+    }
+    await _persistAll();
+    notifyListeners();
+    return imported.length;
+  }
+
+  /// Attach real site photos (data URLs) to a MILS job.
+  Future<void> attachMilsPhotos(String logId, List<String> dataUrls) async {
+    if (dataUrls.isEmpty) return;
+    milsPhotos.putIfAbsent(logId, () => <String>[]).addAll(dataUrls);
+    final all = <Map<String, dynamic>>[];
+    milsPhotos.forEach((log, urls) {
+      for (final u in urls) {
+        all.add({'log': log, 'url': u});
+      }
+    });
+    await writeStore('mils_photos', all);
+    notifyListeners();
+  }
+
   /// Next document serial — SERVER-assigned when the backend is configured
   /// (atomic RPC, paper-book continuity, passcode re-verified server-side);
   /// local counter otherwise (offline dev).
@@ -212,11 +250,13 @@ class AppStore extends ChangeNotifier {
     required double total,
     required String passcode,
     String? verifyHash,
+    String contact = '', // customer phone OR email — server rejects documents without one
   }) async {
     if (Env.apiConfigured && _api != null && AuthStore.instance.accessToken != null) {
       final res = await _api!.post('/api/docs/issue', {
         'type': type, 'customer': customer, 'total': total,
         'hash': verifyHash ?? '', 'passcode': passcode,
+        'contact': contact,
       });
       if (res != null && res.ok && res.json is Map) {
         final serial = _asInt((res.json as Map)['serial']);
@@ -240,6 +280,13 @@ class AppStore extends ChangeNotifier {
     products.addAll(parseProducts(rawProducts));
     for (final e in rawCustomers) {
       if (e is Map) customers.add(parseCustomer((e).cast<String, dynamic>()));
+    }
+    final rawPhotos = await _readList('mils_photos');
+    for (final e in rawPhotos) {
+      if (e is Map) {
+        final m = (e).cast<String, dynamic>();
+        milsPhotos.putIfAbsent('${m['log']}', () => <String>[]).add('${m['url']}');
+      }
     }
     final rawTxns = await _readList('transactions');
     for (final e in rawTxns) {
@@ -748,47 +795,6 @@ class AppStore extends ChangeNotifier {
       customerSignature: customerSignature,
     ));
   }
-
-  // ------------------------------------------------------- demo fallback
-  void _seedDemo() {
-    DateTime d(int day, [int h = 12]) => DateTime(2026, 8, day, h);
-    Product p(String id, String name, ProductCategory c, int cost, int price, int qty, int reorder,
-        {String unit = 'pcs', bool service = false}) {
-      return Product(
-        id: id, name: name, category: c, costPrice: cost, sellingPrice: price,
-        qtyOnHand: qty, reorderLevel: reorder, unit: unit, isService: service,
-      );
-    }
-
-    final f002 = p('F002', 'BOX FOR 6KG FIRE EXTINGUISHER', ProductCategory.fire, 38000, 55000, 24, 10);
-    final f003 = p('F003', 'BOX FOR 9KG FIRE EXTINGUISHER', ProductCategory.fire, 45000, 65000, 12, 8);
-    final refill = p('SRV-1', 'DCP 6KG REFILL SERVICE', ProductCategory.fire, 3000, 7500, 0, 0, unit: 'job', service: true);
-    products.addAll([f002, f003, refill]);
-
-    Customer c(String id, String name, bool corp, {int balance = 0}) => Customer(
-          id: id, name: name, isCorporate: corp,
-          phone: '+234 803 000 0000', email: 'client@example.com',
-          address: 'Kaduna, Nigeria', creditBalance: balance,
-        );
-    final c003 = c('C003', 'Alhaji Musa Ibrahim', false);
-    customers.addAll([c003, c('C001', 'Nigerian Breweries — Kaduna Depot', true, balance: 360000)]);
-
-    final sale = Sale(
-      id: 'S001', date: d(2),
-      customer: c003, method: PaymentMethod.cash,
-      items: [SaleItem(product: f002, qty: 2), SaleItem(product: refill, qty: 1)],
-    );
-    sales.add(sale);
-    transactions.add(Transaction(
-      id: 'TXN-0001', date: d(2), type: TxnType.salePayment,
-      amount: sale.total, method: PaymentMethod.cash, reference: 'S001',
-    ));
-    receipts.add(Receipt(
-      number: 'MTK-REC-0001', date: d(2), customer: c003,
-      amount: sale.total, method: PaymentMethod.cash, forDoc: 'S001',
-      signedBy: 'Admin', issuedBy: 'Admin',
-    ));
-  }
 }
 
 // ---------------------------------------------------------------- model IO
@@ -886,9 +892,10 @@ class StoreSettings {
 
 /// One row of the generated-document history (Phase A/B).
 class IssuedDocument {
-  final String type; // receipt | invoice | mils
+  final String type; // receipt | invoice | mils | waybill | deliverynote
   final int serial;
   final String customer;
+  final String customerContact; // phone or email captured on the document
   final double total;
   final String signedBy;
   final String verifyHash;
@@ -897,6 +904,7 @@ class IssuedDocument {
     required this.type,
     required this.serial,
     required this.customer,
+    this.customerContact = '',
     required this.total,
     required this.signedBy,
     required this.verifyHash,
@@ -905,14 +913,22 @@ class IssuedDocument {
 
   Map<String, dynamic> toJson() => {
         'type': type, 'serial': serial, 'customer': customer,
+        'customer_contact': customerContact,
         'total': total, 'signed_by': signedBy,
         'verify_hash': verifyHash, 'issued_at': issuedAt.toIso8601String(),
       };
+  /// Accepts BOTH shapes: local JSON (type/signed_by/…) and the real
+  /// MongoDB archive rows served by /api/bootstrap (doc_type/signed_name/…).
   static IssuedDocument fromJson(Map<String, dynamic> j) => IssuedDocument(
-        type: '${j['type']}', serial: _asInt(j['serial']),
-        customer: '${j['customer']}', total: (j['total'] as num?)?.toDouble() ?? 0,
-        signedBy: '${j['signed_by']}', verifyHash: '${j['verify_hash']}',
-        issuedAt: DateTime.tryParse('${j['issued_at']}') ?? DateTime.now(),
+        type: '${j['type'] ?? j['doc_type'] ?? 'doc'}',
+        serial: _asInt(j['serial']),
+        customer: '${j['customer'] ?? j['customer_name'] ?? '—'}',
+        customerContact: '${j['customer_contact'] ?? j['contact'] ?? ''}',
+        total: (j['total'] as num?)?.toDouble() ?? 0,
+        signedBy: '${j['signed_name'] ?? j['signed_by'] ?? '—'}',
+        verifyHash: '${j['verify_hash'] ?? j['hash'] ?? ''}',
+        issuedAt: DateTime.tryParse('${j['issued_at'] ?? j['created_at'] ?? ''}') ??
+            DateTime.now(),
       );
 }
 

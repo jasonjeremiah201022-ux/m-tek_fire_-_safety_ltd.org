@@ -1,16 +1,24 @@
-# Supabase in M-TEK — AUTH ONLY
+# Supabase in M-TEK — AUTH + the data-api Edge Function
 
-Owner decision (2026-08-30): **MongoDB stores everything** (one cluster,
-one database per section — see `backend/api/README.md`). Supabase is used
-ONLY for authentication:
+Owner decisions (2026-08-30): **no Render** (or any PaaS). Supabase hosts
+authentication AND the data API as an **Edge Function**; **MongoDB stores
+everything** (one cluster, one database per section).
 
-- GoTrue accounts (email + password) — the CEO account is created manually
-  in the Supabase dashboard and hardcoded to UID `d9c7fd50-0a60-4a16-b4ab-
-  041cb568a49b` in `backend/.env`.
-- JWTs issued by Supabase Auth are validated by the M-TEK data API
-  (`backend/api`); roles live in `mtek_people.profiles` (MongoDB), never in
-  Supabase, so no business table and no RLS exists here.
+- Auth: GoTrue accounts. The CEO account is locked to
+  `mtekfiresafetyltd@gmail.com` (UID `d9c7fd50-0a60-4a16-b4ab-041cb568a49b`
+  in `backend/.env`) — auto-confirmed, never registered.
+- Data API: `supabase/functions/data-api/` — all routes, authority matrix,
+  self-provisioning (serials start 000000001; catalogue seeded from the
+  owner's real `seed/products_seed.txt`).
 
-There are intentionally NO migrations, tables or edge functions in this
-project. `backend/.env` holds the keys:
-`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`.
+## Deploy (clicks only)
+- **Option A — dashboard:** Edge Functions → Create → name `data-api` →
+  paste the files from `supabase/functions/data-api/` → Deploy.
+- **Option B — automatic:** add repo secrets `SUPABASE_ACCESS_TOKEN` +
+  `SUPABASE_PROJECT_ID`, copy `docs/ci/deploy-edge.yml` into
+  `.github/workflows/` — every push deploys it.
+- Function secrets (dashboard → Edge Functions → Secrets):
+  `MONGODB_URI`, `SUPABASE_SECRET_KEY`, `MTEK_CEO_UID`, `MTEK_CEO_SIG`.
+
+## App base URL
+`MILS_API_BASE=https://kshuadjcflwlidupnqly.supabase.co/functions/v1/data-api`

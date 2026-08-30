@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/format.dart' as fmt;
 import '../core/theme.dart';
 import '../data/auth_store.dart';
 import 'screens/customers_screen.dart';
@@ -78,6 +79,56 @@ class AppShell extends StatefulWidget {
 }
 
 class _AppShellState extends State<AppShell> {
+
+  /// Recent activity — the latest real transactions (payments, receipts,
+  /// refunds). Live store data; replaces a dead bell button.
+  void _showRecentActivity(BuildContext context) {
+    final store = AppStore.instance;
+    final latest = store.transactions.reversed.take(12).toList();
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Recent activity',
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+              const SizedBox(height: 10),
+              if (latest.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 18),
+                  child: Text('No transactions yet — activity appears here as it happens.',
+                      style: TextStyle(color: Mtek.gray500, fontSize: 12.5)),
+                )
+              else
+                for (final t in latest)
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    dense: true,
+                    leading: Icon(
+                      t.isRefund ? Icons.undo : Icons.payments_outlined,
+                      size: 20,
+                      color: t.isRefund ? Mtek.danger : Mtek.success,
+                    ),
+                    title: Text('${t.isRefund ? 'Refund' : 'Payment'} — ${t.reference.isEmpty ? 'walk-in' : t.reference}',
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                    subtitle: Text(fmt.fmtDateTime(t.date), style: const TextStyle(fontSize: 11.5)),
+                    trailing: Text(fmt.naira(t.amount),
+                        style: TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w700,
+                            color: t.isRefund ? Mtek.danger : Mtek.gray800)),
+                  ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   int _index = 0;
   final _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -106,7 +157,11 @@ class _AppShellState extends State<AppShell> {
         ],
       ),
       actions: [
-        IconButton(icon: const Icon(Icons.notifications_outlined), onPressed: () {}),
+        IconButton(
+          tooltip: 'Recent activity',
+          icon: const Icon(Icons.notifications_outlined),
+          onPressed: () => _showRecentActivity(context),
+        ),
         const Padding(
           padding: EdgeInsets.only(right: 8),
           child: Center(child: Text('Admin', style: TextStyle(fontSize: 13))),
