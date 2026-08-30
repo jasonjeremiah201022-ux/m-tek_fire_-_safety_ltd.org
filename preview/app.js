@@ -779,8 +779,19 @@ function renderAuth(mode = 'login') {
   const auth = $('#auth');
   auth.innerHTML = `
     <div class="auth-overlay">
+      <div class="auth-hero">
+        <div class="hero-seal"><img src="logo.png" alt="M-Tek Fire & Safety Limited seal"></div>
+        <div class="hero-name">M-TEK FIRE &amp; SAFETY LTD.</div>
+        <div class="hero-tag">Sales · Supplies · Installations · Refilling · Maintenance · Training · Consultancy</div>
+        <div class="hero-rc">RC: 1082534 · Kaduna — Lagos</div>
+        <div class="hero-points">
+          <span>Receipts, invoices &amp; MILS — signed digitally</span>
+          <span>Stock, revenue &amp; credit at a glance</span>
+          <span>Works offline, syncs when connected</span>
+        </div>
+      </div>
       <div class="auth-card">
-        <div class="lg"><svg class="ic" style="width:30px;height:30px"><use href="/icons.svg#mround"/></svg></div>
+        <div class="lg"><img src="logo.png" alt="M-Tek seal" style="width:100%;height:100%;object-fit:contain"></div>
         <div class="co">M-TEK FIRE &amp; SAFETY LTD</div>
         <div class="sub">${mode === 'login' ? 'Sign in to your workspace' : 'Create your account'}</div>
         ${mode === 'login' ? `
@@ -892,6 +903,9 @@ function updateUserChip() {
   const u = currentUser();
   $('#uname').textContent = u ? u.name : '';
   $('#urole').textContent = u ? u.role.toUpperCase() : '';
+  $('#fname').textContent = u ? u.name : '—';
+  $('#frole').textContent = u ? u.role.toUpperCase() + ' · live workspace' : 'sign in to continue';
+  $('#uavatar').textContent = u ? (u.name || '?').trim().charAt(0).toUpperCase() : '–';
   $('#logoutbtn').style.display = u ? '' : 'none';
 }
 

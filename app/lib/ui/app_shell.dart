@@ -98,7 +98,7 @@ class _AppShellState extends State<AppShell> {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: Image.asset('assets/logo.png', height: 34,
+            child: Image.asset('assets/branding/logo.png', height: 34,
                 errorBuilder: (_, __, ___) => const SizedBox.shrink()),
           ),
           const SizedBox(width: 10),
@@ -169,7 +169,7 @@ class _AppShellState extends State<AppShell> {
         padding: const EdgeInsets.symmetric(vertical: 12),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(10),
-          child: Image.asset('assets/logo.png', width: 40, height: 40,
+          child: Image.asset('assets/branding/logo.png', width: 40, height: 40,
               errorBuilder: (_, __, ___) => const SizedBox.shrink()),
         ),
       ),

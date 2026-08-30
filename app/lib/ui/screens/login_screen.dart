@@ -53,10 +53,21 @@ class _LoginScreenState extends State<LoginScreen> {
     return Column(
       children: [
         Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(color: Mtek.brand600, borderRadius: BorderRadius.circular(14)),
-          child: const Icon(Icons.local_fire_department, color: Colors.white, size: 30),
+          width: 64,
+          height: 64,
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF1E3FA0).withValues(alpha: .18),
+                blurRadius: 22,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Image.asset('assets/branding/logo.png', fit: BoxFit.contain),
         ),
         const SizedBox(height: 12),
         const Text('M-TEK FIRE & SAFETY LTD',

@@ -53,7 +53,11 @@ jobs:
         working-directory: app
         run: |
           flutter pub get
-          flutter build web --release --base-href="${{ env.BASE_HREF }}"      - uses: actions/upload-artifact@v4
+          flutter build web --release --base-href="${{ env.BASE_HREF }}" \
+            --dart-define=SUPABASE_URL="${{ vars.SUPABASE_URL }}" \
+            --dart-define=SUPABASE_ANON_KEY="${{ vars.SUPABASE_ANON_KEY }}" \
+            --dart-define=MILS_API_BASE="${{ vars.MILS_API_BASE }}"
+      - uses: actions/upload-artifact@v4
         with: { name: mtek-pwa, path: app/build/web }
 
   android:
@@ -66,10 +70,20 @@ jobs:
         with: { channel: stable, cache: true }
       - name: Build APK + AAB
         working-directory: app
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+          MILS_API_BASE: ${{ vars.MILS_API_BASE }}
         run: |
           flutter pub get
-          flutter build apk --release
-          flutter build appbundle --release
+          flutter build apk --release \
+            --dart-define=SUPABASE_URL="$SUPABASE_URL" \
+            --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY" \
+            --dart-define=MILS_API_BASE="$MILS_API_BASE"
+          flutter build appbundle --release \
+            --dart-define=SUPABASE_URL="$SUPABASE_URL" \
+            --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY" \
+            --dart-define=MILS_API_BASE="$MILS_API_BASE"
       - uses: actions/upload-artifact@v4
         with: { name: mtek-apk, path: app/build/app/outputs/flutter-apk/app-release.apk }
       - uses: actions/upload-artifact@v4
@@ -83,9 +97,17 @@ jobs:
         with: { channel: stable, cache: true }
       - name: Build Windows EXE
         working-directory: app
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+          MILS_API_BASE: ${{ vars.MILS_API_BASE }}
+        shell: pwsh
         run: |
           flutter pub get
-          flutter build windows --release
+          flutter build windows --release `
+            --dart-define=SUPABASE_URL="$env:SUPABASE_URL" `
+            --dart-define=SUPABASE_ANON_KEY="$env:SUPABASE_ANON_KEY" `
+            --dart-define=MILS_API_BASE="$env:MILS_API_BASE"
       - name: Zip bundle
         shell: pwsh
         run: Compress-Archive -Path app/build/windows/x64/runner/Release/* -DestinationPath mtek-windows.zip

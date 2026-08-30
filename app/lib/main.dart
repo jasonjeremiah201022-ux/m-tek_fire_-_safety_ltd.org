@@ -60,7 +60,7 @@ class _BootScreenState extends State<_BootScreen> {
               width: 64,
               height: 64,
               decoration: BoxDecoration(color: Mtek.brand600, borderRadius: BorderRadius.circular(16)),
-              child: const Icon(Icons.local_fire_department, color: Colors.white, size: 34),
+              child: Image.asset('assets/branding/logo.png', fit: BoxFit.contain),
             ),
             const SizedBox(height: 16),
             const Text('M-TEK FIRE & SAFETY LTD.',

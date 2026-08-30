@@ -361,3 +361,74 @@ methods {}
 /* ---------- settings ---------- */
 .form-card input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--brand-600); }
 .ic { fill: none; vertical-align: middle; }
+
+/* =========================================================================
+   V2 POLISH — real seal branding + UI upgrade (2026-08-30)
+   ========================================================================= */
+
+/* auth: split hero + card */
+.auth-overlay { gap: 46px; flex-wrap: wrap; align-content: center; }
+.auth-hero {
+  max-width: 430px; color: #fff; display: none;
+}
+@media (min-width: 900px) { .auth-hero { display: block; } }
+.hero-seal {
+  width: 208px; height: 208px; margin-bottom: 22px; border-radius: 50%;
+  padding: 14px; background: rgba(255,255,255,.04);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.08), 0 24px 70px rgba(0,0,0,.5);
+}
+.hero-seal img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
+.hero-name { font-family: Sora, sans-serif; font-size: 25px; font-weight: 800; letter-spacing: 1.5px; }
+.hero-tag { margin-top: 9px; font-size: 12px; line-height: 1.7; color: #b9c4d8; max-width: 400px; }
+.hero-rc { margin-top: 7px; font-size: 11.5px; letter-spacing: 1px; color: var(--gold-500); font-weight: 700; }
+.hero-points { margin-top: 22px; display: flex; flex-direction: column; gap: 9px; }
+.hero-points span {
+  font-size: 12.5px; color: #ccd5e5; display: flex; align-items: center; gap: 9px;
+}
+.hero-points span::before {
+  content: ""; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--gold-500); box-shadow: 0 0 10px var(--gold-500); flex: none;
+}
+.auth-card { box-shadow: 0 30px 90px rgba(2,6,23,.55); border: 1px solid var(--gray-200); }
+.auth-card .lg { background: #fff; box-shadow: 0 8px 24px rgba(30,63,160,.16); overflow: hidden; }
+.auth-card .lg img { border-radius: 50%; }
+
+/* sidebar brand with the real seal */
+.brand { padding: 12px 10px 16px; border-bottom: 1px solid rgba(255,255,255,.07); margin-bottom: 10px; }
+.brand img {
+  width: 42px; height: 42px; border-radius: 50%; background: #fff; padding: 3px;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.14), 0 6px 18px rgba(0,0,0,.35);
+}
+.brand .t1 { font-family: Sora, sans-serif; letter-spacing: .2px; }
+.brand .t2 { color: #93a1b8 !important; font-size: 10.5px !important; letter-spacing: 1.6px; text-transform: uppercase; }
+
+/* content + cards */
+.content { background-blend-mode: normal; }
+.card, .form-card {
+  box-shadow: 0 1px 2px rgba(15,23,42,.05), 0 10px 28px -18px rgba(15,23,42,.25);
+  border: 1px solid var(--gray-200);
+}
+.card:hover { border-color: #d5dbe7; }
+.btn.primary {
+  background: linear-gradient(135deg, var(--brand-500), var(--brand-700));
+  box-shadow: 0 6px 16px -6px rgba(30,63,160,.55);
+}
+.btn.primary:hover { filter: brightness(1.06); }
+.serial-banner {
+  background: linear-gradient(135deg, #fff8e6, var(--gold-tint));
+  border: 1px solid #f2dfa8;
+}
+
+/* topbar */
+.topbar { background: linear-gradient(180deg, var(--navy-900), var(--navy-950)); }
+.userchip { border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); }
+
+/* document sheet */
+.doc-sheet { border: 1px solid var(--gray-200); box-shadow: 0 18px 50px -20px rgba(15,23,42,.35); }
+.corp { color: var(--navy-900); }
+
+/* misc */
+.seg { background: #eef1f7; border: 1px solid var(--gray-200); }
+table.ledg th { position: sticky; top: 0; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: #c4cdda; border-radius: 8px; border: 2px solid transparent; background-clip: content-box; }

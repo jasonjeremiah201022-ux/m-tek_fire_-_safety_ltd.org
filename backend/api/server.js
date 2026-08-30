@@ -192,6 +192,26 @@ async function ensureCore() {
   const st = await coll.settings();
   await st.updateOne({ _id: 'settings' }, { $setOnInsert: { vat_enabled: false, vat_rate: 0.075, watermark: true } }, { upsert: true });
 }
+// Starter catalogue (owner seed) — provisioned automatically the first
+// time the API touches MongoDB, so a fresh cluster needs NO manual seeding.
+const STARTER_PRODUCTS = [
+  { id: 'F002', name: 'BOX FOR 6KG FIRE EXTINGUISHER', cat: 'Fire', cost: 38000, price: 45000, qty: 24, reorder: 5, unit: 'box' },
+  { id: 'F003', name: 'BOX FOR 9KG FIRE EXTINGUISHER', cat: 'Fire', cost: 46000, price: 55000, qty: 12, reorder: 4, unit: 'box' },
+  { id: 'SRV-1', name: 'DCP REFILL (PER KG)', cat: 'Fire', cost: 0, price: 3500, qty: 0, reorder: 0, unit: 'kg', service: true },
+];
+async function ensureCatalogue() {
+  const p = await coll.products();
+  const count = await p.countDocuments();
+  if (count > 0) return;
+  for (const s of STARTER_PRODUCTS) {
+    await p.updateOne({ _id: s.id }, { $set: {
+      name: s.name, category: s.cat, cost_price: s.cost, selling_price: s.price,
+      qty_on_hand: s.qty, reorder_level: s.reorder, unit: s.unit,
+      is_service: !!s.service, updated_at: new Date().toISOString(),
+    } }, { upsert: true });
+  }
+}
+
 async function nextSerial(type) {
   const s = await coll.serials();
   const out = await s.findOneAndUpdate(
@@ -211,10 +231,33 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
   const route = `${req.method} ${url.pathname}`;
   try {
+    // landing page (browser-checkable — no bash needed)
+    if (route === 'GET /' ) {
+      const buf = Buffer.from(`<!DOCTYPE html><html><head><title>M-TEK Data API</title>
+<style>body{font-family:system-ui,sans-serif;background:#0b1224;color:#e7edf7;display:grid;place-items:center;min-height:100vh;margin:0}
+main{text-align:center;max-width:560px;padding:40px}h1{letter-spacing:1px}img{width:120px;height:120px;border-radius:50%;background:#fff;padding:8px}
+code{background:#16213c;padding:2px 8px;border-radius:6px}ul{text-align:left;line-height:1.9}</style></head><body><main>
+<img src="/logo.png" alt="M-Tek seal"><h1>M-TEK Data API</h1>
+<p>Supabase = auth only · MongoDB = all storage (7 section databases)</p>
+<ul><li><code>GET /health</code> — live status + serial counters</li>
+<li>Serial books start at <b>000000001</b></li>
+<li>Authority: stock edits = CEO/Admin · seeding = CEO only</li></ul>
+<p style="color:#7f8ea8">POST endpoints require a Supabase JWT (Authorization: Bearer …)</p>
+</main></body></html>`, 'utf8');
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Content-Length': buf.length });
+      return res.end(buf);
+    }
+    if (route === 'GET /logo.png') {
+      const png = fs.readFileSync(path.join(__dirname, '..', '..', 'assets', 'logo', 'mtek_logo.png'));
+      res.writeHead(200, { 'Content-Type': 'image/png', 'Content-Length': png.length });
+      return res.end(png);
+    }
+
     // health (no auth — also proves Mongo reachability)
     if (route === 'GET /health') {
       try {
         await ensureCore();
+        await ensureCatalogue();
         return json(res, 200, { ok: true, databases: SECTION_DBS, serials: await peekSerials() });
       } catch (e) {
         return json(res, 503, { ok: false, error: `MongoDB unreachable — ${e.message.slice(0, 120)}`, databases: SECTION_DBS });
@@ -230,6 +273,7 @@ const server = http.createServer(async (req, res) => {
       }
       case 'GET /api/bootstrap': {
         await ensureCore();
+        await ensureCatalogue();
         const [products, customers, settings, serials, txns, receipts, invoices, docs] = await Promise.all([
           (await coll.products()).find({}).sort({ name: 1 }).limit(1000).toArray(),
           (await coll.customers()).find({}).sort({ name: 1 }).limit(1000).toArray(),
