@@ -17,8 +17,10 @@ everything** (one cluster, one database per section).
 - **Option B — automatic:** add repo secrets `SUPABASE_ACCESS_TOKEN` +
   `SUPABASE_PROJECT_ID`, copy `docs/ci/deploy-edge.yml` into
   `.github/workflows/` — every push deploys it.
-- Function secrets (dashboard → Edge Functions → Secrets):
-  `MONGODB_URI`, `SUPABASE_SECRET_KEY`, `MTEK_CEO_UID`, `MTEK_CEO_SIG`.
+- Function secrets (dashboard → Edge Functions → Secrets): you only ADD three —
+  `MONGODB_URI`, `MTEK_CEO_UID`, `MTEK_CEO_SIG`. The `SUPABASE_SECRET_KEY(S)`
+  is already there as a Supabase default — leave it untouched; the function
+  reads it under any of its names.
 
 ## App base URL
 `MILS_API_BASE=https://kshuadjcflwlidupnqly.supabase.co/functions/v1/data-api`

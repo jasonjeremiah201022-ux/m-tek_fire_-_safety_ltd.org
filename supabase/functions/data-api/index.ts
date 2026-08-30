@@ -24,7 +24,10 @@ import { MongoClient } from 'npm:mongodb@6.8.0';
 import { OWNER_CATALOGUE } from './catalogue.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
+// Accept every name Supabase uses for the project secret key — including the
+// pre-added dashboard default "SUPABASE_SECRET_KEYS" (plural).
 const SERVICE_ROLE = Deno.env.get('SUPABASE_SECRET_KEY') ??
+  Deno.env.get('SUPABASE_SECRET_KEYS') ??
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 const CEO_UID = Deno.env.get('MTEK_CEO_UID') ?? 'd9c7fd50-0a60-4a16-b4ab-041cb568a49b';
 const CEO_EMAIL = 'mtekfiresafetyltd@gmail.com';
